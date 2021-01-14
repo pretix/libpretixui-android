@@ -15,6 +15,8 @@ import eu.pretix.libpretixsync.db.QuestionLike
 import eu.pretix.libpretixsync.db.QuestionOption
 import eu.pretix.libpretixui.android.R
 import org.joda.time.LocalDate
+import org.joda.time.LocalTime
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -65,7 +67,8 @@ internal class CountryAdapter(context: Context) :
 }
 
 fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
-                        defaultCountry: String,
+                        values: Map<QuestionLike, String>? = null,
+                        defaultCountry: String?,
                         retryHandler: ((MutableList<Answer>) -> Unit)): Dialog {
     val inflater = ctx.layoutInflater
     val fviews = HashMap<QuestionLike, Any>()
@@ -86,13 +89,21 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
         when (question.type) {
             QuestionType.TEL -> {
                 val fieldS = PhoneEditText(ctx)
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    fieldS.setPhoneNumber(values[question])
+                }
                 fviews[question] = fieldS
-                fieldS.setDefaultCountry(defaultCountry)
+                if (defaultCountry != null) {
+                    fieldS.setDefaultCountry(defaultCountry)
+                }
                 fieldS.setPadding(0, 0, 0, 0)
                 llFormFields.addView(fieldS)
             }
             QuestionType.EMAIL -> {
                 val fieldS = EditText(ctx)
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    fieldS.setText(values[question])
+                }
                 fieldS.setLines(1)
                 fieldS.setSingleLine(true)
                 fieldS.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
@@ -101,6 +112,9 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
             }
             QuestionType.S -> {
                 val fieldS = EditText(ctx)
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    fieldS.setText(values[question])
+                }
                 fieldS.setLines(1)
                 fieldS.setSingleLine(true)
                 fviews[question] = fieldS
@@ -108,12 +122,18 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
             }
             QuestionType.T -> {
                 val fieldT = EditText(ctx)
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    fieldT.setText(values[question])
+                }
                 fieldT.setLines(2)
                 fviews[question] = fieldT
                 llFormFields.addView(fieldT)
             }
             QuestionType.N -> {
                 val fieldN = EditText(ctx)
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    fieldN.setText(values[question])
+                }
                 fieldN.inputType = InputType.TYPE_CLASS_NUMBER.or(InputType.TYPE_NUMBER_FLAG_DECIMAL).or(InputType.TYPE_NUMBER_FLAG_SIGNED)
                 fieldN.setSingleLine(true)
                 fieldN.setLines(1)
@@ -124,6 +144,9 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
             QuestionType.B -> {
                 val fieldB = CheckBox(ctx)
                 fieldB.setText(R.string.yes)
+                if (values?.containsKey(question) == true) {
+                    fieldB.isChecked = "True" == values[question]
+                }
                 fviews[question] = fieldB
                 llFormFields.addView(fieldB)
             }
@@ -131,10 +154,16 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
             }
             QuestionType.M -> {
                 val fields = ArrayList<CheckBox>()
+                val selected = if (values?.containsKey(question) == true) {
+                    values[question]!!.split(",")
+                } else { emptyList<String>() }
                 for (opt in question.options!!) {
                     val field = CheckBox(ctx)
                     field.text = opt!!.value
                     field.tag = opt
+                    if (selected.contains(opt.server_id.toString())) {
+                        field.isChecked = true
+                    }
                     fields.add(field)
                     llFormFields.addView(field)
                 }
@@ -143,7 +172,9 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
             QuestionType.CC -> {
                 val fieldC = Spinner(ctx)
                 fieldC.adapter = CountryAdapter(ctx)
-                if (!question.default.isNullOrBlank()) {
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    fieldC.setSelection((fieldC.adapter as CountryAdapter).getIndex(CountryCode.getByAlpha2Code(values[question])))
+                } else if (!question.default.isNullOrBlank()) {
                     fieldC.setSelection((fieldC.adapter as CountryAdapter).getIndex(CountryCode.getByAlpha2Code(question.default)))
                 } else {
                     val cc = CountryCode.getByAlpha2Code(Locale.getDefault().country)
@@ -151,6 +182,7 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
                         fieldC.setSelection((fieldC.adapter as CountryAdapter).getIndex(cc))
                     }
                 }
+
                 fviews[question] = fieldC
                 llFormFields.addView(fieldC)
             }
@@ -160,16 +192,42 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
                 val emptyOpt = QuestionOption(0L, 0, "", "")
                 opts.add(0, emptyOpt)
                 fieldC.adapter = OptionAdapter(ctx, opts.filter { it != null } as MutableList<QuestionOption>)
+
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    var i = 0
+                    for (opt in question.options) {
+                        if (opt.server_id.toString() == values[question]) {
+                            fieldC.setSelection(i)
+                            break
+                        }
+                        i++
+                    }
+                }
+
                 fviews[question] = fieldC
                 llFormFields.addView(fieldC)
             }
             QuestionType.D -> {
                 val fieldD = DatePickerField(ctx)
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    try {
+                        fieldD.setValue(df.parse(values[question]))
+                    } catch (e: ParseException) {
+                        e.printStackTrace()
+                    }
+                }
                 fviews[question] = fieldD
                 llFormFields.addView(fieldD)
             }
             QuestionType.H -> {
                 val fieldH = TimePickerField(ctx)
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    try {
+                        fieldH.value = LocalTime.fromDateFields(hf.parse(values[question]))
+                    } catch (e: ParseException) {
+                        e.printStackTrace()
+                    }
+                }
                 fviews[question] = fieldH
                 llFormFields.addView(fieldH)
             }
@@ -189,6 +247,15 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
                 fieldWH.gravity = Gravity.CENTER
                 fieldsW.add(fieldWH)
                 llInner.addView(fieldWH)
+
+                if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                    try {
+                        fieldWD.setValue(wf.parse(values[question]))
+                        fieldWH.value = LocalTime.fromDateFields(wf.parse(values[question]))
+                    } catch (e: ParseException) {
+                        e.printStackTrace()
+                    }
+                }
 
                 fviews[question] = fieldsW
                 llFormFields.addView(llInner)
