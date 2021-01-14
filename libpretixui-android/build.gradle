@@ -1,0 +1,28 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+android {
+    compileSdkVersion 29
+    buildToolsVersion '28.0.3'
+    defaultConfig {
+        minSdkVersion 17
+        targetSdkVersion 29
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'com.neovisionaries:nv-i18n:1.27'
+    implementation 'joda-time:joda-time:2.10.5'
+    implementation 'com.github.ialokim:android-phone-field:0.2.3'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation(project(':libpretixsync')) {
+        transitive = false
+    }
+}
+
