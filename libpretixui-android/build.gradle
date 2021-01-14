@@ -18,9 +18,9 @@ repositories {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.neovisionaries:nv-i18n:1.27'
-    implementation 'joda-time:joda-time:2.10.5'
+    implementation 'joda-time:joda-time:2.10.6'
     implementation 'com.github.ialokim:android-phone-field:0.2.3'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation(project(':libpretixsync')) {
         transitive = false
     }
