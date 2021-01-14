@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import com.github.ialokim.phonefield.PhoneEditText
 import com.neovisionaries.i18n.CountryCode
 import eu.pretix.libpretixsync.check.QuestionType
+import eu.pretix.libpretixsync.db.Answer
 import eu.pretix.libpretixsync.db.QuestionLike
 import eu.pretix.libpretixsync.db.QuestionOption
 import eu.pretix.libpretixui.android.R
@@ -28,9 +29,6 @@ fun addQuestionsError(ctx: Context, f: Any?, label: TextView?, strid: Int) {
 }
 
 internal class OptionAdapter(context: Context, objects: MutableList<QuestionOption>) : ArrayAdapter<QuestionOption>(context, R.layout.spinneritem_simple, objects)
-
-class Answer(var question: QuestionLike, var value: String, var options: List<QuestionOption>? = null) {
-}
 
 
 fun allCountries(): List<CountryCode> {
@@ -133,9 +131,9 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
             }
             QuestionType.M -> {
                 val fields = ArrayList<CheckBox>()
-                for (opt in question.options) {
+                for (opt in question.options!!) {
                     val field = CheckBox(ctx)
-                    field.text = opt.value
+                    field.text = opt!!.value
                     field.tag = opt
                     fields.add(field)
                     llFormFields.addView(field)
@@ -158,10 +156,10 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
             }
             QuestionType.C -> {
                 val fieldC = Spinner(ctx)
-                val opts = question.options
+                val opts = question.options!!.toMutableList()
                 val emptyOpt = QuestionOption(0L, 0, "", "")
                 opts.add(0, emptyOpt)
-                fieldC.adapter = OptionAdapter(ctx, opts)
+                fieldC.adapter = OptionAdapter(ctx, opts.filter { it != null } as MutableList<QuestionOption>)
                 fviews[question] = fieldC
                 llFormFields.addView(fieldC)
             }
@@ -307,7 +305,7 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
                     addQuestionsError(ctx, field, labels[question], R.string.question_input_invalid)
                 } else {
                     try {
-                        question.clean_answer(answer, question.options)
+                        question.clean_answer(answer, question.options!!)
                         addQuestionsError(ctx, field, labels[question], 0)
                     } catch (e: QuestionLike.ValidationException) {
                         has_errors = true
