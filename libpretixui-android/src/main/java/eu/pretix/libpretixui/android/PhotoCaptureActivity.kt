@@ -1,16 +1,21 @@
 package eu.pretix.libpretixui.android
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
+import android.view.Menu
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
+import androidx.camera.core.impl.CameraInfoInternal
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -18,13 +23,23 @@ import kotlinx.android.synthetic.main.activity_photo_capture.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class PhotoCaptureActivity : AppCompatActivity() {
-    private var imageCapture: ImageCapture? = null
+    companion object {
+        private const val TAG = "PhotoCaptureActivity"
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private const val PREVIEW_RES_W = 900
+        private const val PREVIEW_RES_H = 1200
+        private const val STORAGE_RES_W = 900
+        private const val STORAGE_RES_H = 1200
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    }
 
+    private var imageCapture: ImageCapture? = null
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var requestedCameraString: String? = null
     private lateinit var outputDirectory: File
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,11 +85,19 @@ class PhotoCaptureActivity : AppCompatActivity() {
 
     }
 
+    private fun hasBackCamera(): Boolean {
+        return cameraProvider?.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) ?: false
+    }
+
+    private fun hasFrontCamera(): Boolean {
+        return cameraProvider?.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) ?: false
+    }
+
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
         cameraProviderFuture.addListener(Runnable {
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            cameraProvider = cameraProviderFuture.get()
+            invalidateOptionsMenu()
 
             val preview = Preview.Builder()
                     .build()
@@ -88,12 +111,16 @@ class PhotoCaptureActivity : AppCompatActivity() {
                     .build()
 
             // Select back camera as a default
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            val cameraSelector = if (requestedCameraString == "front" && hasFrontCamera()) {
+                CameraSelector.DEFAULT_FRONT_CAMERA
+            } else {
+                CameraSelector.DEFAULT_BACK_CAMERA
+            }
 
             try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
-            } catch(exc: Exception) {
+                cameraProvider!!.unbindAll()
+                cameraProvider!!.bindToLifecycle(this, cameraSelector, preview, imageCapture)
+            } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(this))
@@ -111,19 +138,24 @@ class PhotoCaptureActivity : AppCompatActivity() {
             mediaDir else filesDir
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-    companion object {
-        private const val TAG = "PhotoCaptureActivity"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private const val PREVIEW_RES_W = 900
-        private const val PREVIEW_RES_H = 1200
-        private const val STORAGE_RES_W = 900
-        private const val STORAGE_RES_H = 1200
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        if (hasBackCamera()) {
+            val mi = menu.add(getString(R.string.camera_back))
+            mi.setOnMenuItemClickListener {
+                requestedCameraString = "back"
+                startCamera()
+                true
+            }
+        }
+        if (hasFrontCamera()) {
+            val mi = menu.add(getString(R.string.camera_front))
+            mi.setOnMenuItemClickListener {
+                requestedCameraString = "front"
+                startCamera()
+                true
+            }
+        }
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onRequestPermissionsResult(
@@ -140,5 +172,4 @@ class PhotoCaptureActivity : AppCompatActivity() {
             }
         }
     }
-
 }

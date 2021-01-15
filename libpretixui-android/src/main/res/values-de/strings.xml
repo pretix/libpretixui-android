@@ -7,4 +7,6 @@
     <string name="question_input_required">Diese Frage muss beantwortet werden.</string>
     <string name="question_validation_error">Teile der Eingabe waren ungültig.</string>
     <string name="take_photo">Foto aufnehmen</string>
+    <string name="camera_back">Kamera auf der Rückseite</string>
+    <string name="camera_front">Kamera auf der Frontseite</string>
 </resources>
