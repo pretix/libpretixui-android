@@ -6,5 +6,6 @@
     <string name="question_validation_error">Some of your input could not be validated.</string>
     <string name="question_input_required">This field is required.</string>
     <string name="question_input_invalid">This input is not valid.</string>
+    <string name="take_photo">Take a photo</string>
 
 </resources>

@@ -6,4 +6,5 @@
     <string name="question_input_invalid">Die eingegebene Antwort ist nicht gültig.</string>
     <string name="question_input_required">Diese Frage muss beantwortet werden.</string>
     <string name="question_validation_error">Teile der Eingabe waren ungültig.</string>
+    <string name="take_photo">Foto aufnehmen</string>
 </resources>

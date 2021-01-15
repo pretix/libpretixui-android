@@ -3,22 +3,34 @@ package eu.pretix.libpretixui.android.questions
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.os.Build
 import android.text.InputType
+import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.res.ResourcesCompat
 import com.github.ialokim.phonefield.PhoneEditText
 import com.neovisionaries.i18n.CountryCode
 import eu.pretix.libpretixsync.check.QuestionType
 import eu.pretix.libpretixsync.db.Answer
 import eu.pretix.libpretixsync.db.QuestionLike
 import eu.pretix.libpretixsync.db.QuestionOption
+import eu.pretix.libpretixui.android.PhotoCaptureActivity
 import eu.pretix.libpretixui.android.R
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.logging.Logger
+
 
 fun addQuestionsError(ctx: Context, f: Any?, label: TextView?, strid: Int) {
     if (f is EditText) {
@@ -79,6 +91,12 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
 
     val view = inflater.inflate(R.layout.dialog_questions, null)
     val llFormFields = view.findViewById<LinearLayout>(R.id.llFormFields)
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    fun startTakePhoto () {
+        val intent = Intent(ctx, PhotoCaptureActivity::class.java)
+        ctx.startActivity(intent)
+    }
 
     for (question in questions) {
         val tv = TextView(ctx)
@@ -151,12 +169,27 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
                 llFormFields.addView(fieldB)
             }
             QuestionType.F -> {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !ctx.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                    val tv = TextView(ctx)
+                    tv.text = "Not supported on this Android vearsion or device"
+                    llFormFields.addView(tv)
+                } else {
+                    val btnF = Button(ctx)
+                    btnF.setText(R.string.take_photo)
+                    btnF.setCompoundDrawablesWithIntrinsicBounds(ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_add_a_photo_24, null), null, null, null)
+                    btnF.setOnClickListener {
+                        startTakePhoto()
+                    }
+                    llFormFields.addView(btnF)
+                }
             }
             QuestionType.M -> {
                 val fields = ArrayList<CheckBox>()
                 val selected = if (values?.containsKey(question) == true) {
                     values[question]!!.split(",")
-                } else { emptyList<String>() }
+                } else {
+                    emptyList<String>()
+                }
                 for (opt in question.options!!) {
                     val field = CheckBox(ctx)
                     field.text = opt!!.value
