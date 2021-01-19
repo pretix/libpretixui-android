@@ -181,8 +181,11 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                         buffer.get(bytes)
                         val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                         val cropped = Bitmap.createBitmap(bitmap, image.cropRect.left, image.cropRect.top, image.cropRect.width(), image.cropRect.height())
-                        val scaled = Bitmap.createScaledBitmap(cropped, STORAGE_RES_W, STORAGE_RES_H, true)
-
+                        val scaled = if (cropped.width > STORAGE_RES_W && cropped.height > STORAGE_RES_H) {
+                            Bitmap.createScaledBitmap(cropped, STORAGE_RES_W, STORAGE_RES_H, true)
+                        } else {
+                            cropped
+                        }
                         FileOutputStream(photoFile).use { out ->
                             scaled.compress(Bitmap.CompressFormat.JPEG, 98, out)
                         }
