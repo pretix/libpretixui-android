@@ -176,6 +176,21 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
         btCapture.setOnClickListener { takePhoto() }
         uvcTexture.setAspectRatio(3.0 / 4.0)
         usbMonitor = USBMonitor(this, onDeviceConnectListener)
+        ivPreview.visibility = View.GONE
+        btCapture.visibility = View.VISIBLE
+        btReject.visibility = View.GONE
+        btAccept.visibility = View.GONE
+
+        btReject.setOnClickListener {
+            ivPreview.visibility = View.GONE
+            btCapture.visibility = View.VISIBLE
+            btReject.visibility = View.GONE
+            btAccept.visibility = View.GONE
+        }
+        btAccept.setOnClickListener {
+            // todo set result
+            finish()
+        }
     }
 
     private fun takePhotoProcessBitmap(cropped: Bitmap) {
@@ -192,7 +207,11 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
             scaled.compress(Bitmap.CompressFormat.JPEG, 98, out)
         }
         runOnUiThread {
-
+            ivPreview.setImageBitmap(scaled)
+            ivPreview.visibility = View.VISIBLE
+            btCapture.visibility = View.GONE
+            btReject.visibility = View.VISIBLE
+            btAccept.visibility = View.VISIBLE
         }
     }
 

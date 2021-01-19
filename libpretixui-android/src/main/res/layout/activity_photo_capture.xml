@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
-    tools:context=".PhotoCaptureActivity">
+    android:theme="@android:style/ThemeOverlay.Material.Dark"
+    tools:context=".PhotoCaptureActivity"
+    tools:targetApi="lollipop">
 
     <FrameLayout
         android:id="@+id/frameLayout"
@@ -16,7 +18,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:background="@color/pf_grey"
-        app:layout_constraintBottom_toTopOf="@+id/btCapture"
+        app:layout_constraintBottom_toTopOf="@+id/btRow"
         app:layout_constraintDimensionRatio="3:4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,35 +35,66 @@
             android:id="@+id/viewFinder"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/ivPreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/ic_photo_camera_white_24" />
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/btCapture"
+        android:id="@+id/btRow"
         android:layout_width="0dp"
         android:layout_height="96dp"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:foregroundTint="@color/pf_white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintVertical_weight="1">
 
+
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/btReject"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:maxWidth="6dp"
-            android:maxHeight="6dp"
+            android:padding="16dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btCapture"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_retry_white_24" />
+
+        <ImageView
+            android:id="@+id/btCapture"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btAccept"
+            app:layout_constraintStart_toEndOf="@+id/btReject"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_photo_camera_white_24" />
+
+        <ImageView
+            android:id="@+id/btAccept"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="16dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btCapture"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_check_white_24" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
