@@ -9,5 +9,6 @@
     <string name="take_photo">Take a photo</string>
     <string name="camera_back">Back camera</string>
     <string name="camera_front">Front camera</string>
+    <string name="camera_usb">Select USB camera</string>
 
 </resources>

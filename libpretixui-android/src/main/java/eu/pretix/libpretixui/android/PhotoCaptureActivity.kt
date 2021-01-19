@@ -1,31 +1,39 @@
 package eu.pretix.libpretixui.android
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
-import android.hardware.camera2.CameraAccessException
-import android.hardware.camera2.CameraManager
+import android.graphics.SurfaceTexture
+import android.hardware.usb.UsbDevice
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
 import android.view.Menu
+import android.view.Surface
+import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.*
-import androidx.camera.core.impl.CameraInfoInternal
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.serenegiant.usb.CameraDialog
+import com.serenegiant.usb.USBMonitor
+import com.serenegiant.usb.UVCCamera
 import kotlinx.android.synthetic.main.activity_photo_capture.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.Executors
+
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-class PhotoCaptureActivity : AppCompatActivity() {
+class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity() {
     companion object {
         private const val TAG = "PhotoCaptureActivity"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
@@ -39,8 +47,89 @@ class PhotoCaptureActivity : AppCompatActivity() {
 
     private var imageCapture: ImageCapture? = null
     private var cameraProvider: ProcessCameraProvider? = null
-    private var requestedCameraString: String? = null
+    private var requestedCameraString: String? = "back"
     private lateinit var outputDirectory: File
+
+    private val sync = Any()
+
+    // for accessing USB and USB camera
+    private var usbMonitor: USBMonitor? = null
+    private var uvcCamera: UVCCamera? = null
+    private var uvcPreviewSurface: Surface? = null
+    val executorService = Executors.newFixedThreadPool(1)
+
+
+    private val onDeviceConnectListener = object : USBMonitor.OnDeviceConnectListener {
+        override fun onAttach(device: UsbDevice?) {
+        }
+
+        override fun onConnect(device: UsbDevice, ctrlBlock: USBMonitor.UsbControlBlock, createNew: Boolean) {
+            // TODO check if camera device
+            releaseUVCCamera()
+            if (requestedCameraString == "usb") {
+                runOnUiThread {
+                    viewFinder.visibility = View.GONE
+                    uvcTexture.visibility = View.VISIBLE
+                    cameraProvider?.unbindAll()
+                }
+            }
+            executorService.execute {
+                val camera = UVCCamera()
+                camera.open(ctrlBlock)
+                camera.setStatusCallback { statusClass, event, selector, statusAttribute, data ->
+                    Log.d(TAG, "USB camera reported onStatus(statusClass=" + statusClass
+                            + "; " +
+                            "event=" + event + "; " +
+                            "selector=" + selector + "; " +
+                            "statusAttribute=" + statusAttribute + "; " +
+                            "data=...)")
+                }
+                camera.setButtonCallback { button, state ->
+                    Log.d(TAG, "USB camera reported onButton(button=" + button + "; state=" + state + ")")
+                }
+                //					camera.setPreviewTexture(camera.getSurfaceTexture());
+                uvcPreviewSurface?.release()
+                uvcPreviewSurface = null
+                val modes = listOf(
+                        arrayOf(PREVIEW_RES_W, PREVIEW_RES_H, UVCCamera.FRAME_FORMAT_MJPEG),
+                        arrayOf(PREVIEW_RES_H, PREVIEW_RES_W, UVCCamera.FRAME_FORMAT_MJPEG),
+                        arrayOf(1280, 720, UVCCamera.FRAME_FORMAT_MJPEG),
+                        arrayOf(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_MJPEG),
+                        arrayOf(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.DEFAULT_PREVIEW_MODE)
+                )
+                var previewSize: Size? = null
+                for (m in modes) {
+                    try {
+                        camera.setPreviewSize(m[0], m[1], m[2])
+                        previewSize = Size(m[0], m[1])
+                        break
+                    } catch (e: IllegalArgumentException) {
+                        continue
+                    }
+                }
+                if (previewSize != null) {
+                    uvcTexture.setDataSize(previewSize.width, previewSize.height)
+                    val st: SurfaceTexture = uvcTexture.surfaceTexture ?: return@execute
+                    uvcPreviewSurface = Surface(st)
+                    camera.setPreviewDisplay(uvcPreviewSurface)
+                    camera.startPreview()
+                    synchronized(sync) { uvcCamera = camera }
+                } else {
+                    // todo: no supported camera resolution
+                }
+            }
+        }
+
+        override fun onDisconnect(device: UsbDevice, ctrlBlock: USBMonitor.UsbControlBlock?) {
+            // TODO you should check whether the coming device equal to camera device that currently using
+            releaseUVCCamera()
+        }
+
+        override fun onDettach(device: UsbDevice?) {}
+
+        override fun onCancel(device: UsbDevice?) {}
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +145,8 @@ class PhotoCaptureActivity : AppCompatActivity() {
         }
 
         btCapture.setOnClickListener { takePhoto() }
+        uvcTexture.setAspectRatio(3.0 / 4.0)
+        usbMonitor = USBMonitor(this, onDeviceConnectListener)
     }
 
     private fun takePhoto() {
@@ -99,29 +190,42 @@ class PhotoCaptureActivity : AppCompatActivity() {
             cameraProvider = cameraProviderFuture.get()
             invalidateOptionsMenu()
 
-            val preview = Preview.Builder()
-                    .build()
-                    .also {
-                        it.setSurfaceProvider(viewFinder.surfaceProvider)
-                    }
+            if (requestedCameraString == "front" || requestedCameraString == "back") {
+                runOnUiThread {
+                    viewFinder.visibility = View.VISIBLE
+                    uvcTexture.visibility = View.GONE
+                }
 
-            imageCapture = ImageCapture.Builder()
-                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                    .setTargetResolution(Size(STORAGE_RES_W, STORAGE_RES_H))
-                    .build()
+                val preview = Preview.Builder()
+                        .build()
+                        .also {
+                            it.setSurfaceProvider(viewFinder.surfaceProvider)
+                        }
 
-            // Select back camera as a default
-            val cameraSelector = if (requestedCameraString == "front" && hasFrontCamera()) {
-                CameraSelector.DEFAULT_FRONT_CAMERA
-            } else {
-                CameraSelector.DEFAULT_BACK_CAMERA
-            }
+                imageCapture = ImageCapture.Builder()
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                        .setTargetResolution(Size(STORAGE_RES_W, STORAGE_RES_H))
+                        .build()
 
-            try {
+                // Select back camera as a default
+                val cameraSelector = if (requestedCameraString == "front" && hasFrontCamera()) {
+                    CameraSelector.DEFAULT_FRONT_CAMERA
+                } else {
+                    CameraSelector.DEFAULT_BACK_CAMERA
+                }
+
+                try {
+                    cameraProvider!!.unbindAll()
+                    cameraProvider!!.bindToLifecycle(this, cameraSelector, preview, imageCapture)
+                } catch (exc: Exception) {
+                    Log.e(TAG, "Use case binding failed", exc)
+                }
+            } else if (requestedCameraString == "usb") {
+                runOnUiThread {
+                    viewFinder.visibility = View.GONE
+                    uvcTexture.visibility = View.VISIBLE
+                }
                 cameraProvider!!.unbindAll()
-                cameraProvider!!.bindToLifecycle(this, cameraSelector, preview, imageCapture)
-            } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -155,6 +259,13 @@ class PhotoCaptureActivity : AppCompatActivity() {
                 true
             }
         }
+        val mi = menu.add(getString(R.string.camera_usb))
+        mi.setOnMenuItemClickListener {
+            synchronized(sync) {
+                CameraDialog.showDialog(this)
+            }
+            true
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -171,5 +282,55 @@ class PhotoCaptureActivity : AppCompatActivity() {
                 finish()
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        synchronized(sync) {
+            usbMonitor?.register()
+            uvcCamera?.startPreview()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        synchronized(sync) {
+            uvcCamera?.stopPreview()
+            usbMonitor?.unregister()
+        }
+    }
+
+    @Synchronized
+    private fun releaseUVCCamera() {
+        synchronized(sync) {
+            try {
+                uvcCamera?.setStatusCallback(null)
+                uvcCamera?.setButtonCallback(null)
+                uvcCamera?.close()
+                uvcCamera?.destroy()
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+            uvcCamera = null
+            uvcPreviewSurface?.release()
+            uvcPreviewSurface = null
+        }
+    }
+
+    override fun getUSBMonitor(): USBMonitor? {
+        return usbMonitor
+    }
+
+    override fun onDialogResult(canceled: Boolean) {
+        if (!canceled) {
+            requestedCameraString = "usb"
+            cameraProvider?.unbindAll()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        usbMonitor?.destroy()
+        usbMonitor = null
     }
 }
