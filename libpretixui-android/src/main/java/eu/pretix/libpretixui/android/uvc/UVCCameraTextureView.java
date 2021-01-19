@@ -50,6 +50,8 @@ import com.serenegiant.widget.CameraViewInterface;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
+import kotlin.NotImplementedError;
+
 /**
  * change the view size with keeping the specified aspect ratio.
  * if you set this view with in a FrameLayout and set property "android:layout_gravity="center",
@@ -222,8 +224,7 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 
     @Override
     public void setVideoEncoder(final IVideoEncoder encoder) {
-        if (mRenderHandler != null)
-            mRenderHandler.setVideoEncoder(encoder);
+        throw new NotImplementedError();
     }
 
     @Override
@@ -269,7 +270,6 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
             implements SurfaceTexture.OnFrameAvailableListener {
 
         private static final int MSG_REQUEST_RENDER = 1;
-        private static final int MSG_SET_ENCODER = 2;
         private static final int MSG_CREATE_SURFACE = 3;
         private static final int MSG_RESIZE = 4;
         private static final int MSG_TERMINATE = 9;
@@ -290,12 +290,6 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
         private RenderHandler(final FpsCounter counter, final RenderThread thread) {
             mThread = thread;
             mFpsCounter = counter;
-        }
-
-        public final void setVideoEncoder(final IVideoEncoder encoder) {
-            if (DEBUG) Log.v(TAG, "setVideoEncoder:");
-            if (mIsActive)
-                sendMessage(obtainMessage(MSG_SET_ENCODER, encoder));
         }
 
         public final SurfaceTexture getPreviewTexture() {
@@ -345,7 +339,6 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
             if (mIsActive) {
                 mIsActive = false;
                 removeMessages(MSG_REQUEST_RENDER);
-                removeMessages(MSG_SET_ENCODER);
                 sendEmptyMessage(MSG_TERMINATE);
             }
         }
@@ -364,9 +357,6 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
             switch (msg.what) {
                 case MSG_REQUEST_RENDER:
                     mThread.onDrawFrame();
-                    break;
-                case MSG_SET_ENCODER:
-                    mThread.setEncoder((MediaEncoder) msg.obj);
                     break;
                 case MSG_CREATE_SURFACE:
                     mThread.updatePreviewSurface();
@@ -404,7 +394,6 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
             private final float[] mStMatrix = new float[16];
             private final float[] mTmpMatrix = new float[16];
             private final float[] mOurMatrix = new float[16];
-            private MediaEncoder mEncoder;
             private int mViewWidth, mViewHeight, mDataWidth, mDataHeight;
             private final FpsCounter mFpsCounter;
 
@@ -499,33 +488,6 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
                 }
             }
 
-            public final void setEncoder(final MediaEncoder encoder) {
-                if (DEBUG) Log.v(TAG, "RenderThread#setEncoder:encoder=" + encoder);
-                if (encoder != null && (encoder instanceof MediaVideoEncoder)) {
-                    ((MediaVideoEncoder) encoder).setEglContext(mEglSurface.getContext(), mTexId);
-                }
-                mEncoder = encoder;
-            }
-
-            /*
-             * Now you can get frame data as ByteBuffer(as YUV/RGB565/RGBX/NV21 pixel format) using IFrameCallback interface
-             * with UVCCamera#setFrameCallback instead of using following code samples.
-             */
-/*			// for part1
- 			private static final int BUF_NUM = 1;
-			private static final int BUF_STRIDE = 640 * 480;
-			private static final int BUF_SIZE = BUF_STRIDE * BUF_NUM;
-			int cnt = 0;
-			int offset = 0;
-			final int pixels[] = new int[BUF_SIZE];
-			final IntBuffer buffer = IntBuffer.wrap(pixels); */
-/*			// for part2
-			private ByteBuffer buf = ByteBuffer.allocateDirect(640 * 480 * 4);
- */
-
-            /**
-             * draw a frame (and request to draw for video capturing if it is necessary)
-             */
             public final void onDrawFrame() {
                 mEglSurface.makeCurrent();
                 // update texture(came from camera)
@@ -535,92 +497,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 
                 Matrix.multiplyMM(mStMatrix, 0, mOurMatrix, 0, mTmpMatrix, 0);
 
-                // notify video encoder if it exist
-                if (mEncoder != null) {
-                    // notify to capturing thread that the camera frame is available.
-                    if (mEncoder instanceof MediaVideoEncoder)
-                        ((MediaVideoEncoder) mEncoder).frameAvailableSoon(mStMatrix);
-                    else
-                        mEncoder.frameAvailableSoon();
-                }
-                // draw to preview screen
-
-
                 mDrawer.draw(mTexId, mStMatrix, 0);
                 mEglSurface.swap();
-/*				// sample code to read pixels into Buffer and save as a Bitmap (part1)
-				buffer.position(offset);
-				GLES20.glReadPixels(0, 0, 640, 480, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
-				if (++cnt == 100) { // save as a Bitmap, only once on this sample code
-					// if you save every frame as a Bitmap, app will crash by Out of Memory exception...
-					Log.i(TAG, "Capture image using glReadPixels:offset=" + offset);
-					final Bitmap bitmap = createBitmap(pixels,offset,  640, 480);
-					final File outputFile = MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_DCIM, ".png");
-					try {
-						final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile));
-						try {
-							try {
-								bitmap.compress(CompressFormat.PNG, 100, os);
-								os.flush();
-								bitmap.recycle();
-							} catch (IOException e) {
-							}
-						} finally {
-							os.close();
-						}
-					} catch (FileNotFoundException e) {
-					} catch (IOException e) {
-					}
-				}
-				offset = (offset + BUF_STRIDE) % BUF_SIZE;
-*/
-/*				// sample code to read pixels into Buffer and save as a Bitmap (part2)
-		        buf.order(ByteOrder.LITTLE_ENDIAN);	// it is enough to call this only once.
-		        GLES20.glReadPixels(0, 0, 640, 480, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
-		        buf.rewind();
-				if (++cnt == 100) {	// save as a Bitmap, only once on this sample code
-					// if you save every frame as a Bitmap, app will crash by Out of Memory exception...
-					final File outputFile = MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_DCIM, ".png");
-			        BufferedOutputStream os = null;
-					try {
-				        try {
-				            os = new BufferedOutputStream(new FileOutputStream(outputFile));
-				            Bitmap bmp = Bitmap.createBitmap(640, 480, Bitmap.Config.ARGB_8888);
-				            bmp.copyPixelsFromBuffer(buf);
-				            bmp.compress(Bitmap.CompressFormat.PNG, 90, os);
-				            bmp.recycle();
-				        } finally {
-				            if (os != null) os.close();
-				        }
-					} catch (FileNotFoundException e) {
-					} catch (IOException e) {
-					}
-				}
-*/
             }
-
-/*			// sample code to read pixels into IntBuffer and save as a Bitmap (part1)
-			private static Bitmap createBitmap(final int[] pixels, final int offset, final int width, final int height) {
-				final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
-				paint.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix(new float[] {
-						0, 0, 1, 0, 0,
-						0, 1, 0, 0, 0,
-						1, 0, 0, 0, 0,
-						0, 0, 0, 1, 0
-					})));
-
-				final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-				final Canvas canvas = new Canvas(bitmap);
-
-				final Matrix matrix = new Matrix();
-				matrix.postScale(1.0f, -1.0f);
-				matrix.postTranslate(0, height);
-				canvas.concat(matrix);
-
-				canvas.drawBitmap(pixels, offset, width, 0, 0, width, height, false, paint);
-
-				return bitmap;
-			} */
 
             @Override
             public final void run() {

@@ -1,7 +1,6 @@
 package eu.pretix.libpretixui.android
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -9,7 +8,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.SurfaceTexture
 import android.hardware.usb.UsbDevice
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -31,11 +29,11 @@ import eu.pretix.libpretixui.android.uvc.CameraDialog
 import kotlinx.android.synthetic.main.activity_photo_capture.*
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executors
+import kotlin.math.roundToInt
 
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -63,6 +61,9 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
     private var usbMonitor: USBMonitor? = null
     private var uvcCamera: UVCCamera? = null
     private var uvcPreviewSurface: Surface? = null
+    private var uvcPreviewSize: Size? = null
+    private var uvcCaptureRequested: Boolean = false
+    private var uvcBitmapCallback: ((Bitmap) -> Unit)? = null
     val executorService = Executors.newFixedThreadPool(3)
 
 
@@ -99,7 +100,21 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                 camera.setButtonCallback { button, state ->
                     Log.d(TAG, "USB camera reported onButton(button=" + button + "; state=" + state + ")")
                 }
-                //					camera.setPreviewTexture(camera.getSurfaceTexture());
+                camera.setFrameCallback({ frame ->
+                    if (uvcCaptureRequested) {
+                        synchronized(sync) {
+                            uvcCaptureRequested = false
+                        }
+                        val usbBitmap = Bitmap.createBitmap(
+                                uvcPreviewSize!!.width,
+                                uvcPreviewSize!!.height,
+                                Bitmap.Config.RGB_565
+                        )
+                        usbBitmap.copyPixelsFromBuffer(frame)
+                        uvcBitmapCallback?.invoke(usbBitmap)
+                    }
+                }, UVCCamera.PIXEL_FORMAT_RGB565)
+
                 uvcPreviewSurface?.release()
                 uvcPreviewSurface = null
                 val modes = listOf(
@@ -109,18 +124,18 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                         arrayOf(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_MJPEG),
                         arrayOf(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.DEFAULT_PREVIEW_MODE)
                 )
-                var previewSize: Size? = null
+                uvcPreviewSize = null
                 for (m in modes) {
                     try {
                         camera.setPreviewSize(m[0], m[1], m[2])
-                        previewSize = Size(m[0], m[1])
+                        uvcPreviewSize = Size(m[0], m[1])
                         break
                     } catch (e: IllegalArgumentException) {
                         continue
                     }
                 }
-                if (previewSize != null) {
-                    uvcTexture.setDataSize(previewSize.width, previewSize.height)
+                if (uvcPreviewSize != null) {
+                    uvcTexture.setDataSize(uvcPreviewSize!!.width, uvcPreviewSize!!.height)
                     val st: SurfaceTexture = uvcTexture.surfaceTexture ?: return@execute
                     uvcPreviewSurface = Surface(st)
                     camera.setPreviewDisplay(uvcPreviewSurface)
@@ -163,11 +178,25 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
         usbMonitor = USBMonitor(this, onDeviceConnectListener)
     }
 
-    private fun takePhoto() {
+    private fun takePhotoProcessBitmap(cropped: Bitmap) {
         val photoFile = File(
                 outputDirectory,
                 SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis()) + ".jpg"
         )
+        val scaled = if (cropped.width > STORAGE_RES_W && cropped.height > STORAGE_RES_H) {
+            Bitmap.createScaledBitmap(cropped, STORAGE_RES_W, STORAGE_RES_H, true)
+        } else {
+            cropped
+        }
+        FileOutputStream(photoFile).use { out ->
+            scaled.compress(Bitmap.CompressFormat.JPEG, 98, out)
+        }
+        runOnUiThread {
+
+        }
+    }
+
+    private fun takePhoto() {
         if (requestedCameraString == "front" || requestedCameraString == "back") {
             val imageCapture = imageCapture ?: return
 
@@ -180,14 +209,9 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                         val bytes = ByteArray(buffer.remaining())
                         buffer.get(bytes)
                         val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                        val cropped = Bitmap.createBitmap(bitmap, image.cropRect.left, image.cropRect.top, image.cropRect.width(), image.cropRect.height())
-                        val scaled = if (cropped.width > STORAGE_RES_W && cropped.height > STORAGE_RES_H) {
-                            Bitmap.createScaledBitmap(cropped, STORAGE_RES_W, STORAGE_RES_H, true)
-                        } else {
-                            cropped
-                        }
-                        FileOutputStream(photoFile).use { out ->
-                            scaled.compress(Bitmap.CompressFormat.JPEG, 98, out)
+                        executorService.execute {
+                            val cropped = Bitmap.createBitmap(bitmap, image.cropRect.left, image.cropRect.top, image.cropRect.width(), image.cropRect.height())
+                            takePhotoProcessBitmap(cropped)
                         }
                     } finally {
                         image.close()
@@ -199,17 +223,21 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                 }
             })
         } else {
-            // usb
-            executorService.execute {
-                val bm = uvcTexture.captureStillImage()
-                try {
-                    FileOutputStream(photoFile).use { out ->
-                        bm.compress(Bitmap.CompressFormat.JPEG, 98, out) // bmp is your Bitmap instance
-                    }
-                } catch (e: IOException) {
-                    e.printStackTrace()
+            // USB
+            uvcBitmapCallback = {
+                executorService.execute {
+                    // this calculation is probably only correct if the aspect ratio of the view is
+                    // smaller than of the source, which in our case should always be true (landscape
+                    // cameras, portrait viewport).
+                    val aspectRatioView: Float = STORAGE_RES_W / STORAGE_RES_H.toFloat()
+                    val width = (it.height * aspectRatioView).roundToInt()
+                    val left = ((it.width - width) / 2f).roundToInt()
+                    val cropped = Bitmap.createBitmap(it, left, 0, width, it.height)
+                    takePhotoProcessBitmap(cropped)
                 }
-
+            }
+            synchronized(sync) {
+                uvcCaptureRequested = true
             }
         }
 
