@@ -1,6 +1,8 @@
 package eu.pretix.libpretixui.android
 
 import android.Manifest
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.hardware.usb.UsbDevice
@@ -22,9 +24,9 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.serenegiant.usb.CameraDialog
 import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.UVCCamera
+import eu.pretix.libpretixui.android.uvc.CameraDialog
 import kotlinx.android.synthetic.main.activity_photo_capture.*
 import java.io.File
 import java.text.SimpleDateFormat
@@ -49,6 +51,7 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
     private var cameraProvider: ProcessCameraProvider? = null
     private var requestedCameraString: String? = "back"
     private lateinit var outputDirectory: File
+    private lateinit var prefs: SharedPreferences
 
     private val sync = Any()
 
@@ -60,18 +63,23 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
 
 
     private val onDeviceConnectListener = object : USBMonitor.OnDeviceConnectListener {
-        override fun onAttach(device: UsbDevice?) {
+        override fun onAttach(device: UsbDevice) {
+            if (requestedCameraString == "usb:${device.serialNumber}") {
+                usbMonitor!!.requestPermission(device)
+            }
         }
 
         override fun onConnect(device: UsbDevice, ctrlBlock: USBMonitor.UsbControlBlock, createNew: Boolean) {
-            // TODO check if camera device
             releaseUVCCamera()
-            if (requestedCameraString == "usb") {
+            if (requestedCameraString == "usb:${device.serialNumber}") {
                 runOnUiThread {
                     viewFinder.visibility = View.GONE
                     uvcTexture.visibility = View.VISIBLE
                     cameraProvider?.unbindAll()
                 }
+                prefs.edit().putString("camera", requestedCameraString).apply()
+            } else {
+                return
             }
             executorService.execute {
                 val camera = UVCCamera()
@@ -136,6 +144,8 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
         setContentView(R.layout.activity_photo_capture)
 
         outputDirectory = getOutputDirectory()
+        prefs = getSharedPreferences("PhotoCaptureActivity", Context.MODE_PRIVATE)
+        requestedCameraString = prefs.getString("camera", "back")
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -247,6 +257,7 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
             val mi = menu.add(getString(R.string.camera_back))
             mi.setOnMenuItemClickListener {
                 requestedCameraString = "back"
+                prefs.edit().putString("camera", requestedCameraString).apply()
                 startCamera()
                 true
             }
@@ -255,6 +266,7 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
             val mi = menu.add(getString(R.string.camera_front))
             mi.setOnMenuItemClickListener {
                 requestedCameraString = "front"
+                prefs.edit().putString("camera", requestedCameraString).apply()
                 startCamera()
                 true
             }
@@ -284,18 +296,18 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
         }
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         synchronized(sync) {
             usbMonitor?.register()
             uvcCamera?.startPreview()
         }
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPause() {
+        super.onPause()
+        releaseUVCCamera()
         synchronized(sync) {
-            uvcCamera?.stopPreview()
             usbMonitor?.unregister()
         }
     }
@@ -321,9 +333,9 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
         return usbMonitor
     }
 
-    override fun onDialogResult(canceled: Boolean) {
+    override fun onDialogResult(canceled: Boolean, usbDevice: UsbDevice?) {
         if (!canceled) {
-            requestedCameraString = "usb"
+            requestedCameraString = "usb:${usbDevice!!.serialNumber}"
             cameraProvider?.unbindAll()
         }
     }
