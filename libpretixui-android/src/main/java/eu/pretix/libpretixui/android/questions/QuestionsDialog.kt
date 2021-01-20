@@ -117,6 +117,10 @@ class QuestionsDialog(
         for (question in questions) {
             val tv = TextView(ctx)
             tv.text = question.question
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                tv.setTextAppearance(R.style.TextAppearance_AppCompat_Medium)
+            }
+            tv.setPadding(0, 16, 0, 4)
             llFormFields.addView(tv)
             labels[question] = tv
 
