@@ -365,7 +365,7 @@ class QuestionsDialog(
                 }
                 QuestionType.F -> {
                     val fieldset = field as List<View>
-                    answer = if (fieldset[0].tag != null) fieldset[0].tag as String else ""
+                    answer = if (fieldset[0].tag != null) "file://${fieldset[0].tag as String}" else ""
                     empty = answer.trim() == ""
                 }
                 QuestionType.M -> {
