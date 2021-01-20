@@ -14,6 +14,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
+import com.bumptech.glide.Glide
 import com.github.ialokim.phonefield.PhoneEditText
 import com.neovisionaries.i18n.CountryCode
 import eu.pretix.libpretixsync.check.QuestionType
@@ -24,6 +25,7 @@ import eu.pretix.libpretixui.android.PhotoCaptureActivity
 import eu.pretix.libpretixui.android.R
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
+import java.io.File
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -75,13 +77,17 @@ internal class CountryAdapter(context: Context) :
     }
 }
 
+interface QuestionsDialogInterface : DialogInterface {
+    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean
+}
+
 class QuestionsDialog(
         val ctx: Activity,
         val questions: List<QuestionLike>,
         val values: Map<QuestionLike, String>? = null,
         val defaultCountry: String?,
         val retryHandler: ((MutableList<Answer>) -> Unit)
-) : AlertDialog(ctx) {
+) : AlertDialog(ctx), QuestionsDialogInterface{
     companion object {
         val hf = SimpleDateFormat("HH:mm", Locale.US)
         val wf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US)
@@ -91,6 +97,7 @@ class QuestionsDialog(
     private val fieldViews = HashMap<QuestionLike, Any>()
     private val labels = HashMap<QuestionLike, TextView>()
     private var v: View = LayoutInflater.from(context).inflate(R.layout.dialog_questions, null)
+    private var takingPhotoFor: QuestionLike? = null
 
     init {
         setView(v)
@@ -183,13 +190,35 @@ class QuestionsDialog(
                         tv.text = "Not supported on this Android version or device"
                         llFormFields.addView(tv)
                     } else {
+                        val fieldsF = ArrayList<View>()
+
+                        val llInner = LinearLayout(ctx)
+                        llInner.orientation = LinearLayout.HORIZONTAL
+                        llInner.gravity = Gravity.CENTER
+
+                        val imgF = ImageView(ctx)
+                        if (values != null && values[question].isNullOrBlank()) {
+                            imgF.visibility = View.GONE
+                        } else {
+                            imgF.tag = values!![question]
+                            Glide.with(context).load(File(values!![question])).into(imgF)
+                        }
+                        imgF.layoutParams = LinearLayout.LayoutParams(160, 120)
+                        fieldsF.add(imgF)
+                        llInner.addView(imgF)
+
                         val btnF = Button(ctx)
                         btnF.setText(R.string.take_photo)
                         btnF.setCompoundDrawablesWithIntrinsicBounds(ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_add_a_photo_24, null), null, null, null)
+                        btnF.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                         btnF.setOnClickListener {
-                            startTakePhoto()
+                            startTakePhoto(question)
                         }
-                        llFormFields.addView(btnF)
+                        fieldsF.add(btnF)
+                        llInner.addView(btnF)
+
+                        fieldViews[question] = fieldsF
+                        llFormFields.addView(llInner)
                     }
                 }
                 QuestionType.M -> {
@@ -335,7 +364,9 @@ class QuestionsDialog(
                     empty = answer == "False"
                 }
                 QuestionType.F -> {
-                    empty = true
+                    val fieldset = field as List<View>
+                    answer = if (fieldset[0].tag != null) fieldset[0].tag as String else ""
+                    empty = answer.trim() == ""
                 }
                 QuestionType.M -> {
                     empty = true
@@ -421,16 +452,32 @@ class QuestionsDialog(
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    private fun startTakePhoto() {
+    private fun startTakePhoto(question: QuestionLike) {
         val intent = Intent(ctx, PhotoCaptureActivity::class.java)
-        ctx.startActivity(intent)
+        takingPhotoFor = question
+        ctx.startActivityForResult(intent, PhotoCaptureActivity.REQUEST_CODE)
+    }
+
+    override fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        if (requestCode == PhotoCaptureActivity.REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                val filename = data!!.getStringExtra(PhotoCaptureActivity.RESULT_FILENAME)!!
+                val views = fieldViews[takingPhotoFor] as List<View>
+                val imageView = views[0] as ImageView
+                imageView.visibility = View.VISIBLE
+                imageView.tag = filename
+                Glide.with(context).load(File(filename)).into(imageView)
+            }
+            return true
+        }
+        return false
     }
 }
 
 fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
                         values: Map<QuestionLike, String>? = null,
                         defaultCountry: String?,
-                        retryHandler: ((MutableList<Answer>) -> Unit)): Dialog {
+                        retryHandler: ((MutableList<Answer>) -> Unit)): QuestionsDialogInterface {
     val dialog = QuestionsDialog(ctx, questions, values, defaultCountry, retryHandler)
     dialog.show()
     return dialog

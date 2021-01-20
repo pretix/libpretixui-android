@@ -1,7 +1,9 @@
 package eu.pretix.libpretixui.android
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -47,6 +49,9 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
         private const val STORAGE_RES_W = 900
         private const val STORAGE_RES_H = 1200
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+
+        public val REQUEST_CODE = 40182
+        public val RESULT_FILENAME = "filename"
     }
 
     private var imageCapture: ImageCapture? = null
@@ -54,10 +59,10 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
     private var requestedCameraString: String? = "back"
     private lateinit var outputDirectory: File
     private lateinit var prefs: SharedPreferences
-
-    private val sync = Any()
+    private var lastCapturedFile: File? = null
 
     // for accessing USB and USB camera
+    private val sync = Any()
     private var usbMonitor: USBMonitor? = null
     private var uvcCamera: UVCCamera? = null
     private var uvcPreviewSurface: Surface? = null
@@ -189,6 +194,9 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
         }
         btAccept.setOnClickListener {
             // todo set result
+            if (lastCapturedFile != null) {
+                setResult(Activity.RESULT_OK, Intent().putExtra(RESULT_FILENAME, lastCapturedFile!!.absolutePath))
+            }
             finish()
         }
     }
@@ -207,6 +215,7 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
             scaled.compress(Bitmap.CompressFormat.JPEG, 98, out)
         }
         runOnUiThread {
+            lastCapturedFile = photoFile
             ivPreview.setImageBitmap(scaled)
             ivPreview.visibility = View.VISIBLE
             btCapture.visibility = View.GONE
