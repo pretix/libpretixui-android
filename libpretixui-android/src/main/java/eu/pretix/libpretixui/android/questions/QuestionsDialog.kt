@@ -2,6 +2,7 @@ package eu.pretix.libpretixui.android.questions
 
 import android.app.Activity
 import android.app.Dialog
+import android.app.SearchManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -79,6 +80,10 @@ internal class CountryAdapter(context: Context) :
 
 interface QuestionsDialogInterface : DialogInterface {
     fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean
+
+    fun setOnCancelListener(listener: DialogInterface.OnCancelListener?)
+
+    fun isShowing(): Boolean
 }
 
 class QuestionsDialog(
@@ -87,7 +92,7 @@ class QuestionsDialog(
         val values: Map<QuestionLike, String>? = null,
         val defaultCountry: String?,
         val retryHandler: ((MutableList<Answer>) -> Unit)
-) : AlertDialog(ctx), QuestionsDialogInterface{
+) : AlertDialog(ctx), QuestionsDialogInterface {
     companion object {
         val hf = SimpleDateFormat("HH:mm", Locale.US)
         val wf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US)
@@ -110,7 +115,9 @@ class QuestionsDialog(
         }
         window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         addFields()
+
     }
+
 
     private fun addFields() {
         val llFormFields = v.findViewById<LinearLayout>(R.id.llFormFields)!!
