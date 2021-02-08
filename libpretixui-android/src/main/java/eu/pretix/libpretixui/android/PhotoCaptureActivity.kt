@@ -31,6 +31,7 @@ import eu.pretix.libpretixui.android.uvc.CameraDialog
 import kotlinx.android.synthetic.main.activity_photo_capture.*
 import java.io.File
 import java.io.FileOutputStream
+import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
@@ -92,62 +93,67 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                 return
             }
             executorService.execute {
-                val camera = UVCCamera()
-                camera.open(ctrlBlock)
-                camera.setStatusCallback { statusClass, event, selector, statusAttribute, data ->
-                    Log.d(TAG, "USB camera reported onStatus(statusClass=" + statusClass
-                            + "; " +
-                            "event=" + event + "; " +
-                            "selector=" + selector + "; " +
-                            "statusAttribute=" + statusAttribute + "; " +
-                            "data=...)")
-                }
-                camera.setButtonCallback { button, state ->
-                    Log.d(TAG, "USB camera reported onButton(button=" + button + "; state=" + state + ")")
-                }
-                camera.setFrameCallback({ frame ->
-                    if (uvcCaptureRequested) {
-                        synchronized(sync) {
-                            uvcCaptureRequested = false
+                try {
+                    val camera = UVCCamera()
+                    camera.open(ctrlBlock)
+                    camera.setStatusCallback { statusClass, event, selector, statusAttribute, data ->
+                        Log.d(TAG, "USB camera reported onStatus(statusClass=" + statusClass
+                                + "; " +
+                                "event=" + event + "; " +
+                                "selector=" + selector + "; " +
+                                "statusAttribute=" + statusAttribute + "; " +
+                                "data=...)")
+                    }
+                    camera.setButtonCallback { button, state ->
+                        Log.d(TAG, "USB camera reported onButton(button=" + button + "; state=" + state + ")")
+                    }
+                    camera.setFrameCallback({ frame ->
+                        if (uvcCaptureRequested) {
+                            synchronized(sync) {
+                                uvcCaptureRequested = false
+                            }
+                            val usbBitmap = Bitmap.createBitmap(
+                                    uvcPreviewSize!!.width,
+                                    uvcPreviewSize!!.height,
+                                    Bitmap.Config.RGB_565
+                            )
+                            usbBitmap.copyPixelsFromBuffer(frame)
+                            uvcBitmapCallback?.invoke(usbBitmap)
                         }
-                        val usbBitmap = Bitmap.createBitmap(
-                                uvcPreviewSize!!.width,
-                                uvcPreviewSize!!.height,
-                                Bitmap.Config.RGB_565
-                        )
-                        usbBitmap.copyPixelsFromBuffer(frame)
-                        uvcBitmapCallback?.invoke(usbBitmap)
-                    }
-                }, UVCCamera.PIXEL_FORMAT_RGB565)
+                    }, UVCCamera.PIXEL_FORMAT_RGB565)
 
-                uvcPreviewSurface?.release()
-                uvcPreviewSurface = null
-                val modes = listOf(
-                        arrayOf(PREVIEW_RES_W, PREVIEW_RES_H, UVCCamera.FRAME_FORMAT_MJPEG),
-                        arrayOf(PREVIEW_RES_H, PREVIEW_RES_W, UVCCamera.FRAME_FORMAT_MJPEG),
-                        arrayOf(1280, 720, UVCCamera.FRAME_FORMAT_MJPEG),
-                        arrayOf(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_MJPEG),
-                        arrayOf(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.DEFAULT_PREVIEW_MODE)
-                )
-                uvcPreviewSize = null
-                for (m in modes) {
-                    try {
-                        camera.setPreviewSize(m[0], m[1], m[2])
-                        uvcPreviewSize = Size(m[0], m[1])
-                        break
-                    } catch (e: IllegalArgumentException) {
-                        continue
+                    uvcPreviewSurface?.release()
+                    uvcPreviewSurface = null
+                    val modes = listOf(
+                            arrayOf(PREVIEW_RES_W, PREVIEW_RES_H, UVCCamera.FRAME_FORMAT_MJPEG),
+                            arrayOf(PREVIEW_RES_H, PREVIEW_RES_W, UVCCamera.FRAME_FORMAT_MJPEG),
+                            arrayOf(1280, 720, UVCCamera.FRAME_FORMAT_MJPEG),
+                            arrayOf(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_MJPEG),
+                            arrayOf(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.DEFAULT_PREVIEW_MODE)
+                    )
+                    uvcPreviewSize = null
+                    for (m in modes) {
+                        try {
+                            camera.setPreviewSize(m[0], m[1], m[2])
+                            uvcPreviewSize = Size(m[0], m[1])
+                            break
+                        } catch (e: IllegalArgumentException) {
+                            continue
+                        }
                     }
-                }
-                if (uvcPreviewSize != null) {
-                    uvcTexture.setDataSize(uvcPreviewSize!!.width, uvcPreviewSize!!.height)
-                    val st: SurfaceTexture = uvcTexture.surfaceTexture ?: return@execute
-                    uvcPreviewSurface = Surface(st)
-                    camera.setPreviewDisplay(uvcPreviewSurface)
-                    camera.startPreview()
-                    synchronized(sync) { uvcCamera = camera }
-                } else {
-                    // todo: no supported camera resolution
+                    if (uvcPreviewSize != null) {
+                        uvcTexture.setDataSize(uvcPreviewSize!!.width, uvcPreviewSize!!.height)
+                        val st: SurfaceTexture = uvcTexture.surfaceTexture ?: return@execute
+                        uvcPreviewSurface = Surface(st)
+                        camera.setPreviewDisplay(uvcPreviewSurface)
+                        camera.startPreview()
+                        synchronized(sync) { uvcCamera = camera }
+                    } else {
+                        // todo: no supported camera resolution
+                    }
+                } catch (e: UnsupportedOperationException) {
+                    // could not open camera
+                    e.printStackTrace()
                 }
             }
         }
