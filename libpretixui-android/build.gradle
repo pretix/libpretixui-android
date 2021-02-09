@@ -38,9 +38,9 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:1.0.0-rc01"
     implementation "androidx.camera:camera-view:1.0.0-alpha20"
 
-    implementation(fileTree(dir: '../libuvccamera/', include: ['*.aar']))
-
-    // might require <uses-sdk tools:overrideLibrary="androidx.camera.view, androidx.camera.camera2, androidx.camera.lifecycle, androidx.camera.core"/>
+    implementation(project(':libuvccamera'))
+    implementation(project(':usbCameraCommon'))
+    implementation(project(':common'))
 
     implementation(project(':libpretixsync')) {
         transitive = false

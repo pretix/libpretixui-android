@@ -5,7 +5,7 @@
 bin/
 gen/
 doc/
-build/
+libpretixui-android/build/
 out/
 dist/
 jre/

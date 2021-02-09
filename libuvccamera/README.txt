@@ -8,11 +8,6 @@ https://github.com/raphaelm/UVCCamera/tree/raphaelm-fixes
 The build environment consisted of plain Android SDK and NDK installations, provided by the
 docker image available on docker hub as bitriseio/android-ndk:v2021_01_09-08_39-b2261
 
-This also contains the transitive dependency "libcommon" by saki4510t since it isn't available
-on a reliable maven archive and we don't want to trust the GitHub repository to stay around
-forever. The binary included is taken from here:
-https://github.com/saki4510t/libcommon/blob/master/repository/com/serenegiant/common/2.12.4/common-2.12.4.aar
-
 The libuvccamera.aar binary contains the following components:
 
 UVCCamera
