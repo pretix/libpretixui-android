@@ -107,11 +107,14 @@ class QuestionsDialog(
     init {
         setView(v)
 
-        setButton(DialogInterface.BUTTON_POSITIVE, ctx.getString(R.string.cont)) { p0, p1 ->
-            validate()
-        }
+        setButton(DialogInterface.BUTTON_POSITIVE, ctx.getString(R.string.cont), null as DialogInterface.OnClickListener?)
         setButton(DialogInterface.BUTTON_NEGATIVE, ctx.getString(R.string.cancel)) { p0, p1 ->
             cancel()
+        }
+        setOnShowListener {
+            getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                validate()
+            }
         }
         window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         addFields()
