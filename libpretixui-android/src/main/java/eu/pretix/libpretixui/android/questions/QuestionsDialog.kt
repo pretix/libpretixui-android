@@ -15,7 +15,9 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.model.GlideUrl
 import com.github.ialokim.phonefield.PhoneEditText
 import com.neovisionaries.i18n.CountryCode
 import eu.pretix.libpretixsync.check.QuestionType
@@ -91,6 +93,7 @@ class QuestionsDialog(
         val questions: List<QuestionLike>,
         val values: Map<QuestionLike, String>? = null,
         val defaultCountry: String?,
+        val glideLoader: ((String) -> GlideUrl)? = null,
         val retryHandler: ((MutableList<Answer>) -> Unit)
 ) : AlertDialog(ctx), QuestionsDialogInterface {
     companion object {
@@ -139,6 +142,8 @@ class QuestionsDialog(
                     val fieldS = PhoneEditText(ctx)
                     if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
                         fieldS.setPhoneNumber(values[question])
+                    } else if (!question.default.isNullOrBlank()) {
+                        fieldS.setPhoneNumber(question.default)
                     }
                     fieldViews[question] = fieldS
                     if (defaultCountry != null) {
@@ -151,6 +156,8 @@ class QuestionsDialog(
                     val fieldS = EditText(ctx)
                     if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
                         fieldS.setText(values[question])
+                    } else if (!question.default.isNullOrBlank()) {
+                        fieldS.setText(question.default)
                     }
                     fieldS.setLines(1)
                     fieldS.isSingleLine = true
@@ -162,6 +169,8 @@ class QuestionsDialog(
                     val fieldS = EditText(ctx)
                     if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
                         fieldS.setText(values[question])
+                    } else if (!question.default.isNullOrBlank()) {
+                        fieldS.setText(question.default)
                     }
                     fieldS.setLines(1)
                     fieldS.isSingleLine = true
@@ -172,6 +181,8 @@ class QuestionsDialog(
                     val fieldT = EditText(ctx)
                     if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
                         fieldT.setText(values[question])
+                    } else if (!question.default.isNullOrBlank()) {
+                        fieldT.setText(question.default)
                     }
                     fieldT.setLines(2)
                     fieldViews[question] = fieldT
@@ -181,6 +192,8 @@ class QuestionsDialog(
                     val fieldN = EditText(ctx)
                     if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
                         fieldN.setText(values[question])
+                    } else if (!question.default.isNullOrBlank()) {
+                        fieldN.setText(question.default)
                     }
                     fieldN.inputType = InputType.TYPE_CLASS_NUMBER.or(InputType.TYPE_NUMBER_FLAG_DECIMAL).or(InputType.TYPE_NUMBER_FLAG_SIGNED)
                     fieldN.isSingleLine = true
@@ -194,6 +207,8 @@ class QuestionsDialog(
                     fieldB.setText(R.string.yes)
                     if (values?.containsKey(question) == true) {
                         fieldB.isChecked = "True" == values[question]
+                    } else if (!question.default.isNullOrBlank()) {
+                        fieldB.isChecked = "True" == question.default
                     }
                     fieldViews[question] = fieldB
                     llFormFields.addView(fieldB)
@@ -210,12 +225,25 @@ class QuestionsDialog(
                         llInner.orientation = LinearLayout.HORIZONTAL
                         llInner.gravity = Gravity.CENTER
 
+                        val circularProgressDrawable = CircularProgressDrawable(ctx)
+                        circularProgressDrawable.strokeWidth = 5f
+                        circularProgressDrawable.centerRadius = 30f
+                        circularProgressDrawable.start()
+
                         val imgF = ImageView(ctx)
                         if (values != null && values[question].isNullOrBlank()) {
                             imgF.visibility = View.GONE
                         } else {
                             imgF.tag = values!![question]
-                            Glide.with(context).load(File(values!![question])).into(imgF)
+                            if (values!![question]?.startsWith("http") == true && glideLoader != null) {
+                                Glide.with(context)
+                                        .load(glideLoader!!(values[question]!!))
+                                        .placeholder(circularProgressDrawable)
+                                        .error(R.drawable.ic_baseline_broken_image_24)
+                                        .into(imgF)
+                            } else {
+                                Glide.with(context).load(File(values[question])).into(imgF)
+                            }
                         }
                         imgF.layoutParams = LinearLayout.LayoutParams(160, 120)
                         fieldsF.add(imgF)
@@ -239,6 +267,8 @@ class QuestionsDialog(
                     val fields = ArrayList<CheckBox>()
                     val selected = if (values?.containsKey(question) == true) {
                         values[question]!!.split(",")
+                    } else if (!question.default.isNullOrBlank()) {
+                        question.default.split(",")
                     } else {
                         emptyList<String>()
                     }
@@ -287,6 +317,15 @@ class QuestionsDialog(
                             }
                             i++
                         }
+                    } else if (!question.default.isNullOrBlank()) {
+                        var i = 0
+                        for (opt in question.options) {
+                            if (opt.server_id.toString() == question.default) {
+                                fieldC.setSelection(i)
+                                break
+                            }
+                            i++
+                        }
                     }
 
                     fieldViews[question] = fieldC
@@ -300,6 +339,12 @@ class QuestionsDialog(
                         } catch (e: ParseException) {
                             e.printStackTrace()
                         }
+                    } else if (!question.default.isNullOrBlank()) {
+                        try {
+                            fieldD.setValue(df.parse(question.default))
+                        } catch (e: ParseException) {
+                            e.printStackTrace()
+                        }
                     }
                     fieldViews[question] = fieldD
                     llFormFields.addView(fieldD)
@@ -309,6 +354,12 @@ class QuestionsDialog(
                     if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
                         try {
                             fieldH.value = LocalTime.fromDateFields(hf.parse(values[question]))
+                        } catch (e: ParseException) {
+                            e.printStackTrace()
+                        }
+                    } else if (!question.default.isNullOrBlank()) {
+                        try {
+                            fieldH.value = LocalTime.fromDateFields(hf.parse(question.default))
                         } catch (e: ParseException) {
                             e.printStackTrace()
                         }
@@ -337,6 +388,13 @@ class QuestionsDialog(
                         try {
                             fieldWD.setValue(wf.parse(values[question]))
                             fieldWH.value = LocalTime.fromDateFields(wf.parse(values[question]))
+                        } catch (e: ParseException) {
+                            e.printStackTrace()
+                        }
+                    } else if (!question.default.isNullOrBlank()) {
+                        try {
+                            fieldWD.setValue(wf.parse(question.default))
+                            fieldWH.value = LocalTime.fromDateFields(wf.parse(question.default))
                         } catch (e: ParseException) {
                             e.printStackTrace()
                         }
@@ -379,7 +437,12 @@ class QuestionsDialog(
                 }
                 QuestionType.F -> {
                     val fieldset = field as List<View>
-                    answer = if (fieldset[0].tag != null) "file://${fieldset[0].tag as String}" else ""
+                    answer = if (fieldset[0].tag is String && (fieldset[0].tag as String).contains("://"))
+                        fieldset[0].tag as String
+                    else if (fieldset[0].tag != null)
+                        "file://${fieldset[0].tag as String}"
+                    else
+                        ""
                     empty = answer.trim() == ""
                 }
                 QuestionType.M -> {
@@ -491,8 +554,9 @@ class QuestionsDialog(
 fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
                         values: Map<QuestionLike, String>? = null,
                         defaultCountry: String?,
+                        glideLoader: ((String) -> GlideUrl)? = null,
                         retryHandler: ((MutableList<Answer>) -> Unit)): QuestionsDialogInterface {
-    val dialog = QuestionsDialog(ctx, questions, values, defaultCountry, retryHandler)
+    val dialog = QuestionsDialog(ctx, questions, values, defaultCountry, glideLoader, retryHandler)
     dialog.show()
     return dialog
 }
