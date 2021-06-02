@@ -2,6 +2,7 @@
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
     <string name="cancel">Abbrechen</string>
+    <string name="copy">Vorherige kopieren</string>
     <string name="cont">WEITER</string>
     <string name="question_input_invalid">Die eingegebene Antwort ist nicht gültig.</string>
     <string name="question_input_required">Diese Frage muss beantwortet werden.</string>
