@@ -72,7 +72,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="@{name}"
+                    android:text="@{name != null ? name : @string/covid_check_name_unknown}"
                     tools:text="John Doe"
                     android:textColor="@color/BLACK"
                     android:textSize="18dp"
@@ -86,7 +86,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="@{@string/date_format(birthdate.toDate())}"
+                    android:visibility="@{birthdate != null ? View.VISIBLE : View.GONE}"
+                    android:text="@{birthdate != null ? @string/date_format(birthdate.toDate()) : &quot;&quot;}"
                     tools:text="1960-01-01"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/ivPerson"
@@ -501,10 +502,11 @@
                 android:padding="16dp">
 
                 <com.ncorti.slidetoact.SlideToActView
-                    android:id="@+id/example"
+                    android:id="@+id/staConfirm"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:elevation="0dp"
+                    app:animate_completion="false"
                     app:inner_color="@color/WHITE"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"

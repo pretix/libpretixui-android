@@ -2,6 +2,7 @@ package eu.pretix.libpretixui.android.covid
 
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
+import java.io.Serializable
 
 data class CovidCheckSettings(
         val allow_vaccinated: Boolean,
@@ -19,7 +20,7 @@ data class CovidCheckSettings(
         val accept_eudgc: Boolean,
         val accept_baercode: Boolean,
         val accept_manual: Boolean
-) {
+) : Serializable {
 
     // Helper method for the actual checks.
     // Note that max/min is swapped, since the settings are worded as "min. X days ago" while the

@@ -11,6 +11,9 @@
     <string name="camera_back">Back camera</string>
     <string name="camera_front">Front camera</string>
     <string name="camera_usb">Select USB camera</string>
+    <string name="covid_check_validate">Validate</string>
+    <string name="covid_check_validated">Validated</string>
+    <string name="covid_check_name_unknown">Name unknown, please compare with ID</string>
     <string name="covid_check_required">COVID-19 Check</string>
     <string name="covid_check_instructions">Please check that the person in front of you has one of the following documents with the correct information on it. You can also use your barcode scanner to scan a compatible certificate.</string>
     <string name="covid_check_vaccinated">Vaccinated</string>
