@@ -16,9 +16,12 @@
     <string name="covid_check_vaccinated">Vaccinated</string>
     <string name="covid_check_recovered">Recovered</string>
     <string name="covid_check_tested_pcr">Negatively tested (PCR)</string>
-    <string name="covid_check_tested_other">Negatively tested (Antigen, other)</string>
+    <string name="covid_check_tested_other">Negatively tested (Antigen)</string>
     <string name="covid_check_min">No earlier than</string>
     <string name="covid_check_max">No later than</string>
     <string name="covid_check_slide">Slide to confirm</string>
+    <string name="datetime_format">%1$tY-%1$tm-%1$td %1$tH:%1$tM</string>
+    <string name="date_format">%1$tY-%1$tm-%1$td</string>
+    <string name="time_format">%1$tH:%1$tM</string>
 
 </resources>
