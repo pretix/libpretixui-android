@@ -11,5 +11,14 @@
     <string name="camera_back">Back camera</string>
     <string name="camera_front">Front camera</string>
     <string name="camera_usb">Select USB camera</string>
+    <string name="covid_check_required">COVID-19 Check</string>
+    <string name="covid_check_instructions">Please check that the person in front of you has one of the following documents with the correct information on it. You can also use your barcode scanner to scan a compatible certificate.</string>
+    <string name="covid_check_vaccinated">Vaccinated</string>
+    <string name="covid_check_recovered">Recovered</string>
+    <string name="covid_check_tested_pcr">Negatively tested (PCR)</string>
+    <string name="covid_check_tested_other">Negatively tested (Antigen, other)</string>
+    <string name="covid_check_min">No earlier than</string>
+    <string name="covid_check_max">No later than</string>
+    <string name="covid_check_slide">Slide to confirm</string>
 
 </resources>

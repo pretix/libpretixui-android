@@ -4,7 +4,10 @@
     package="eu.pretix.libpretixui.android">
 
     <application>
-        <activity android:name=".PhotoCaptureActivity"></activity>
+        <activity android:name=".covid.CovidCheckActivity"
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
+            />
+        <activity android:name=".PhotoCaptureActivity" />
     </application>
 
 </manifest>

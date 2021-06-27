@@ -11,4 +11,13 @@
     <string name="camera_back">Kamera auf der Rückseite</string>
     <string name="camera_front">Kamera auf der Frontseite</string>
     <string name="camera_usb">USB-Kamera auswählen</string>
+    <string name="covid_check_required">COVID-19-Kontrolle</string>
+    <string name="covid_check_instructions">Bitte prüfen Sie, dass die Person vor Ihnen eines der folgenden Dokumente mit den korrekten Angaben hat. Sie können Ihren Barcode-Scanner verwenden, um ein kompatibles Zertifikat einzuscannen.</string>
+    <string name="covid_check_vaccinated">Geimpft</string>
+    <string name="covid_check_recovered">Genesen</string>
+    <string name="covid_check_tested_pcr">Getestet (PCR)</string>
+    <string name="covid_check_tested_other">Getestet (Antigen-Schnelltest, andere)</string>
+    <string name="covid_check_min">Frühestes Datum</string>
+    <string name="covid_check_max">Spätestes Datum</string>
+    <string name="covid_check_slide">zur Bestätigung schieben</string>
 </resources>
