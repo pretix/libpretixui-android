@@ -8,6 +8,8 @@ import androidx.databinding.DataBindingUtil
 import com.ncorti.slidetoact.SlideToActView
 import eu.pretix.libpretixui.android.R
 import eu.pretix.libpretixui.android.databinding.ActivityCovidCheckBinding
+import eu.pretix.libpretixui.android.scanning.HardwareScanner
+import eu.pretix.libpretixui.android.scanning.ScanReceiver
 import kotlinx.android.synthetic.main.activity_covid_check.*
 import org.joda.time.LocalDate
 
@@ -20,6 +22,12 @@ class CovidCheckActivity : AppCompatActivity() {
         val EXTRA_BIRTHDATE = "birthdate"
         val EXTRA_SETTINGS = "settings"
     }
+
+    private val hardwareScanner = HardwareScanner(object : ScanReceiver {
+        override fun scanResult(result: String) {
+            handleScan(result)
+        }
+    })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,5 +55,19 @@ class CovidCheckActivity : AppCompatActivity() {
                 finish()
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        hardwareScanner.start(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        hardwareScanner.stop(this)
+    }
+
+    fun handleScan(result: String) {
+        DGC().check(result)
     }
 }

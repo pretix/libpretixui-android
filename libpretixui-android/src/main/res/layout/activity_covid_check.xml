@@ -117,14 +117,14 @@
                     android:id="@+id/tvInstructions"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/covid_check_instructions"
+                    android:text="@{(settings.accept_baercode || settings.accept_eudgc) ? @string/covid_check_instructions_barcode : @string/covid_check_instructions}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/button"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageButton
-                    android:visibility="@{hasHardwareScanner &amp;&amp; (settings.accept_baercode || settings.accept_eudgc) ? View.GONE : View.VISIBLE}"
+                    android:visibility="@{(settings.accept_baercode || settings.accept_eudgc) ? View.VISIBLE : View.GONE}"
                     android:id="@+id/button"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
