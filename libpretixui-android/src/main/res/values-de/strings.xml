@@ -21,8 +21,12 @@
     <string name="covid_check_recovered">Genesen</string>
     <string name="covid_check_tested_pcr">Getestet (PCR)</string>
     <string name="covid_check_tested_other">Getestet (Schnelltest)</string>
+    <string name="covid_check_scanned_data">Gescannte Daten</string>
+    <string name="covid_check_scan_inacceptable">Gescannte Daten sind nicht akzeptierbar!</string>
     <string name="covid_check_min">Frühestes Datum</string>
     <string name="covid_check_max">Spätestes Datum</string>
+    <string name="covid_check_from">Gültig ab</string>
+    <string name="covid_check_until">Gültig bis</string>
     <string name="covid_check_slide">zur Bestätigung schieben</string>
     <string name="datetime_format">%1$td.%1$tm.%1$tY %1$tH:%1$tM</string>
     <string name="date_format">%1$td.%1$tm.%1$tY</string>

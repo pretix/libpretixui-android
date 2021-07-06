@@ -13,11 +13,20 @@
             name="hasHardwareScanner"
             type="java.lang.Boolean" />
         <variable
+            name="acceptBarcode"
+            type="java.lang.Boolean" />
+        <variable
             name="name"
             type="java.lang.String" />
         <variable
             name="birthdate"
             type="org.joda.time.LocalDate" />
+        <variable
+            name="hasScannedResult"
+            type="java.lang.Boolean" />
+        <variable
+            name="hasAcceptableScannedResult"
+            type="java.lang.Boolean" />
     </data>
 
     <ScrollView
@@ -117,14 +126,14 @@
                     android:id="@+id/tvInstructions"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@{(settings.accept_baercode || settings.accept_eudgc) ? @string/covid_check_instructions_barcode : @string/covid_check_instructions}"
+                    android:text="@{acceptBarcode ? @string/covid_check_instructions_barcode : @string/covid_check_instructions}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/button"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageButton
-                    android:visibility="@{(settings.accept_baercode || settings.accept_eudgc) ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{(acceptBarcode &amp;&amp; !hasHardwareScanner) ? View.VISIBLE : View.GONE}"
                     android:id="@+id/button"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
@@ -135,6 +144,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clVacc"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="@{settings.allow_vaccinated ? View.VISIBLE : View.GONE}"
@@ -225,6 +235,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clCured"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="@{settings.allow_cured ? View.VISIBLE : View.GONE}"
@@ -314,6 +325,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clTested"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="@{settings.allow_tested_pcr ? View.VISIBLE : View.GONE}"
@@ -405,6 +417,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clTested2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="@{settings.allow_tested_antigen_unknown ? View.VISIBLE : View.GONE}"
@@ -498,7 +511,153 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{settings.accept_manual ? View.VISIBLE : View.GONE}"
+                android:visibility="@{hasScannedResult ? View.VISIBLE : View.GONE}"
+                android:paddingTop="0dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <ImageView
+                    android:id="@+id/ivScannedData"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_qr_code_scanner_24" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataHead"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/covid_check_scanned_data"
+                    android:textAllCaps="true"
+                    android:textColor="@color/BLACK"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivScannedData"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataPersonName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.062"
+                    app:layout_constraintStart_toEndOf="@+id/ivScannedData"
+                    app:layout_constraintTop_toBottomOf="@+id/tvScannedDataHead"
+                    tools:text="John Doe" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataPersonDetails"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    tools:text="1960-01-01"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivScannedData"
+                    app:layout_constraintTop_toBottomOf="@id/tvScannedDataPersonName" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataMin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/covid_check_from"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    app:layout_constraintStart_toEndOf="@+id/ivScannedData"
+                    app:layout_constraintTop_toBottomOf="@+id/tvScannedDataPersonDetails" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataMax"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="right"
+                    android:text="@string/covid_check_until"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toEndOf="@+id/tvScannedDataMin"
+                    app:layout_constraintTop_toBottomOf="@+id/tvScannedDataPersonDetails" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataMinDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@+id/tvScannedDataMin"
+                    app:layout_constraintTop_toBottomOf="@+id/tvScannedDataMin"
+                    tools:text="1960-01-01 23:59" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataMaxDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="2dp"
+                    android:gravity="right"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="@+id/tvScannedDataMax"
+                    app:layout_constraintStart_toEndOf="@+id/tvScannedDataMinDate"
+                    app:layout_constraintTop_toBottomOf="@+id/tvScannedDataMax"
+                    tools:text="1960-01-01 23:59" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clScanInvalid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/pretix_brand_red"
+                android:padding="16dp"
+                android:visibility="@{(hasScannedResult &amp;&amp; !hasAcceptableScannedResult) ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageView
+                    android:id="@+id/ivScanInvalid"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@android:drawable/ic_dialog_alert" />
+
+                <TextView
+                    android:id="@+id/tvScanInvalid"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/covid_check_scan_inacceptable"
+                    android:textAllCaps="true"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:textColor="@color/WHITE"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivScanInvalid"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{settings.accept_manual || hasAcceptableScannedResult ? View.VISIBLE : View.GONE}"
                 android:padding="16dp">
 
                 <com.ncorti.slidetoact.SlideToActView

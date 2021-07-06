@@ -21,8 +21,12 @@
     <string name="covid_check_recovered">Recovered</string>
     <string name="covid_check_tested_pcr">Negatively tested (PCR)</string>
     <string name="covid_check_tested_other">Negatively tested (Antigen)</string>
+    <string name="covid_check_scanned_data">Scanned Data</string>
+    <string name="covid_check_scan_inacceptable">Scanned Data is not acceptable!</string>
     <string name="covid_check_min">No earlier than</string>
     <string name="covid_check_max">No later than</string>
+    <string name="covid_check_from">Valid from</string>
+    <string name="covid_check_until">Valid until</string>
     <string name="covid_check_slide">Slide to confirm</string>
     <string name="datetime_format">%1$tY-%1$tm-%1$td %1$tH:%1$tM</string>
     <string name="date_format">%1$tY-%1$tm-%1$td</string>
