@@ -589,6 +589,7 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
                         retryHandler: ((MutableList<Answer>) -> Unit),
                         copyFrom: Map<QuestionLike, String>? = null): QuestionsDialogInterface {
     val dialog = QuestionsDialog(ctx, questions, values, defaultCountry, glideLoader, retryHandler, copyFrom)
+    dialog.setCanceledOnTouchOutside(false)
     dialog.show()
     return dialog
 }
