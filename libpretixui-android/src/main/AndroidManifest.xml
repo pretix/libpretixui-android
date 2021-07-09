@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="eu.pretix.libpretixui.android">
 
-    <uses-sdk tools:overrideLibrary="de.rki.covpass.http, de.rki.covpass.logging, de.rki.covpass.sdk, com.ensody.reactivestate, androidx.security" />
+    <uses-sdk tools:overrideLibrary="de.rki.covpass.http, de.rki.covpass.logging, de.rki.covpass.sdk, de.rki.covpass.sdk.demo, com.ensody.reactivestate, androidx.security" />
 
     <application>
         <activity android:name=".covid.CovidCheckActivity"
