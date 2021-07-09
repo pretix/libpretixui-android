@@ -14,7 +14,7 @@
     <string name="covid_check_validate">Validieren</string>
     <string name="covid_check_name_unknown">Name unbekannt, bitte mit Ausweis abgleichen</string>
     <string name="covid_check_validated">Validiert</string>
-    <string name="covid_check_required">COVID-19-Kontrolle</string>
+    <string name="covid_check_required">COVID-19 Kontrolle</string>
     <string name="covid_check_instructions">Bitte prüfen Sie, dass die Person vor Ihnen eines der folgenden Dokumente mit den korrekten Angaben hat.</string>
     <string name="covid_check_instructions_barcode">Bitte prüfen Sie, dass die Person vor Ihnen eines der folgenden Dokumente mit den korrekten Angaben hat. Sie können Ihren Barcode-Scanner verwenden, um ein kompatibles Zertifikat einzuscannen.</string>
     <string name="covid_check_vaccinated">Geimpft</string>
