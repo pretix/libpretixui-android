@@ -3,7 +3,7 @@ package eu.pretix.libpretixui.android.covid
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.ncorti.slidetoact.SlideToActView
@@ -59,6 +59,18 @@ class CovidCheckActivity : AppCompatActivity() {
             }
         }
 
+        val proofClickListener = View.OnClickListener {
+            hardwareScanner.stop(this)
+            hideAllSections(except=it)
+            binding.hasResult = true
+            binding.hasAcceptableResult = true
+        }
+
+        clVacc.setOnClickListener(proofClickListener)
+        clCured.setOnClickListener(proofClickListener)
+        clTested.setOnClickListener(proofClickListener)
+        clTested2.setOnClickListener(proofClickListener)
+
         staConfirm.onSlideCompleteListener = object : SlideToActView.OnSlideCompleteListener {
             override fun onSlideComplete(view: SlideToActView) {
                 setResult(Activity.RESULT_OK, Intent().putExtra(RESULT_CODE, checkData))
@@ -74,10 +86,27 @@ class CovidCheckActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        hardwareScanner.stop(this)
+        try {
+            hardwareScanner.stop(this)
+        } catch (exception: Exception) {
+            // Scanner has probably been already stopped elsewhere.
+        }
+    }
+
+    override fun onBackPressed() {
+        if (binding.hasResult == true) {
+            this.recreate()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     fun handleScan(result: String) {
+        hardwareScanner.stop(this)
+        binding.hasResult = true
+        binding.hasScannedResult = true
+        hideAllSections()
+
         try {
             val dgc = DGC()
             val dgcResult = dgc.check(result)
@@ -87,8 +116,8 @@ class CovidCheckActivity : AppCompatActivity() {
             checkData = "type: DGC"
             tvScannedDataPersonName.text = covCertificate.fullName
             tvScannedDataPersonDetails.text = covCertificate.birthDate.birthDate.toString()
-            binding.hasScannedResult = true
-            binding.hasAcceptableScannedResult = true
+            hideAllSections(clScannedData as View)
+            binding.hasAcceptableResult = true
 
             when (dgcEntry.type) {
                 VaccinationCertType.VACCINATION_INCOMPLETE,
@@ -102,7 +131,7 @@ class CovidCheckActivity : AppCompatActivity() {
                     )
 
                     if (!binding.settings!!.allow_vaccinated) {
-                        binding.hasAcceptableScannedResult = false
+                        binding.hasAcceptableResult = false
                     }
                 }
                 TestCertType.POSITIVE_PCR_TEST,
@@ -115,7 +144,7 @@ class CovidCheckActivity : AppCompatActivity() {
                     )
 
                     if (!binding.settings!!.allow_tested_pcr) {
-                        binding.hasAcceptableScannedResult = false
+                        binding.hasAcceptableResult = false
                     }
                 }
                 TestCertType.POSITIVE_ANTIGEN_TEST,
@@ -128,7 +157,7 @@ class CovidCheckActivity : AppCompatActivity() {
                     )
 
                     if (!binding.settings!!.allow_tested_antigen_unknown) {
-                        binding.hasAcceptableScannedResult = false
+                        binding.hasAcceptableResult = false
                     }
                 }
                 RecoveryCertType.RECOVERY -> {
@@ -140,40 +169,49 @@ class CovidCheckActivity : AppCompatActivity() {
                     )
 
                     if (!binding.settings!!.allow_cured) {
-                        binding.hasAcceptableScannedResult = false
+                        binding.hasAcceptableResult = false
                     }
 
                     if (!isValid(dgcEntry.validFrom, dgcEntry.validUntil)) {
-                        binding.hasAcceptableScannedResult = false
+                        binding.hasAcceptableResult = false
                     }
                 }
                 else -> {
-                    binding.hasAcceptableScannedResult = false
+                    binding.hasAcceptableResult = false
 
                 }
             }
-        } catch (exception: ValidationRuleViolationException) {
-            binding.hasAcceptableScannedResult = false
-            tvScanInvalid.text = String.format("%s (%s)", resources.getString(getValidationException(exception.ruleIdentifier)), exception.ruleIdentifier)
-            Toast.makeText(applicationContext, "DGC ValidationRuleViolationException", Toast.LENGTH_SHORT).show()
-        } catch (exception: BadCoseSignatureException) {
-            binding.hasAcceptableScannedResult = false
-            Toast.makeText(applicationContext, "DGC BadCoseSignatureException", Toast.LENGTH_SHORT).show()
-        } catch (exception: ExpiredCwtException) {
-            binding.hasAcceptableScannedResult = false
-            Toast.makeText(applicationContext, "DGC ExpiredCwtException", Toast.LENGTH_SHORT).show()
-        } catch (exception: NoMatchingExtendedKeyUsageException) {
-            binding.hasAcceptableScannedResult = false
-            Toast.makeText(applicationContext, "DGC NoMatchingExtendedKeyUsageException", Toast.LENGTH_SHORT).show()
         } catch (exception: Exception) {
-            // Here we would normally run the next validator
-            binding.hasScannedResult = true
-            binding.hasAcceptableScannedResult = false
-            Toast.makeText(applicationContext, "Not a DGC", Toast.LENGTH_SHORT).show()
+            binding.hasAcceptableResult = false
+            when (exception) {
+                is ValidationRuleViolationException -> {
+                    tvScanInvalid.text = String.format("%s (%s)", resources.getString(getValidationException(exception.ruleIdentifier)), exception.ruleIdentifier)
+                }
+                is BadCoseSignatureException -> {
+                    tvScanInvalid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_badcosesignature))
+                }
+                is ExpiredCwtException -> {
+                    tvScanInvalid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_expiredcwt))
+                }
+                is NoMatchingExtendedKeyUsageException -> {
+                    tvScanInvalid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_nomatchingextendedkeyusage))
+                }
+                else -> {
+                    tvScanInvalid.text = String.format("%s (EX)", resources.getString(R.string.covid_check_scan_invalid))
+                }
+            }
         }
     }
 
     fun getValidationException(ruleIdentifier: String): Int {
         return resources.getIdentifier(String.format("covid_check_rules_%s", ruleIdentifier), "string", packageName)
+    }
+
+    fun hideAllSections(except: View? = null) {
+        clVacc.visibility = View.GONE
+        clCured.visibility = View.GONE
+        clTested.visibility = View.GONE
+        clTested2.visibility = View.GONE
+        except?.visibility = View.VISIBLE
     }
 }

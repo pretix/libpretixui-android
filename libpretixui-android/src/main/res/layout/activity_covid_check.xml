@@ -22,10 +22,13 @@
             name="birthdate"
             type="org.joda.time.LocalDate" />
         <variable
-            name="hasScannedResult"
+            name="hasResult"
             type="java.lang.Boolean" />
         <variable
-            name="hasAcceptableScannedResult"
+            name="hasAcceptableResult"
+            type="java.lang.Boolean" />
+        <variable
+            name="hasScannedResult"
             type="java.lang.Boolean" />
     </data>
 
@@ -117,7 +120,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{hasScannedResult ? View.GONE : View.VISIBLE}"
+                android:visibility="@{hasResult ? View.GONE : View.VISIBLE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -145,9 +148,10 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clVacc"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(settings.allow_vaccinated &amp;&amp; settings.accept_manual &amp;&amp; !hasScannedResult) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{(settings.allow_vaccinated &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -234,9 +238,10 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clCured"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(settings.allow_cured &amp;&amp; settings.accept_manual &amp;&amp; !hasScannedResult) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{(settings.allow_cured &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -326,7 +331,7 @@
                 android:id="@+id/clTested"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(settings.allow_tested_pcr &amp;&amp; settings.accept_manual &amp;&amp; !hasScannedResult) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{(settings.allow_tested_pcr &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -415,9 +420,10 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clTested2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(settings.allow_tested_antigen_unknown &amp;&amp; settings.accept_manual &amp;&amp; !hasScannedResult) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{(settings.allow_tested_antigen_unknown &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -506,9 +512,10 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clScannedData"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{hasScannedResult ? View.VISIBLE : View.GONE}"
+                android:visibility="gone"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -568,7 +575,7 @@
                 android:layout_height="match_parent"
                 android:background="@color/pretix_brand_red"
                 android:padding="16dp"
-                android:visibility="@{(hasScannedResult &amp;&amp; !hasAcceptableScannedResult) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{(hasResult &amp;&amp; !hasAcceptableResult) ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent">
 
                 <ImageView
@@ -602,7 +609,7 @@
                 android:layout_height="match_parent"
                 android:background="@color/pretix_brand_green"
                 android:padding="16dp"
-                android:visibility="@{(hasScannedResult &amp;&amp; hasAcceptableScannedResult) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{(hasScannedResult &amp;&amp; hasAcceptableResult) ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent">
 
                 <ImageView
@@ -633,7 +640,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{settings.accept_manual || hasAcceptableScannedResult ? View.VISIBLE : View.GONE}"
+                android:visibility="@{hasAcceptableResult ? View.VISIBLE : View.GONE}"
                 android:padding="16dp">
 
                 <com.ncorti.slidetoact.SlideToActView
@@ -651,6 +658,7 @@
                     app:text="@string/covid_check_slide"
                     app:text_size="14sp"
                     app:text_style="bold" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
