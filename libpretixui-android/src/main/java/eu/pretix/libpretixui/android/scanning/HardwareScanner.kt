@@ -47,7 +47,11 @@ class HardwareScanner(val receiver: ScanReceiver) {
     }
 
     fun stop(ctx: Context) {
-        ctx.unregisterReceiver(scanReceiver)
+        try {
+            ctx.unregisterReceiver(scanReceiver)
+        } catch (exception: Exception) {
+            // Scanner has probably been already stopped elsewhere.
+        }
     }
 }
 

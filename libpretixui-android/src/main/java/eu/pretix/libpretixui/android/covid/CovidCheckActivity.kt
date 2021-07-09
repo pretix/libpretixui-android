@@ -60,6 +60,11 @@ class CovidCheckActivity : AppCompatActivity() {
         binding.hasHardwareScanner = intent.extras?.getBoolean(EXTRA_HARDWARE_SCAN, false) ?: false
         binding.acceptBarcode = binding.settings!!.accept_eudgc
 
+        // Since we haven't implemented the Camera-Barcodescanner yet, we disable scanning on those devices for now
+        if (binding.acceptBarcode == true && binding.hasHardwareScanner == false) {
+            binding.acceptBarcode = false
+        }
+
         val acceptBarcode = binding.acceptBarcode!!
         when {
             binding.settings!!.accept_manual and acceptBarcode -> {
@@ -78,11 +83,6 @@ class CovidCheckActivity : AppCompatActivity() {
             else -> {
                 tvInstructions.text = resources.getString(R.string.covid_check_instructions_none)
             }
-        }
-
-        // Since we haven't implemented the Camera-Barcodescanner yet, we disable scanning on those devices for now
-        if (binding.acceptBarcode == true && binding.hasHardwareScanner == false) {
-            binding.acceptBarcode = false
         }
 
         // covpass-android-sdk requires at least SDK-Level 23, so we disable barcode-parsing for everything below that
@@ -153,11 +153,7 @@ class CovidCheckActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        try {
-            hardwareScanner.stop(this)
-        } catch (exception: Exception) {
-            // Scanner has probably been already stopped elsewhere.
-        }
+        hardwareScanner.stop(this)
     }
 
     override fun onBackPressed() {
