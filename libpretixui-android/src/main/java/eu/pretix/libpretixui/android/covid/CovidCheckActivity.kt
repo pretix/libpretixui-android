@@ -57,8 +57,15 @@ class CovidCheckActivity : AppCompatActivity() {
             binding.acceptBarcode = false
         }
 
-        tvDGCserver.text = sdkDeps.trustServiceHost
-        tvDGCupdate.text = sdkDeps.dscRepository.lastUpdate.value.toString()
+        // covpass-android-sdk requires at least SDK-Level 23, so we disable barcode-parsing for everything below that
+        if (android.os.Build.VERSION.SDK_INT < 23) {
+            tvDGCserver.text = "No DGC"
+            tvDGCupdate.text = String.format("SDK_INT: %d", android.os.Build.VERSION.SDK_INT)
+            binding.acceptBarcode = false
+        } else {
+            tvDGCserver.text = sdkDeps.trustServiceHost
+            tvDGCupdate.text = sdkDeps.dscRepository.lastUpdate.value.toString()
+        }
 
         if (intent.extras?.containsKey(EXTRA_BIRTHDATE) == true) {
             try {
@@ -97,7 +104,9 @@ class CovidCheckActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        hardwareScanner.start(this)
+        if (binding.acceptBarcode == true) {
+            hardwareScanner.start(this)
+        }
     }
 
     override fun onPause() {

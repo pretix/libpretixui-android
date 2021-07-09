@@ -122,6 +122,11 @@ class DGC() {
     }
 
     fun init(application: Application) {
+        // covpass-android-sdk requires at least SDK-Level 23, so we won't even try init the SDK.
+        if (android.os.Build.VERSION.SDK_INT < 23) {
+            return
+        }
+
         sdkDeps = object : SdkDependencies() {
             override val application: Application = application
         }
