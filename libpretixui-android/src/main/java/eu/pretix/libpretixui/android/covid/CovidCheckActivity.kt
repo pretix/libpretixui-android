@@ -52,6 +52,26 @@ class CovidCheckActivity : AppCompatActivity() {
         binding.hasHardwareScanner = intent.extras?.getBoolean(EXTRA_HARDWARE_SCAN, false) ?: false
         binding.acceptBarcode = binding.settings!!.accept_eudgc
 
+        val acceptBarcode = binding.acceptBarcode!!
+        when {
+            binding.settings!!.accept_manual and acceptBarcode -> {
+                tvInstructions.text = String.format(
+                    "%s %s",
+                    resources.getString(R.string.covid_check_instructions_manual),
+                    resources.getString(R.string.covid_check_instructions_also_barcode)
+                )
+            }
+            binding.settings!!.accept_manual -> {
+                tvInstructions.text = resources.getString(R.string.covid_check_instructions_manual)
+            }
+            acceptBarcode -> {
+                tvInstructions.text = resources.getString(R.string.covid_check_instructions_barcode)
+            }
+            else -> {
+                tvInstructions.text = resources.getString(R.string.covid_check_instructions_none)
+            }
+        }
+
         // Since we haven't implemented the Camera-Barcodescanner yet, we disable scanning on those devices for now
         if (binding.acceptBarcode == true && binding.hasHardwareScanner == false) {
             binding.acceptBarcode = false

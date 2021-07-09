@@ -15,8 +15,10 @@
     <string name="covid_check_validated">Validated</string>
     <string name="covid_check_name_unknown">Name unknown, please compare with ID</string>
     <string name="covid_check_required">COVID-19 Check</string>
-    <string name="covid_check_instructions">Please check that the person in front of you has one of the following documents with the correct information on it.</string>
-    <string name="covid_check_instructions_barcode">Please check that the person in front of you has one of the following documents with the correct information on it. You can also use your barcode scanner to scan a compatible certificate.</string>
+    <string name="covid_check_instructions_manual">Please check that the person in front of you has one of the following documents with the correct information on it. Tap on the field that corresponds to the presented proof.</string>
+    <string name="covid_check_instructions_barcode">Please use your barcode scanner to scan a compatible certificate.</string>
+    <string name="covid_check_instructions_also_barcode">You can also use your barcode scanner to scan a compatible certificate.</string>
+    <string name="covid_check_instructions_none">There is no enabled verification method. Please contact the event organizer.</string>
     <string name="covid_check_vaccinated">Vaccinated</string>
     <string name="covid_check_recovered">Recovered</string>
     <string name="covid_check_tested_pcr">Negatively tested (PCR)</string>

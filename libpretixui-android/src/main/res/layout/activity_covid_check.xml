@@ -162,7 +162,6 @@
                     android:id="@+id/tvInstructions"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@{acceptBarcode ? @string/covid_check_instructions_barcode : @string/covid_check_instructions}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/btCapture"
                     app:layout_constraintStart_toStartOf="parent"
