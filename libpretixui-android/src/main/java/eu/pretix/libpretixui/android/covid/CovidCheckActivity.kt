@@ -2,13 +2,16 @@ package eu.pretix.libpretixui.android.covid
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.ncorti.slidetoact.SlideToActView
 import de.rki.covpass.sdk.cert.*
 import de.rki.covpass.sdk.cert.models.*
+import de.rki.covpass.sdk.dependencies.sdkDeps
 import de.rki.covpass.sdk.utils.isValid
 import eu.pretix.libpretixui.android.R
 import eu.pretix.libpretixui.android.databinding.ActivityCovidCheckBinding
@@ -50,6 +53,9 @@ class CovidCheckActivity : AppCompatActivity() {
         binding.name = intent.extras?.getString(EXTRA_NAME)
         binding.hasHardwareScanner = intent.extras?.getBoolean(EXTRA_HARDWARE_SCAN, false) ?: false
         binding.acceptBarcode = binding.settings!!.accept_eudgc
+        tvDGCserver.text = sdkDeps.trustServiceHost
+        //tvDGCupdate.text = LocalDateTime.ofInstant(sdkDeps.dscRepository.lastUpdate.value).formatDateTime()
+        tvDGCupdate.text = sdkDeps.dscRepository.lastUpdate.value.toString()
 
         if (intent.extras?.containsKey(EXTRA_BIRTHDATE) == true) {
             try {

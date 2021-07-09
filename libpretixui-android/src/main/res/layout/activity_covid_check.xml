@@ -69,9 +69,41 @@
                     android:textColor="@color/WHITE"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvDGCserver"
                     app:layout_constraintStart_toEndOf="@+id/ivHead"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvDGCserver"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="DGC server"
+                    android:gravity="right"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    android:textColor="@color/pretix_brand_lightgrey"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@+id/tvDGCupdate"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/tvHead"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvDGCupdate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="DGC Update"
+                    android:gravity="right"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    android:textColor="@color/pretix_brand_lightgrey"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/tvHead"
+                    app:layout_constraintTop_toBottomOf="@+id/tvDGCserver" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
