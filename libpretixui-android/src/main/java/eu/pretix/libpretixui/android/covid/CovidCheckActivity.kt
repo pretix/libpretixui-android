@@ -2,10 +2,8 @@ package eu.pretix.libpretixui.android.covid
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.View
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.ncorti.slidetoact.SlideToActView
@@ -53,6 +51,12 @@ class CovidCheckActivity : AppCompatActivity() {
         binding.name = intent.extras?.getString(EXTRA_NAME)
         binding.hasHardwareScanner = intent.extras?.getBoolean(EXTRA_HARDWARE_SCAN, false) ?: false
         binding.acceptBarcode = binding.settings!!.accept_eudgc
+
+        // Since we haven't implemented the Camera-Barcodescanner yet, we disable scanning on those devices for now
+        if (binding.acceptBarcode == true && binding.hasHardwareScanner == false) {
+            binding.acceptBarcode = false
+        }
+
         tvDGCserver.text = sdkDeps.trustServiceHost
         tvDGCupdate.text = sdkDeps.dscRepository.lastUpdate.value.toString()
 
@@ -81,6 +85,13 @@ class CovidCheckActivity : AppCompatActivity() {
                 setResult(Activity.RESULT_OK, Intent().putExtra(RESULT_CODE, checkData))
                 finish()
             }
+        }
+
+        btCapture.setOnClickListener {
+            // ToDo
+            // 1. Open ScanView
+            // 2. pass the result to handleScan()
+            // 3. Profit
         }
     }
 
