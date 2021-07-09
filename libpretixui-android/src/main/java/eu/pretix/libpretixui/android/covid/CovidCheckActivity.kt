@@ -147,7 +147,6 @@ class CovidCheckActivity : AppCompatActivity() {
     }
 
     fun handleScan(result: String) {
-        hardwareScanner.stop(this)
         binding.hasResult = true
         binding.hasScannedResult = true
         hideAllSections()
@@ -245,6 +244,11 @@ class CovidCheckActivity : AppCompatActivity() {
                     tvScanInvalid.text = String.format("%s (EX)", resources.getString(R.string.covid_check_scan_invalid))
                 }
             }
+        }
+
+        // If the result is not good, we allow to scan a new document right away.
+        if (binding.hasAcceptableResult == true) {
+            hardwareScanner.stop(this)
         }
     }
 
