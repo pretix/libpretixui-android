@@ -1,5 +1,9 @@
 package eu.pretix.libpretixui.android.covid
 
+import android.app.Application
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import de.rki.covpass.sdk.cert.*
 import de.rki.covpass.sdk.cert.models.*
 import de.rki.covpass.sdk.dependencies.sdkDeps
@@ -7,7 +11,11 @@ import de.rki.covpass.sdk.cert.models.DGCEntry
 import de.rki.covpass.sdk.cert.models.Recovery
 import de.rki.covpass.sdk.cert.models.Test
 import de.rki.covpass.sdk.cert.models.Vaccination
+import de.rki.covpass.sdk.dependencies.SdkDependencies
+import de.rki.covpass.sdk.utils.DSC_UPDATE_INTERVAL_HOURS
+import de.rki.covpass.sdk.utils.DscListUpdater
 import de.rki.covpass.sdk.utils.isOlderThan
+import java.util.concurrent.TimeUnit
 
 const val RULE_VR_001: String = "VR_001"
 const val RULE_VR_002: String = "VR_002"
@@ -111,5 +119,24 @@ class DGC() {
 
     private fun assertValidationSuccess(success: Boolean, ruleIdentifier: String) {
         if (!success) throw ValidationRuleViolationException(ruleIdentifier)
+    }
+
+    fun init(application: Application) {
+        sdkDeps = object : SdkDependencies() {
+            override val application: Application = application
+        }
+
+        sdkDeps.validator.updateTrustedCerts(sdkDeps.dscRepository.dscList.value.toTrustedCerts())
+
+        val tag = "dscListWorker"
+        val dscListWorker: PeriodicWorkRequest =
+            PeriodicWorkRequest.Builder(DscListUpdater::class.java, DSC_UPDATE_INTERVAL_HOURS, TimeUnit.HOURS)
+                .addTag(tag)
+                .build()
+        WorkManager.getInstance(application).enqueueUniquePeriodicWork(
+            tag,
+            ExistingPeriodicWorkPolicy.KEEP,
+            dscListWorker,
+        )
     }
 }

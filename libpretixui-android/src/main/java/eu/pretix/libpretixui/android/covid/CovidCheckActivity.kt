@@ -54,7 +54,6 @@ class CovidCheckActivity : AppCompatActivity() {
         binding.hasHardwareScanner = intent.extras?.getBoolean(EXTRA_HARDWARE_SCAN, false) ?: false
         binding.acceptBarcode = binding.settings!!.accept_eudgc
         tvDGCserver.text = sdkDeps.trustServiceHost
-        //tvDGCupdate.text = LocalDateTime.ofInstant(sdkDeps.dscRepository.lastUpdate.value).formatDateTime()
         tvDGCupdate.text = sdkDeps.dscRepository.lastUpdate.value.toString()
 
         if (intent.extras?.containsKey(EXTRA_BIRTHDATE) == true) {
