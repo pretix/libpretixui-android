@@ -28,8 +28,16 @@ class CovidCheckActivity : AppCompatActivity() {
         val EXTRA_SETTINGS = "settings"
     }
 
+    enum class Proof {
+        INVLAID,
+        VACC,
+        CURED,
+        TESTED_PCR,
+        TESTED_AG_UNKNOWN
+    }
     lateinit var binding: ActivityCovidCheckBinding
-    var checkData = "type: manual"
+    var checkProvider = "unset"
+    var checkProof = Proof.INVLAID
 
     private val hardwareScanner = HardwareScanner(object : ScanReceiver {
         override fun scanResult(result: String) {
@@ -100,6 +108,14 @@ class CovidCheckActivity : AppCompatActivity() {
             hideAllSections(except=it)
             binding.hasResult = true
             binding.hasAcceptableResult = true
+            checkProvider = "manual"
+            checkProof = when (it) {
+                clVacc -> Proof.VACC
+                clCured -> Proof.CURED
+                clTested -> Proof.TESTED_PCR
+                clTested2 -> Proof.TESTED_AG_UNKNOWN
+                else -> Proof.INVLAID
+            }
         }
 
         clVacc.setOnClickListener(proofClickListener)
@@ -109,7 +125,13 @@ class CovidCheckActivity : AppCompatActivity() {
 
         staConfirm.onSlideCompleteListener = object : SlideToActView.OnSlideCompleteListener {
             override fun onSlideComplete(view: SlideToActView) {
-                setResult(Activity.RESULT_OK, Intent().putExtra(RESULT_CODE, checkData))
+                setResult(
+                    Activity.RESULT_OK,
+                    Intent().putExtra(
+                        RESULT_CODE,
+                        String.format("provider: %s, proof: %s", checkProvider, checkProof)
+                    )
+                )
                 finish()
             }
         }
@@ -157,7 +179,7 @@ class CovidCheckActivity : AppCompatActivity() {
             val dgcEntry = dgcResult.first
             val covCertificate = dgcResult.second
 
-            checkData = "type: DGC"
+            checkProvider = "DGC"
             tvScannedDataPersonName.text = covCertificate.fullName
             tvScannedDataPersonDetails.text = covCertificate.birthDate.birthDate.toString()
             hideAllSections(clScannedData as View)
@@ -167,6 +189,7 @@ class CovidCheckActivity : AppCompatActivity() {
                 VaccinationCertType.VACCINATION_INCOMPLETE,
                 VaccinationCertType.VACCINATION_COMPLETE,
                 VaccinationCertType.VACCINATION_FULL_PROTECTION -> {
+                    checkProof = Proof.VACC
                     tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_vaccinated))
                     dgc.assertVaccinationRules(
                         dgcEntry as Vaccination,
@@ -180,6 +203,7 @@ class CovidCheckActivity : AppCompatActivity() {
                 }
                 TestCertType.POSITIVE_PCR_TEST,
                 TestCertType.NEGATIVE_PCR_TEST -> {
+                    checkProof = Proof.TESTED_PCR
                     tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_tested_pcr))
                     dgc.assertTestPCRRules(
                         dgcEntry as Test,
@@ -193,6 +217,7 @@ class CovidCheckActivity : AppCompatActivity() {
                 }
                 TestCertType.POSITIVE_ANTIGEN_TEST,
                 TestCertType.NEGATIVE_ANTIGEN_TEST -> {
+                    checkProof = Proof.TESTED_AG_UNKNOWN
                     tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_tested_other))
                     dgc.assertTestAGRules(
                         dgcEntry as Test,
@@ -205,6 +230,7 @@ class CovidCheckActivity : AppCompatActivity() {
                     }
                 }
                 RecoveryCertType.RECOVERY -> {
+                    checkProof = Proof.CURED
                     tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_recovered))
                     dgc.assertRecoveryRules(
                         dgcEntry as Recovery,
