@@ -58,7 +58,7 @@ class DGC() {
     }
 
     fun assertTestAGRules(test: Test, minHours: Int, maxHours: Int) {
-        assertRuleTr001(test, Test.PCR_TEST)
+        assertRuleTr001(test, Test.ANTIGEN_TEST)
         assertRuleTr002(test, minHours)
         assertRuleTr003(test, maxHours)
         assertRuleTr004(test)
