@@ -14,6 +14,7 @@ import de.rki.covpass.sdk.utils.isValid
 import eu.pretix.libpretixui.android.R
 import eu.pretix.libpretixui.android.databinding.ActivityCovidCheckBinding
 import eu.pretix.libpretixui.android.scanning.HardwareScanner
+import eu.pretix.libpretixui.android.scanning.ScanActivity
 import eu.pretix.libpretixui.android.scanning.ScanReceiver
 import kotlinx.android.synthetic.main.activity_covid_check.*
 import org.joda.time.LocalDate
@@ -38,6 +39,7 @@ class CovidCheckActivity : AppCompatActivity() {
     lateinit var binding: ActivityCovidCheckBinding
     var checkProvider = "unset"
     var checkProof = Proof.INVLAID
+    val REQUEST_BARCODE = 30999
 
     private val hardwareScanner = HardwareScanner(object : ScanReceiver {
         override fun scanResult(result: String) {
@@ -56,14 +58,14 @@ class CovidCheckActivity : AppCompatActivity() {
             finish()
         }
 
+        btCapture.setOnClickListener {
+            val i = Intent(this, ScanActivity::class.java)
+            startActivityForResult(i, REQUEST_BARCODE)
+        }
+
         binding.name = intent.extras?.getString(EXTRA_NAME)
         binding.hasHardwareScanner = intent.extras?.getBoolean(EXTRA_HARDWARE_SCAN, false) ?: false
         binding.acceptBarcode = binding.settings!!.accept_eudgc
-
-        // Since we haven't implemented the Camera-Barcodescanner yet, we disable scanning on those devices for now
-        if (binding.acceptBarcode == true && binding.hasHardwareScanner == false) {
-            binding.acceptBarcode = false
-        }
 
         val acceptBarcode = binding.acceptBarcode!!
         when {
@@ -134,13 +136,6 @@ class CovidCheckActivity : AppCompatActivity() {
                 )
                 finish()
             }
-        }
-
-        btCapture.setOnClickListener {
-            // ToDo
-            // 1. Open ScanView
-            // 2. pass the result to handleScan()
-            // 3. Profit
         }
     }
 
@@ -284,5 +279,13 @@ class CovidCheckActivity : AppCompatActivity() {
         clTested.visibility = View.GONE
         clTested2.visibility = View.GONE
         except?.visibility = View.VISIBLE
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_BARCODE && resultCode == Activity.RESULT_OK) {
+            handleScan(data?.getStringExtra(ScanActivity.RESULT) ?: "invalid")
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
     }
 }
