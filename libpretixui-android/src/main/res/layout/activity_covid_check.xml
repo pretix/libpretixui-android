@@ -46,7 +46,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/pretix_brand_red"
-                android:padding="16dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
                 app:layout_constraintBottom_toBottomOf="parent">
 
                 <ImageView
