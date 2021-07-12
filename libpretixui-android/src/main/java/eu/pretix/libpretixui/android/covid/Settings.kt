@@ -64,7 +64,7 @@ val SAMPLE_SETTINGS = CovidCheckSettings(
         365,
         true,
         27,
-        365,
+        180,
         true,
         0,
         72,
