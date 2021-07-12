@@ -18,7 +18,8 @@ data class CovidCheckSettings(
         val allow_tested_antigen_unknown_min: Int, // hours ago
         val allow_tested_antigen_unknown_max: Int,  // hours ago
         val accept_eudgc: Boolean,
-        val accept_manual: Boolean
+        val accept_manual: Boolean,
+        val record_proof: Boolean,
 ) : Serializable {
 
     // Helper method for the actual checks.
@@ -62,15 +63,16 @@ val SAMPLE_SETTINGS = CovidCheckSettings(
         14,
         365,
         true,
-        28,
-        182,  // todo: is days okay? do we need to actually count calendar months?
+        27,
+        365,
         true,
         0,
         72,
         true,
         0,
-        24,
+        48,
         true,
-        true
+        true,
+        false
 )
 

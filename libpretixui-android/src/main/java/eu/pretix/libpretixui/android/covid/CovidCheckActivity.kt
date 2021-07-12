@@ -131,7 +131,7 @@ class CovidCheckActivity : AppCompatActivity() {
                     Activity.RESULT_OK,
                     Intent().putExtra(
                         RESULT_CODE,
-                        String.format("provider: %s, proof: %s", checkProvider, checkProof)
+                        getQuestionResult()
                     )
                 )
                 finish()
@@ -279,6 +279,14 @@ class CovidCheckActivity : AppCompatActivity() {
         clTested.visibility = View.GONE
         clTested2.visibility = View.GONE
         except?.visibility = View.VISIBLE
+    }
+
+    fun getQuestionResult(): String {
+        return if (binding.settings!!.record_proof) {
+            String.format("provider: %s, proof: %s", checkProvider, checkProof)
+        } else {
+            String.format("provider: %s, proof: %s", checkProvider, "withheld")
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
