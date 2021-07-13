@@ -282,7 +282,25 @@ class CovidCheckActivity : AppCompatActivity() {
     }
 
     fun getQuestionResult(): String {
-        return if (binding.settings!!.record_proof) {
+        val discloseProof = when {
+            checkProof == Proof.VACC && binding.settings!!.record_proof_vaccinated -> {
+                true
+            }
+            checkProof == Proof.CURED && binding.settings!!.record_proof_cured -> {
+                true
+            }
+            checkProof == Proof.TESTED_PCR && binding.settings!!.record_proof_tested_pcr -> {
+                true
+            }
+            checkProof == Proof.TESTED_AG_UNKNOWN && binding.settings!!.record_proof_tested_antigen_unknown -> {
+                true
+            }
+            else -> {
+                false
+            }
+        }
+
+        return if (discloseProof) {
             String.format("provider: %s, proof: %s", checkProvider, checkProof)
         } else {
             String.format("provider: %s, proof: %s", checkProvider, "withheld")
