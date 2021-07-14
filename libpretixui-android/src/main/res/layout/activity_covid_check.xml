@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+        <variable
+            name="settings"
+            type="eu.pretix.libpretixui.android.covid.CovidCheckSettings" />
+        <variable
+            name="hasHardwareScanner"
+            type="java.lang.Boolean" />
+        <variable
+            name="acceptBarcode"
+            type="java.lang.Boolean" />
+        <variable
+            name="name"
+            type="java.lang.String" />
+        <variable
+            name="birthdate"
+            type="org.joda.time.LocalDate" />
+        <variable
+            name="hasResult"
+            type="java.lang.Boolean" />
+        <variable
+            name="hasAcceptableResult"
+            type="java.lang.Boolean" />
+        <variable
+            name="hasScannedResult"
+            type="java.lang.Boolean" />
+    </data>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".covid.CovidCheckActivity">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/pretix_brand_red"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageView
+                    android:id="@+id/ivHead"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_virus_white_24" />
+
+                <TextView
+                    android:id="@+id/tvHead"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/covid_check_required"
+                    android:textAllCaps="true"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:textColor="@color/WHITE"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvDGCserver"
+                    app:layout_constraintStart_toEndOf="@+id/ivHead"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvDGCserver"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="DGC server"
+                    android:gravity="right"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    android:textColor="@color/pretix_brand_lightgrey"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@+id/tvDGCupdate"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/tvHead"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvDGCupdate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="DGC Update"
+                    android:gravity="right"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    android:textColor="@color/pretix_brand_lightgrey"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/tvHead"
+                    app:layout_constraintTop_toBottomOf="@+id/tvDGCserver" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvPersonName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@{name != null ? name : @string/covid_check_name_unknown}"
+                    tools:text="John Doe"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivPerson"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvPersonDetails"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:visibility="@{birthdate != null ? View.VISIBLE : View.GONE}"
+                    android:text="@{birthdate != null ? @string/date_format(birthdate.toDate()) : &quot;&quot;}"
+                    tools:text="1960-01-01"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivPerson"
+                    app:layout_constraintTop_toBottomOf="@id/tvPersonName" />
+
+                <ImageView
+                    android:id="@+id/ivPerson"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_person_24" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{hasResult ? View.GONE : View.VISIBLE}"
+                android:paddingTop="0dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <TextView
+                    android:id="@+id/tvInstructions"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/btCapture"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageButton
+                    android:visibility="@{(acceptBarcode &amp;&amp; !hasHardwareScanner) ? View.VISIBLE : View.GONE}"
+                    android:id="@+id/btCapture"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_qr_code_scanner_24" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clVacc"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{(settings.allow_vaccinated &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
+                android:paddingTop="0dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground">
+
+                <ImageView
+                    android:id="@+id/ivVacc"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_needle_24" />
+
+                <TextView
+                    android:id="@+id/tvVaccHead"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/covid_check_vaccinated"
+                    android:textAllCaps="true"
+                    android:textColor="@color/BLACK"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivVacc"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvVaccMin"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/covid_check_min"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    app:layout_constraintStart_toEndOf="@+id/ivVacc"
+                    app:layout_constraintTop_toBottomOf="@+id/tvVaccHead" />
+
+                <TextView
+                    android:id="@+id/tvVaccMax"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="right"
+                    android:text="@string/covid_check_max"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toEndOf="@+id/tvVaccMin"
+                    app:layout_constraintTop_toBottomOf="@+id/tvVaccHead" />
+
+                <TextView
+                    android:id="@+id/tvVaccMinDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@{@string/date_format(settings.vaccMinDate().toDate())}"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@+id/tvVaccMin"
+                    app:layout_constraintTop_toBottomOf="@+id/tvVaccMin"
+                    tools:text="1960-01-01" />
+
+                <TextView
+                    android:id="@+id/tvVaccMaxDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="2dp"
+                    android:gravity="right"
+                    android:text="@{@string/date_format(settings.vaccMaxDate().toDate())}"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="@+id/tvVaccMax"
+                    app:layout_constraintStart_toEndOf="@+id/tvVaccMinDate"
+                    app:layout_constraintTop_toBottomOf="@+id/tvVaccMax"
+                    tools:text="1960-01-01" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clCured"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{(settings.allow_cured &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
+                android:paddingTop="0dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground">
+
+                <ImageView
+                    android:id="@+id/ivCured"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_stethoscope_24" />
+
+                <TextView
+                    android:id="@+id/tvCuredHead"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/covid_check_recovered"
+                    android:textAllCaps="true"
+                    android:textColor="@color/BLACK"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivCured"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvCuredMin"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/covid_check_min"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    app:layout_constraintStart_toEndOf="@+id/ivCured"
+                    app:layout_constraintTop_toBottomOf="@+id/tvCuredHead" />
+
+                <TextView
+                    android:id="@+id/tvCuredMax"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="right"
+                    android:text="@string/covid_check_max"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toEndOf="@+id/tvCuredMin"
+                    app:layout_constraintTop_toBottomOf="@+id/tvCuredHead" />
+
+                <TextView
+                    android:id="@+id/tvCuredMinDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@{@string/date_format(settings.curedMinDate().toDate())}"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@+id/tvCuredMin"
+                    app:layout_constraintTop_toBottomOf="@+id/tvCuredMin"
+                    tools:text="1960-01-01" />
+
+                <TextView
+                    android:id="@+id/tvCuredMaxDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="2dp"
+                    android:gravity="right"
+                    android:text="@{@string/date_format(settings.curedMaxDate().toDate())}"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="@+id/tvCuredMax"
+                    app:layout_constraintStart_toEndOf="@+id/tvCuredMinDate"
+                    app:layout_constraintTop_toBottomOf="@+id/tvCuredMax"
+                    tools:text="1960-01-01" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clTested"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{(settings.allow_tested_pcr &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
+                android:paddingTop="0dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground">
+
+                <ImageView
+                    android:id="@+id/ivTested"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_microscope_24" />
+
+                <TextView
+                    android:id="@+id/tvTestedHead"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/covid_check_tested_pcr"
+                    android:textAllCaps="true"
+                    android:textColor="@color/BLACK"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivTested"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvTestedMin"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/covid_check_min"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    app:layout_constraintStart_toEndOf="@+id/ivTested"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTestedHead" />
+
+                <TextView
+                    android:id="@+id/tvTestedMax"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="right"
+                    android:text="@string/covid_check_max"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:visibility="@{settings.allow_tested_pcr_min > 0 ? View.VISIBLE : View.GONE}"
+                    android:textSize="10sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toEndOf="@+id/tvTestedMin"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTestedHead" />
+
+                <TextView
+                    android:id="@+id/tvTestedMinDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@{@string/datetime_format(settings.testedPcrMinDateTime().toDate())}"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@+id/tvTestedMin"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTestedMin"
+                    tools:text="1960-01-01 23:59" />
+
+                <TextView
+                    android:id="@+id/tvTestedMaxDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="2dp"
+                    android:gravity="right"
+                    android:text="@{@string/datetime_format(settings.testedPcrMaxDateTime().toDate())}"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:visibility="@{settings.allow_tested_pcr_min > 0 ? View.VISIBLE : View.GONE}"
+                    app:layout_constraintEnd_toEndOf="@+id/tvTestedMax"
+                    app:layout_constraintStart_toEndOf="@+id/tvTestedMinDate"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTestedMax"
+                    tools:text="1960-01-01 23:59" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clTested2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{(settings.allow_tested_antigen_unknown &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
+                android:paddingTop="0dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground">
+
+                <ImageView
+                    android:id="@+id/ivTested2"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_flask_outline_24" />
+
+                <TextView
+                    android:id="@+id/tvTested2Head"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/covid_check_tested_other"
+                    android:textAllCaps="true"
+                    android:textColor="@color/BLACK"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivTested2"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvTested2Min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/covid_check_min"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    app:layout_constraintStart_toEndOf="@+id/ivTested2"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTested2Head" />
+
+                <TextView
+                    android:id="@+id/tvTested2Max"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="right"
+                    android:text="@string/covid_check_max"
+                    android:visibility="@{settings.allow_tested_antigen_unknown_min > 0 ? View.VISIBLE : View.GONE}"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="10sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toEndOf="@+id/tvTested2Min"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTested2Head" />
+
+                <TextView
+                    android:id="@+id/tvTested2MinDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@{@string/datetime_format(settings.testedOtherMinDateTime().toDate())}"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@+id/tvTested2Min"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTested2Min"
+                    tools:text="1960-01-01 23:59" />
+
+                <TextView
+                    android:id="@+id/tvTested2MaxDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="2dp"
+                    android:gravity="right"
+                    android:text="@{@string/datetime_format(settings.testedOtherMaxDateTime().toDate())}"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:visibility="@{settings.allow_tested_antigen_unknown_min > 0 ? View.VISIBLE : View.GONE}"
+                    app:layout_constraintEnd_toEndOf="@+id/tvTested2Max"
+                    app:layout_constraintStart_toEndOf="@+id/tvTested2MinDate"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTested2Max"
+                    tools:text="1960-01-01 23:59" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clScannedData"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:paddingTop="0dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <ImageView
+                    android:id="@+id/ivScannedData"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_qr_code_scanner_24" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataHead"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/covid_check_scanned_data"
+                    android:textAllCaps="true"
+                    android:textColor="@color/BLACK"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivScannedData"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataPersonName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:textColor="@color/BLACK"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.062"
+                    app:layout_constraintStart_toEndOf="@+id/ivScannedData"
+                    app:layout_constraintTop_toBottomOf="@+id/tvScannedDataHead"
+                    tools:text="John Doe" />
+
+                <TextView
+                    android:id="@+id/tvScannedDataPersonDetails"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    tools:text="1960-01-01"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivScannedData"
+                    app:layout_constraintTop_toBottomOf="@id/tvScannedDataPersonName" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clScanInvalid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/pretix_brand_red"
+                android:padding="16dp"
+                android:visibility="@{(hasResult &amp;&amp; !hasAcceptableResult) ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageView
+                    android:id="@+id/ivScanInvalid"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@android:drawable/ic_dialog_alert" />
+
+                <TextView
+                    android:id="@+id/tvScanInvalid"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/covid_check_scan_invalid"
+                    android:textAllCaps="true"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:textColor="@color/WHITE"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivScanInvalid"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clScanValid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/pretix_brand_green"
+                android:padding="16dp"
+                android:visibility="@{(hasScannedResult &amp;&amp; hasAcceptableResult) ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageView
+                    android:id="@+id/ivScanValid"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_check_white_24" />
+
+                <TextView
+                    android:id="@+id/tvScanValid"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:textAllCaps="true"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:textColor="@color/WHITE"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ivScanValid"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{hasAcceptableResult ? View.VISIBLE : View.GONE}"
+                android:padding="16dp">
+
+                <com.ncorti.slidetoact.SlideToActView
+                    android:id="@+id/staConfirm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:elevation="0dp"
+                    app:animate_completion="false"
+                    app:inner_color="@color/WHITE"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:outer_color="@color/pretix_brand_green"
+                    app:text="@string/covid_check_slide"
+                    app:text_size="14sp"
+                    app:text_style="bold" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</layout>
