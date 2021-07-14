@@ -44,5 +44,10 @@
     <string name="datetime_format">%1$tY-%1$tm-%1$td %1$tH:%1$tM</string>
     <string name="date_format">%1$tY-%1$tm-%1$td</string>
     <string name="time_format">%1$tH:%1$tM</string>
-
+    <string name="update_app">Update application</string>
+    <string name="update_app_help">Download and install the latest version of the application.</string>
+    <string name="updater_downloading_title">Downloading Update…</string>
+    <string name="updater_downloading_body">Please stand by while we are downloading the latest application version</string>
+    <string name="updater_no_update_available">There is no update currently available.</string>
+    <string name="updater_update_unknown">Unfortunately, we were unable to determine if there is an update available.</string>
 </resources>
