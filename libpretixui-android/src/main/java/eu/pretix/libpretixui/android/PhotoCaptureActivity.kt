@@ -384,6 +384,8 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                         Toast.LENGTH_SHORT).show()
                 finish()
             }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 
