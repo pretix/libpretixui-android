@@ -11,5 +11,10 @@
     <string name="camera_back">Back camera</string>
     <string name="camera_front">Front camera</string>
     <string name="camera_usb">Select USB camera</string>
-
+    <string name="update_app">Update application</string>
+    <string name="update_app_help">Download and install the latest version of the application.</string>
+    <string name="updater_downloading_title">Downloading Update…</string>
+    <string name="updater_downloading_body">Please stand by while we are downloading the latest application version</string>
+    <string name="updater_no_update_available">There is no update currently available.</string>
+    <string name="updater_update_unknown">Unfortunately, we were unable to determine if there is an update available.</string>
 </resources>
