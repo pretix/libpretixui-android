@@ -30,7 +30,7 @@
     <string name="covid_check_scan_invalid">Scanned Data is invalid!</string>
     <string name="covid_check_min">No earlier than</string>
     <string name="covid_check_max">No later than</string>
-    <string name="covid_check_slide">Slide to confirm</string>
+    <string name="covid_check_slide">Slide to check in</string>
     <string name="covid_check_rules_VR_001">Not enough vaccination doses received</string>
     <string name="covid_check_rules_VR_002">Vaccination not allowed</string>
     <string name="covid_check_rules_VR_003">Vaccination too recent</string>

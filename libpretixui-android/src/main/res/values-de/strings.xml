@@ -30,7 +30,7 @@
     <string name="covid_check_scan_invalid">Gescannte Daten sind nicht gültig!</string>
     <string name="covid_check_min">Frühestes Datum</string>
     <string name="covid_check_max">Spätestes Datum</string>
-    <string name="covid_check_slide">zur Bestätigung schieben</string>
+    <string name="covid_check_slide">zum Check-in schieben</string>
     <string name="covid_check_rules_VR_001">Nicht ausreichend viele Impfdosen erhalten</string>
     <string name="covid_check_rules_VR_002">Impfstoff nicht zugelassen</string>
     <string name="covid_check_rules_VR_003">Impfung zu jung</string>
