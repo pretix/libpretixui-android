@@ -143,7 +143,7 @@ class QuestionsDialog(
             }
         }
 
-        if (questions.size == 1 && questions[0].identifier == "pretix_covid_certificates_question") {
+        if (questions.size == 1 && questions[0].identifier == "pretix_covid_certificates_question" && questions[0].type == QuestionType.T) {
             // Don't have the user click manually
             startCovidValidation(questions[0])
         }
