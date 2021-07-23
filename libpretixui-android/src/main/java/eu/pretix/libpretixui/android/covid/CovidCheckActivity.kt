@@ -2,6 +2,8 @@ package eu.pretix.libpretixui.android.covid
 
 import android.app.Activity
 import android.content.Intent
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -18,8 +20,9 @@ import eu.pretix.libpretixui.android.scanning.ScanActivity
 import eu.pretix.libpretixui.android.scanning.ScanReceiver
 import kotlinx.android.synthetic.main.activity_covid_check.*
 import org.joda.time.LocalDate
+import java.io.IOException
 
-class CovidCheckActivity : AppCompatActivity() {
+class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener {
     companion object {
         val REQUEST_CODE = 30175
         val RESULT_CODE = "result"
@@ -36,6 +39,8 @@ class CovidCheckActivity : AppCompatActivity() {
         TESTED_PCR,
         TESTED_AG_UNKNOWN
     }
+
+    private var mediaPlayers: MutableMap<Int, MediaPlayer> = mutableMapOf()
     lateinit var binding: ActivityCovidCheckBinding
     var checkProvider = "unset"
     var checkProof = Proof.INVLAID
@@ -137,6 +142,31 @@ class CovidCheckActivity : AppCompatActivity() {
                 finish()
             }
         }
+
+        buildMediaPlayer()
+    }
+
+    @SuppressWarnings("ResourceType")
+    private fun buildMediaPlayer() {
+        val resourceIds = listOf(R.raw.beep)
+        for (r in resourceIds) {
+            val mediaPlayer = MediaPlayer()
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+            mediaPlayer.setOnCompletionListener(this)
+            // mediaPlayer.setOnErrorListener(this)
+            try {
+                val file = resources.openRawResourceFd(r)
+                try {
+                    mediaPlayer.setDataSource(file.fileDescriptor, file.startOffset, file.length)
+                } finally {
+                    file.close();
+                }
+                mediaPlayer.setVolume(0.2f, 0.2f)
+                mediaPlayer.prepare()
+                mediaPlayers[r] = mediaPlayer
+            } catch (ioe: IOException) {
+            }
+        }
     }
 
     override fun onResume() {
@@ -160,6 +190,7 @@ class CovidCheckActivity : AppCompatActivity() {
     }
 
     fun handleScan(result: String) {
+        mediaPlayers[R.raw.beep]?.start()
         binding.hasResult = true
         binding.hasScannedResult = true
         hideAllSections()
@@ -313,5 +344,9 @@ class CovidCheckActivity : AppCompatActivity() {
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    override fun onCompletion(p0: MediaPlayer?) {
+        p0?.seekTo(0)
     }
 }
