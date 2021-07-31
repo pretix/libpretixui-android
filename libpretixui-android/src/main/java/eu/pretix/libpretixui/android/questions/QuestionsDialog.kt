@@ -26,7 +26,6 @@ import eu.pretix.libpretixui.android.R
 import eu.pretix.libpretixui.android.covid.CovidCheckActivity
 import eu.pretix.libpretixui.android.covid.CovidCheckSettings
 import eu.pretix.libpretixui.android.covid.SAMPLE_SETTINGS
-import kotlinx.android.synthetic.main.dialog_questions.*
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
 import java.io.File
@@ -144,7 +143,7 @@ class QuestionsDialog(
         }
 
         setButton(DialogInterface.BUTTON_POSITIVE, ctx.getString(R.string.cont), null as DialogInterface.OnClickListener?)
-        setButton(DialogInterface.BUTTON_NEGATIVE, ctx.getString(R.string.cancel)) { p0, p1 ->
+        setButton(DialogInterface.BUTTON_NEUTRAL, ctx.getString(R.string.cancel)) { p0, p1 ->
             cancel()
         }
         if (copyFrom != null && copyFrom.isNotEmpty()) {
