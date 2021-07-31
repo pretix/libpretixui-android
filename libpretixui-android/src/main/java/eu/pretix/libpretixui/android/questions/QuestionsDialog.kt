@@ -26,6 +26,7 @@ import eu.pretix.libpretixui.android.R
 import eu.pretix.libpretixui.android.covid.CovidCheckActivity
 import eu.pretix.libpretixui.android.covid.CovidCheckSettings
 import eu.pretix.libpretixui.android.covid.SAMPLE_SETTINGS
+import kotlinx.android.synthetic.main.dialog_questions.*
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
 import java.io.File
@@ -99,6 +100,8 @@ class QuestionsDialog(
         val covidCheckSettings: CovidCheckSettings? = SAMPLE_SETTINGS,
         val attendeeName: String? = null,
         val attendeeDOB: String? = null,
+        val ticketId: String? = null,
+        val ticketType: String? = null,
         val useHardwareScan: Boolean = false
 ) : AlertDialog(ctx), QuestionsDialogInterface {
     companion object {
@@ -115,6 +118,30 @@ class QuestionsDialog(
 
     init {
         setView(v)
+
+        if (this.attendeeName.isNullOrBlank()) {
+            v.findViewById<TextView>(R.id.tvAttendeeName).visibility = View.GONE
+        } else {
+            v.findViewById<TextView>(R.id.tvAttendeeName).text = attendeeName
+        }
+        if (this.attendeeDOB.isNullOrBlank()) {
+            v.findViewById<TextView>(R.id.tvAttendeeDOB).visibility = View.GONE
+        } else {
+            v.findViewById<TextView>(R.id.tvAttendeeDOB).text = attendeeName
+        }
+        if (ticketType.isNullOrBlank()) {
+            v.findViewById<TextView>(R.id.tvTicketType).visibility = View.GONE
+        } else {
+            v.findViewById<TextView>(R.id.tvTicketType).text = ticketType
+        }
+        if (ticketId.isNullOrBlank()) {
+            v.findViewById<TextView>(R.id.tvTicketId).visibility = View.GONE
+        } else {
+            v.findViewById<TextView>(R.id.tvTicketId).text = ticketId
+        }
+        if (ticketId.isNullOrBlank() && ticketType.isNullOrBlank() && attendeeName.isNullOrBlank()) {
+            v.findViewById<View>(R.id.clAttendeeInfo).visibility = View.GONE
+        }
 
         setButton(DialogInterface.BUTTON_POSITIVE, ctx.getString(R.string.cont), null as DialogInterface.OnClickListener?)
         setButton(DialogInterface.BUTTON_NEGATIVE, ctx.getString(R.string.cancel)) { p0, p1 ->
@@ -375,7 +402,8 @@ class QuestionsDialog(
                     val defaultcc = CountryCode.getByAlpha2Code(Locale.getDefault().country)
                     setters[question] = {
                         val cc = CountryCode.getByAlpha2Code(it)
-                        fieldC.setSelection((fieldC.adapter as CountryAdapter).getIndex(cc ?: defaultcc))
+                        fieldC.setSelection((fieldC.adapter as CountryAdapter).getIndex(cc
+                                ?: defaultcc))
                     }
                     if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
                         setters[question]!!(values[question])
@@ -677,8 +705,24 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
                         covidCheckSettings: CovidCheckSettings? = SAMPLE_SETTINGS,
                         attendeeName: String? = null,
                         attendeeDOB: String? = null,
+                        ticketId: String? = null,
+                        ticketType: String? = null,
                         useHardwareScan: Boolean = false): QuestionsDialogInterface {
-    val dialog = QuestionsDialog(ctx, questions, values, defaultCountry, glideLoader, retryHandler, copyFrom, covidCheckSettings, attendeeName, attendeeDOB, useHardwareScan)
+    val dialog = QuestionsDialog(
+            ctx,
+            questions,
+            values,
+            defaultCountry,
+            glideLoader,
+            retryHandler,
+            copyFrom,
+            covidCheckSettings,
+            attendeeName,
+            attendeeDOB,
+            ticketId,
+            ticketType,
+            useHardwareScan
+    )
     dialog.setCanceledOnTouchOutside(false)
     dialog.show()
     return dialog
