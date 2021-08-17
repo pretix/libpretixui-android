@@ -688,8 +688,9 @@
 
                 <com.ncorti.slidetoact.SlideToActView
                     android:id="@+id/staConfirm"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    app:layout_constraintWidth_max="500dp"
                     android:elevation="0dp"
                     app:animate_completion="false"
                     app:inner_color="@color/WHITE"
