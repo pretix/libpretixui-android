@@ -21,6 +21,8 @@ data class CovidCheckSettings(
         val allow_tested_antigen_unknown_min: Int, // hours ago
         val allow_tested_antigen_unknown_max: Int,  // hours ago
         val record_proof_tested_antigen_unknown: Boolean,
+        val allow_other: Boolean,
+        val record_proof_other: Boolean,
         val accept_eudgc: Boolean,
         val accept_manual: Boolean,
 ) : Serializable {
@@ -77,6 +79,8 @@ val SAMPLE_SETTINGS = CovidCheckSettings(
         true,
         0,
         48,
+        false,
+        false,
         false,
         true,
         true,

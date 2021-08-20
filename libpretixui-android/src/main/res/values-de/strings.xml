@@ -21,6 +21,7 @@
     <string name="covid_check_instructions_none">Es wurde keine Kontrollmethode freigeschaltet. Bitte kontaktieren Sie den Veranstalter.</string>
     <string name="covid_check_vaccinated">Geimpft</string>
     <string name="covid_check_recovered">Genesen</string>
+    <string name="covid_check_other">Anderer Nachweis</string>
     <string name="covid_check_tested_pcr">Getestet (PCR)</string>
     <string name="covid_check_tested_other">Getestet (Schnelltest)</string>
     <string name="covid_check_scanned_data">Gescannte Daten</string>

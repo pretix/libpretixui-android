@@ -37,7 +37,8 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         VACC,
         CURED,
         TESTED_PCR,
-        TESTED_AG_UNKNOWN
+        TESTED_AG_UNKNOWN,
+        OTHER
     }
 
     private var mediaPlayers: MutableMap<Int, MediaPlayer> = mutableMapOf()
@@ -119,6 +120,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
             checkProof = when (it) {
                 clVacc -> Proof.VACC
                 clCured -> Proof.CURED
+                clOther -> Proof.OTHER
                 clTested -> Proof.TESTED_PCR
                 clTested2 -> Proof.TESTED_AG_UNKNOWN
                 else -> Proof.INVLAID
@@ -129,6 +131,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         clCured.setOnClickListener(proofClickListener)
         clTested.setOnClickListener(proofClickListener)
         clTested2.setOnClickListener(proofClickListener)
+        clOther.setOnClickListener(proofClickListener)
 
         staConfirm.onSlideCompleteListener = object : SlideToActView.OnSlideCompleteListener {
             override fun onSlideComplete(view: SlideToActView) {
@@ -307,6 +310,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
     fun hideAllSections(except: View? = null) {
         clVacc.visibility = View.GONE
         clCured.visibility = View.GONE
+        clOther.visibility = View.GONE
         clTested.visibility = View.GONE
         clTested2.visibility = View.GONE
         except?.visibility = View.VISIBLE
@@ -318,6 +322,9 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                 true
             }
             checkProof == Proof.CURED && binding.settings!!.record_proof_cured -> {
+                true
+            }
+            checkProof == Proof.OTHER && binding.settings!!.record_proof_other -> {
                 true
             }
             checkProof == Proof.TESTED_PCR && binding.settings!!.record_proof_tested_pcr -> {
