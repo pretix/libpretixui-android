@@ -33,16 +33,46 @@ class HardwareScanner(val receiver: ScanReceiver) {
                 val barocodelen = intent?.getIntExtra("length", 0)
                 val barcodeStr = String(barcode, 0, barocodelen)
                 receiver.scanResult(barcodeStr)
+            } else if (intent.hasExtra("decode_rslt")) {
+                // Honeywell
+                val barcode = intent.getStringExtra("decode_rslt").trim()
+                receiver.scanResult(barcode)
+            } else if (intent.hasExtra("scannerdata")) {
+                // SEUIC AUTOID
+                val barcode = intent.getStringExtra("scannerdata").trim()
+                receiver.scanResult(barcode)
             }
         }
     }
 
     fun start(ctx: Context) {
         val filter = IntentFilter()
-        filter.addAction("scan.rcv.message")  // LECOM
-        filter.addAction("eu.pretix.SCAN")  // Zebra DataWedge
-        filter.addAction("kr.co.bluebird.android.bbapi.action.BARCODE_CALLBACK_DECODING_DATA")  // Bluebird
-        filter.addAction("nlscan.action.SCANNER_RESULT")  // NewLand
+
+        // LECOM
+        // Active by default
+        filter.addAction("scan.rcv.message")
+
+        // Zebra DataWedge
+        // Needs manual configuration in DataWedge
+        filter.addAction("eu.pretix.SCAN")
+
+        // Bluebird
+        // Active by default
+        filter.addAction("kr.co.bluebird.android.bbapi.action.BARCODE_CALLBACK_DECODING_DATA")
+
+        // NewLand
+        // Configure broadcast in Quick Setting > Scan Setting > Output Mode > Output via API
+        filter.addAction("nlscan.action.SCANNER_RESULT")
+
+        // Honeywell
+        // Configure via Settings > Scan Settings > Internal Scanner > Default Profile > Data
+        // Processing Settings > Scan to Intent
+        filter.addAction("com.honeywell.intent.action.SCAN_RESULT")
+
+        // SEUIC AUTOID, also known as Concept FuturePAD
+        // Configure via Scan Tool > Settings > Barcode Send Model > Broadcast
+        filter.addAction("com.android.server.scannerservice.broadcast")
+
         ctx.registerReceiver(scanReceiver, filter)
     }
 
@@ -61,6 +91,8 @@ fun defaultToScanner(): Boolean {
         "Zebra" -> Build.MODEL.startsWith("TC") || Build.MODEL.startsWith("M") || Build.MODEL.startsWith("CC6")
         "Bluebird" -> Build.MODEL.startsWith("EF")
         "NewLand" -> Build.MODEL.startsWith("NQ")
+        "Honeywell" -> Build.MODEL.startsWith("EDA")
+        "SEUIC" -> Build.MODEL.startsWith("AUTOID Pad Air")
         else -> false
     }
 }
