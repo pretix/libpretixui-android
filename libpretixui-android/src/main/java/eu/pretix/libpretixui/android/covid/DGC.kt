@@ -4,17 +4,21 @@ import android.app.Application
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
+import com.ensody.reactivestate.DependencyAccessor
 import de.rki.covpass.sdk.cert.*
 import de.rki.covpass.sdk.cert.models.*
 import de.rki.covpass.sdk.dependencies.sdkDeps
 import de.rki.covpass.sdk.cert.models.DGCEntry
 import de.rki.covpass.sdk.cert.models.Recovery
-import de.rki.covpass.sdk.cert.models.Test
+import de.rki.covpass.sdk.cert.models.TestCert
 import de.rki.covpass.sdk.cert.models.Vaccination
 import de.rki.covpass.sdk.dependencies.SdkDependencies
-import de.rki.covpass.sdk.utils.DSC_UPDATE_INTERVAL_HOURS
-import de.rki.covpass.sdk.utils.DscListUpdater
 import de.rki.covpass.sdk.utils.isOlderThan
+import de.rki.covpass.sdk.worker.DSC_UPDATE_INTERVAL_HOURS
+import de.rki.covpass.sdk.worker.DscListWorker
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.conscrypt.Conscrypt
+import java.security.Security
 import java.util.concurrent.TimeUnit
 
 const val RULE_VR_001: String = "VR_001"
@@ -29,6 +33,9 @@ const val RULE_RR_001: String = "RR_001"
 const val RULE_RR_002: String = "RR_002"
 
 
+class ValidationRuleViolationException(val ruleIdentifier: String) : Exception()
+
+@OptIn(DependencyAccessor::class)
 class DGC() {
     fun check(qrContent: String): Pair<DGCEntry, CovCertificate> {
 
@@ -50,15 +57,15 @@ class DGC() {
         assertRuleVr004(vaccination, maxDays)
     }
 
-    fun assertTestPCRRules(test: Test, minHours: Int, maxHours: Int) {
-        assertRuleTr001(test, Test.PCR_TEST)
+    fun assertTestPCRRules(test: TestCert, minHours: Int, maxHours: Int) {
+        assertRuleTr001(test, TestCert.PCR_TEST)
         assertRuleTr002(test, minHours)
         assertRuleTr003(test, maxHours)
         assertRuleTr004(test)
     }
 
-    fun assertTestAGRules(test: Test, minHours: Int, maxHours: Int) {
-        assertRuleTr001(test, Test.ANTIGEN_TEST)
+    fun assertTestAGRules(test: TestCert, minHours: Int, maxHours: Int) {
+        assertRuleTr001(test, TestCert.ANTIGEN_TEST)
         assertRuleTr002(test, minHours)
         assertRuleTr003(test, maxHours)
         assertRuleTr004(test)
@@ -70,43 +77,43 @@ class DGC() {
     }
 
     private fun assertRuleVr001(vaccination: Vaccination) {
-        assertValidationSuccess(vaccination.doseNumber == vaccination.totalSerialDoses, RULE_VR_001)
+        assertValidationSuccess(vaccination.doseNumber == vaccination.totalSerialDoses || vaccination.isBooster, RULE_VR_001)
     }
 
     private fun assertRuleVr002(vaccination: Vaccination) {
         assertValidationSuccess(
             vaccination.product in listOf(
-                Vaccination.PRODUCT_COMIRNATY,
-                Vaccination.PRODUCT_JANSSEN,
-                Vaccination.PRODUCT_MODERNA,
-                Vaccination.PRODUCT_VAXZEVRIA
+                "EU/1/20/1528", // Comirnaty
+                "EU/1/20/1525", // Janssen
+                "EU/1/20/1507", // Moderna
+                "EU/1/21/1529"  // Vaxzevria
             ),
             RULE_VR_002
         )
     }
 
     private fun assertRuleVr003(vaccination: Vaccination, minDays: Int) {
-        assertValidationSuccess(vaccination.occurrence?.isOlderThan(days = minDays.toLong()) == true, RULE_VR_003)
+        assertValidationSuccess(vaccination.occurrence?.isOlderThan(days = minDays.toLong()) == true || vaccination.isBooster, RULE_VR_003)
     }
 
     private fun assertRuleVr004(vaccination: Vaccination, maxDays: Int) {
         assertValidationSuccess(vaccination.occurrence?.isOlderThan(days = maxDays.toLong()) == false, RULE_VR_004)
     }
 
-    private fun assertRuleTr001(test: Test, testType: String) {
+    private fun assertRuleTr001(test: TestCert, testType: String) {
         assertValidationSuccess(test.testType == testType, RULE_TR_001)
     }
 
-    private fun assertRuleTr002(test: Test, minHours: Int) {
+    private fun assertRuleTr002(test: TestCert, minHours: Int) {
         assertValidationSuccess(test.sampleCollection?.isOlderThan(hours = minHours.toLong()) == true, RULE_TR_002)
     }
 
-    private fun assertRuleTr003(test: Test, maxHours: Int) {
+    private fun assertRuleTr003(test: TestCert, maxHours: Int) {
         assertValidationSuccess(test.sampleCollection?.isOlderThan(hours = maxHours.toLong()) == false, RULE_TR_003)
     }
 
-    private fun assertRuleTr004(test: Test) {
-        assertValidationSuccess(test.testResult == Test.NEGATIVE_RESULT, RULE_TR_004)
+    private fun assertRuleTr004(test: TestCert) {
+        assertValidationSuccess(test.testResult == TestCert.NEGATIVE_RESULT, RULE_TR_004)
     }
 
     private fun assertRuleRr001(recovery: Recovery, minDays: Int) {
@@ -126,7 +133,19 @@ class DGC() {
         if (android.os.Build.VERSION.SDK_INT < 23) {
             return
         }
+        // First, install Conscrypt and Bouncy Castle security providers.
 
+        // Disable patented algorithms in Bouncy Castle
+        System.setProperty("org.bouncycastle.ec.disable_mqv", "true")
+        try {
+            Security.removeProvider("BC")
+        } catch (e: Throwable) {
+            // Ignore if it's missing.
+        }
+        Security.addProvider(BouncyCastleProvider())
+        Security.insertProviderAt(Conscrypt.newProvider(), 1)
+
+        // Now init the SDK
         sdkDeps = object : SdkDependencies() {
             override val application: Application = application
         }
@@ -135,7 +154,7 @@ class DGC() {
 
         val tag = "dscListWorker"
         val dscListWorker: PeriodicWorkRequest =
-            PeriodicWorkRequest.Builder(DscListUpdater::class.java, DSC_UPDATE_INTERVAL_HOURS, TimeUnit.HOURS)
+            PeriodicWorkRequest.Builder(DscListWorker::class.java, DSC_UPDATE_INTERVAL_HOURS, TimeUnit.HOURS)
                 .addTag(tag)
                 .build()
         WorkManager.getInstance(application).enqueueUniquePeriodicWork(

@@ -9,7 +9,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.ncorti.slidetoact.SlideToActView
-import de.rki.covpass.sdk.cert.*
+import de.rki.covpass.sdk.cert.BadCoseSignatureException
+import de.rki.covpass.sdk.cert.ExpiredCwtException
+import de.rki.covpass.sdk.cert.NoMatchingExtendedKeyUsageException
 import de.rki.covpass.sdk.cert.models.*
 import de.rki.covpass.sdk.dependencies.sdkDeps
 import de.rki.covpass.sdk.utils.isValid
@@ -231,7 +233,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                     checkProof = Proof.TESTED_PCR
                     tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_tested_pcr))
                     dgc.assertTestPCRRules(
-                        dgcEntry as Test,
+                        dgcEntry as TestCert,
                         binding.settings!!.allow_tested_pcr_min,
                         binding.settings!!.allow_tested_pcr_max
                     )
@@ -245,7 +247,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                     checkProof = Proof.TESTED_AG_UNKNOWN
                     tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_tested_other))
                     dgc.assertTestAGRules(
-                        dgcEntry as Test,
+                        dgcEntry as TestCert,
                         binding.settings!!.allow_tested_antigen_unknown_min,
                         binding.settings!!.allow_tested_antigen_unknown_max
                     )
