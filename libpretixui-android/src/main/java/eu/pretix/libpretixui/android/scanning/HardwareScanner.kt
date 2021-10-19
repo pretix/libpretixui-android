@@ -18,28 +18,28 @@ class HardwareScanner(val receiver: ScanReceiver) {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.hasExtra("com.symbol.datawedge.data_string")) {
                 // Zebra DataWedge
-                receiver.scanResult(intent.getStringExtra("com.symbol.datawedge.data_string"))
+                receiver.scanResult(intent.getStringExtra("com.symbol.datawedge.data_string")!!)
             } else if (intent.hasExtra("SCAN_BARCODE1")) {
                 // NewLand
-                val barcode = intent.getStringExtra("SCAN_BARCODE1").trim()
+                val barcode = intent.getStringExtra("SCAN_BARCODE1")!!.trim()
                 receiver.scanResult(barcode)
             } else if (intent.hasExtra("EXTRA_BARCODE_DECODING_DATA")) {
                 // Bluebird
-                val barcode = String(intent.getByteArrayExtra("EXTRA_BARCODE_DECODING_DATA")).trim()
+                val barcode = String(intent.getByteArrayExtra("EXTRA_BARCODE_DECODING_DATA")!!).trim()
                 receiver.scanResult(barcode)
             } else if (intent.hasExtra("barocode")) {
                 // Intent receiver for LECOM-manufactured hardware scanners
-                val barcode = intent?.getByteArrayExtra("barocode") // sic!
+                val barcode = intent?.getByteArrayExtra("barocode")!! // sic!
                 val barocodelen = intent?.getIntExtra("length", 0)
                 val barcodeStr = String(barcode, 0, barocodelen)
                 receiver.scanResult(barcodeStr)
             } else if (intent.hasExtra("decode_rslt")) {
                 // Honeywell
-                val barcode = intent.getStringExtra("decode_rslt").trim()
+                val barcode = intent.getStringExtra("decode_rslt")!!.trim()
                 receiver.scanResult(barcode)
             } else if (intent.hasExtra("scannerdata")) {
                 // SEUIC AUTOID
-                val barcode = intent.getStringExtra("scannerdata").trim()
+                val barcode = intent.getStringExtra("scannerdata")!!.trim()
                 receiver.scanResult(barcode)
             }
         }
