@@ -23,6 +23,8 @@ import eu.pretix.libpretixui.android.scanning.ScanReceiver
 import kotlinx.android.synthetic.main.activity_covid_check.*
 import org.joda.time.LocalDate
 import java.io.IOException
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener {
     companion object {
@@ -47,6 +49,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
     lateinit var binding: ActivityCovidCheckBinding
     var checkProvider = "unset"
     var checkProof = Proof.INVLAID
+    var checkProofValidUntil: java.time.ZonedDateTime? = null
     val REQUEST_BARCODE = 30999
 
     private val hardwareScanner = HardwareScanner(object : ScanReceiver {
@@ -119,6 +122,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
             binding.hasResult = true
             binding.hasAcceptableResult = true
             checkProvider = "manual"
+            checkProofValidUntil = null
             checkProof = when (it) {
                 clVacc -> Proof.VACC
                 clCured -> Proof.CURED
@@ -207,6 +211,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
             val covCertificate = dgcResult.second
 
             checkProvider = "DGC"
+            checkProofValidUntil = null
             tvScannedDataPersonName.text = covCertificate.fullName
             tvScannedDataPersonDetails.text = covCertificate.birthDate.toString()
             hideAllSections(clScannedData as View)
@@ -226,7 +231,11 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
 
                     if (!binding.settings!!.allow_vaccinated) {
                         binding.hasAcceptableResult = false
+                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notallowed)
                     }
+
+                    // TODO: use time zone of event instead?
+                    checkProofValidUntil = dgcEntry.occurrence!!.plusDays(binding.settings!!.allow_vaccinated_max.toLong()).atStartOfDay(ZoneId.systemDefault())
                 }
                 TestCertType.POSITIVE_PCR_TEST,
                 TestCertType.NEGATIVE_PCR_TEST -> {
@@ -240,7 +249,10 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
 
                     if (!binding.settings!!.allow_tested_pcr) {
                         binding.hasAcceptableResult = false
+                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notallowed)
                     }
+
+                    checkProofValidUntil = dgcEntry.sampleCollection!!.plusHours(binding.settings!!.allow_tested_pcr_max.toLong())
                 }
                 TestCertType.POSITIVE_ANTIGEN_TEST,
                 TestCertType.NEGATIVE_ANTIGEN_TEST -> {
@@ -254,7 +266,10 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
 
                     if (!binding.settings!!.allow_tested_antigen_unknown) {
                         binding.hasAcceptableResult = false
+                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notallowed)
                     }
+
+                    checkProofValidUntil = dgcEntry.sampleCollection!!.plusHours(binding.settings!!.allow_tested_antigen_unknown_max.toLong())
                 }
                 RecoveryCertType.RECOVERY -> {
                     checkProof = Proof.CURED
@@ -267,11 +282,16 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
 
                     if (!binding.settings!!.allow_cured) {
                         binding.hasAcceptableResult = false
+                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notallowed)
                     }
 
                     if (!isValid(dgcEntry.validFrom, dgcEntry.validUntil)) {
                         binding.hasAcceptableResult = false
+                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notvalid)
                     }
+
+                    // TODO: use time zone of event instead?
+                    checkProofValidUntil = dgcEntry.firstResult!!.plusDays(binding.settings!!.allow_vaccinated_max.toLong()).atStartOfDay(ZoneId.systemDefault())
                 }
                 else -> {
                     binding.hasAcceptableResult = false
@@ -340,12 +360,22 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                 false
             }
         }
+        val discloseValidityTime = binding.settings!!.record_validity_time
 
-        return if (discloseProof) {
-            String.format("provider: %s, proof: %s", checkProvider, checkProof)
-        } else {
-            String.format("provider: %s, proof: %s", checkProvider, "withheld")
+        val components = mutableListOf<String>(
+                String.format("provider: %s", checkProvider)
+        )
+        components.add(
+                String.format("proof: %s", if (discloseProof) checkProof else "withheld")
+        )
+        if (discloseValidityTime) {
+            // TODO: use time zone of event instead?
+            val validityTime = checkProofValidUntil ?: java.time.LocalDate.now().atStartOfDay(ZoneId.systemDefault()).plusDays(1)
+            components.add(
+                    String.format("expires: %s", validityTime.toOffsetDateTime().toString())
+            )
         }
+        return components.joinToString(", ")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

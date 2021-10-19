@@ -25,6 +25,8 @@
     <string name="covid_check_tested_pcr">Negatively tested (PCR)</string>
     <string name="covid_check_tested_other">Negatively tested (Antigen)</string>
     <string name="covid_check_scanned_data">Scanned Data</string>
+    <string name="covid_check_scan_notallowed">This type of certificate is not allowed</string>
+    <string name="covid_check_scan_notvalid">This certificate is currently not valid</string>
     <string name="covid_check_scan_badcosesignature">Bad COSE Signature</string>
     <string name="covid_check_scan_expiredcwt">CWT Expired</string>
     <string name="covid_check_scan_nomatchingextendedkeyusage">No Matching Key found</string>

@@ -25,6 +25,8 @@
     <string name="covid_check_tested_pcr">Getestet (PCR)</string>
     <string name="covid_check_tested_other">Getestet (Schnelltest)</string>
     <string name="covid_check_scanned_data">Gescannte Daten</string>
+    <string name="covid_check_scan_notallowed">Dieser Zertifikatstyp ist nicht erlaubt</string>
+    <string name="covid_check_scan_notvalid">Dieses Zertifikat ist derzeit nicht gültig</string>
     <string name="covid_check_scan_badcosesignature">Ungültige COSE Signatur</string>
     <string name="covid_check_scan_expiredcwt">CWT abgelaufen</string>
     <string name="covid_check_scan_nomatchingextendedkeyusage">Kein passender Schlüssel gefunden</string>
