@@ -282,19 +282,20 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
             binding.hasAcceptableResult = false
             when (exception) {
                 is ValidationRuleViolationException -> {
-                    tvScanInvalid.text = String.format("%s (%s)", resources.getString(getValidationException(exception.ruleIdentifier)), exception.ruleIdentifier)
+                    tvScanInvalidReason.text = String.format("%s (%s)", resources.getString(getValidationException(exception.ruleIdentifier)), exception.ruleIdentifier)
                 }
                 is BadCoseSignatureException -> {
-                    tvScanInvalid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_badcosesignature))
+                    tvScanInvalidReason.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_badcosesignature))
                 }
                 is ExpiredCwtException -> {
-                    tvScanInvalid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_expiredcwt))
+                    tvScanInvalidReason.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_expiredcwt))
                 }
                 is NoMatchingExtendedKeyUsageException -> {
-                    tvScanInvalid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_nomatchingextendedkeyusage))
+                    tvScanInvalidReason.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_nomatchingextendedkeyusage))
                 }
                 else -> {
-                    tvScanInvalid.text = String.format("%s (EX)", resources.getString(R.string.covid_check_scan_invalid))
+                    exception.printStackTrace()
+                    tvScanInvalidReason.text = String.format("%s (EX)", resources.getString(R.string.covid_check_scan_invalid_unknown_error))
                 }
             }
         }

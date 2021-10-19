@@ -28,7 +28,8 @@
     <string name="covid_check_scan_badcosesignature">Ungültige COSE Signatur</string>
     <string name="covid_check_scan_expiredcwt">CWT abgelaufen</string>
     <string name="covid_check_scan_nomatchingextendedkeyusage">Kein passender Schlüssel gefunden</string>
-    <string name="covid_check_scan_invalid">Gescannte Daten sind nicht gültig!</string>
+    <string name="covid_check_scan_invalid">Automatische Prüfung nicht erfolgreich!</string>
+    <string name="covid_check_scan_invalid_unknown_error">Unbekannter Fehler</string>
     <string name="covid_check_min">Frühestes Datum</string>
     <string name="covid_check_max">Spätestes Datum</string>
     <string name="covid_check_slide">zum Check-in schieben</string>
