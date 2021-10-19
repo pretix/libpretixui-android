@@ -208,7 +208,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
 
             checkProvider = "DGC"
             tvScannedDataPersonName.text = covCertificate.fullName
-            tvScannedDataPersonDetails.text = covCertificate.birthDate.birthDate.toString()
+            tvScannedDataPersonDetails.text = covCertificate.birthDate.toString()
             hideAllSections(clScannedData as View)
             binding.hasAcceptableResult = true
 
