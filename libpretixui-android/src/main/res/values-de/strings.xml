@@ -46,7 +46,7 @@
     <string name="time_format">%1$tH:%1$tM</string>
     <string name="update_app">Applikation aktualisieren</string>
     <string name="update_app_help">Lädt die neueste Version der Applikation herunter und installiert diese.</string>
-    <string name="updater_downloading_title">Update download…</string>
+    <string name="updater_downloading_title">Download des Updates…</string>
     <string name="updater_downloading_body">Bitte haben Sie etwas Geduld während wir die neuste Version der Applikation herunterladen</string>
     <string name="updater_no_update_available">Aktuell steht kein Update zur Verfügung.</string>
     <string name="updater_update_unknown">Es konnte leider nicht geprüft werden, ob eine neuere Version der Applikation zur Verfügung steht.</string>

@@ -82,7 +82,7 @@ class Updater(val appname: String, val ctx: Context, val activity: Activity) {
 
     private fun nongmsUpdate() {
         val manager = ctx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val uri = Uri.parse("https://download.pretix.eu/%s.apk".format(appname))
+        val uri = Uri.parse("https://marketplace.pretix.eu/download/%s/latest".format(appname))
         val filename = "%s.apk".format(appname)
         val request = DownloadManager.Request(uri)
         request.setMimeType("application/vnd.android.package-archive")
