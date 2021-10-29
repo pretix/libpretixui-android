@@ -48,5 +48,6 @@
     <string name="datetime_format">%1$td.%1$tm.%1$tY %1$tH:%1$tM</string>
     <string name="date_format">%1$td.%1$tm.%1$tY</string>
     <string name="time_format">%1$tH:%1$tM</string>
+    <string name="android_permission_required">Bitte versuchen Sie es erneut, wenn Sie unserer App die nötige Systemberechtigung erteilt haben.</string>
 
 </resources>
