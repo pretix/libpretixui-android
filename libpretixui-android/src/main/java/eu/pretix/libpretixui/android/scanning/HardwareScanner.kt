@@ -37,6 +37,10 @@ class HardwareScanner(val receiver: ScanReceiver) {
                 // Honeywell
                 val barcode = intent.getStringExtra("decode_rslt")!!.trim()
                 receiver.scanResult(barcode)
+            } else if (intent.hasExtra("data")) {
+                // Sunmi
+                val barcode = intent.getStringExtra("data")!!.trim()
+                receiver.scanResult(barcode)
             } else if (intent.hasExtra("scannerdata")) {
                 // SEUIC AUTOID
                 val barcode = intent.getStringExtra("scannerdata")!!.trim()
@@ -73,6 +77,11 @@ class HardwareScanner(val receiver: ScanReceiver) {
         // Configure via Scan Tool > Settings > Barcode Send Model > Broadcast
         filter.addAction("com.android.server.scannerservice.broadcast")
 
+        // Sunmi, e.g. L2s
+        // Active by default
+        // Configure via Settings > System > Scanner Setting > Data Output Mode > Output via Broadcast
+        filter.addAction("com.android.scanner.ACTION_DATA_CODE_RECEIVED")
+
         ctx.registerReceiver(scanReceiver, filter)
     }
 
@@ -92,6 +101,7 @@ fun defaultToScanner(): Boolean {
         "Bluebird" -> Build.MODEL.startsWith("EF")
         "NewLand" -> Build.MODEL.startsWith("NQ")
         "Honeywell" -> Build.MODEL.startsWith("EDA")
+        "SUNMI" -> Build.MODEL.startsWith("L")
         "SEUIC" -> Build.MODEL.startsWith("AUTOID Pad Air")
         else -> false
     }
