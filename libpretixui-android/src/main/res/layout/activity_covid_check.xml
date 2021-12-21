@@ -6,35 +6,53 @@
     <data>
 
         <import type="android.view.View" />
+
         <import type="eu.pretix.libpretixui.android.covid.CovidCheckActivity.UIState" />
-        <import type="eu.pretix.libpretixui.android.covid.CovidCheckActivity.Proof" />
+
+        <import type="eu.pretix.libpretixui.android.covid.Proof" />
+
+        <import type="eu.pretix.libpretixui.android.covid.ScanResult" />
+
         <variable
             name="settings"
             type="eu.pretix.libpretixui.android.covid.CovidCheckSettings" />
+
         <variable
             name="uiState"
-            type="eu.pretix.libpretixui.android.covid.CovidCheckActivity.UIState" />
+            type="UIState" />
+
         <variable
             name="scanResult"
-            type="eu.pretix.libpretixui.android.covid.CovidCheckActivity.ScanResult" />
+            type="ScanResult" />
+
+        <variable
+            name="storedResults"
+            type="java.util.Map&lt;Proof, ScanResult&gt;" />
+
         <variable
             name="hasHardwareScanner"
             type="java.lang.Boolean" />
+
         <variable
             name="acceptBarcode"
             type="java.lang.Boolean" />
+
         <variable
             name="name"
             type="java.lang.String" />
+
         <variable
             name="birthdate"
             type="org.joda.time.LocalDate" />
+
         <variable
             name="instructionsText"
             type="java.lang.String" />
+
         <variable
             name="dgcServer"
             type="java.lang.String" />
+
         <variable
             name="dgcState"
             type="java.lang.String" />
@@ -56,9 +74,9 @@
                 android:layout_height="match_parent"
                 android:background="@color/pretix_brand_red"
                 android:paddingLeft="16dp"
+                android:paddingTop="8dp"
                 android:paddingRight="16dp"
                 android:paddingBottom="8dp"
-                android:paddingTop="8dp"
                 app:layout_constraintBottom_toBottomOf="parent">
 
                 <ImageView
@@ -90,11 +108,11 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="@{dgcServer}"
                     android:gravity="right"
+                    android:text="@{dgcServer}"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textSize="10sp"
                     android:textColor="@color/pretix_brand_lightgrey"
+                    android:textSize="10sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toTopOf="@+id/tvDGCupdate"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -106,11 +124,11 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="@{dgcState}"
                     android:gravity="right"
+                    android:text="@{dgcState}"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textSize="10sp"
                     android:textColor="@color/pretix_brand_lightgrey"
+                    android:textSize="10sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -129,25 +147,25 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="@{name != null ? name : @string/covid_check_name_unknown}"
-                    tools:text="John Doe"
                     android:textColor="@color/BLACK"
                     android:textSize="18dp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/ivPerson"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="John Doe" />
 
                 <TextView
                     android:id="@+id/tvPersonDetails"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:visibility="@{birthdate != null ? View.VISIBLE : View.GONE}"
                     android:text="@{birthdate != null ? @string/date_format(birthdate.toDate()) : &quot;&quot;}"
-                    tools:text="1960-01-01"
+                    android:visibility="@{birthdate != null ? View.VISIBLE : View.GONE}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/ivPerson"
-                    app:layout_constraintTop_toBottomOf="@id/tvPersonName" />
+                    app:layout_constraintTop_toBottomOf="@id/tvPersonName"
+                    tools:text="1960-01-01" />
 
                 <ImageView
                     android:id="@+id/ivPerson"
@@ -164,11 +182,11 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{uiState == UIState.REVIEW_SCAN ? View.GONE : View.VISIBLE}"
-                android:paddingTop="0dp"
-                android:paddingBottom="16dp"
                 android:paddingStart="16dp"
-                android:paddingEnd="16dp">
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="@{uiState == UIState.REVIEW_SCAN ? View.GONE : View.VISIBLE}">
 
                 <TextView
                     android:id="@+id/tvInstructions"
@@ -181,10 +199,10 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageButton
-                    android:visibility="@{(acceptBarcode &amp;&amp; !hasHardwareScanner) ? View.VISIBLE : View.GONE}"
                     android:id="@+id/btCapture"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
+                    android:visibility="@{(acceptBarcode &amp;&amp; !hasHardwareScanner) ? View.VISIBLE : View.GONE}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -195,23 +213,35 @@
                 android:id="@+id/clVacc"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.VACC)) &amp;&amp; settings.allow_vaccinated &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
-                android:paddingTop="0dp"
-                android:paddingBottom="16dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
                 android:focusable="true"
-                android:background="?android:attr/selectableItemBackground">
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.VACC)) &amp;&amp; settings.allow_vaccinated &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}">
 
                 <ImageView
                     android:id="@+id/ivVacc"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
+                    android:visibility="@{!storedResults.containsKey(Proof.VACC) ? View.VISIBLE : View.INVISIBLE}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.0"
                     app:srcCompat="@drawable/ic_needle_24" />
+
+                <ImageView
+                    android:id="@+id/ivVaccOK"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:visibility="@{storedResults.containsKey(Proof.VACC) ? View.VISIBLE : View.GONE}"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_baseline_check_circle_24" />
 
                 <TextView
                     android:id="@+id/tvVaccHead"
@@ -287,23 +317,35 @@
                 android:id="@+id/clCured"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.CURED)) &amp;&amp; settings.allow_cured &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
-                android:paddingTop="0dp"
-                android:paddingBottom="16dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
                 android:focusable="true"
-                android:background="?android:attr/selectableItemBackground">
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.CURED)) &amp;&amp; settings.allow_cured &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}">
 
                 <ImageView
                     android:id="@+id/ivCured"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
+                    android:visibility="@{!storedResults.containsKey(Proof.CURED) ? View.VISIBLE : View.INVISIBLE}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.0"
                     app:srcCompat="@drawable/ic_stethoscope_24" />
+
+                <ImageView
+                    android:id="@+id/ivCuredOK"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:visibility="@{storedResults.containsKey(Proof.CURED) ? View.VISIBLE : View.GONE}"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_baseline_check_circle_24" />
 
                 <TextView
                     android:id="@+id/tvCuredHead"
@@ -379,23 +421,35 @@
                 android:id="@+id/clTested"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.TESTED_PCR)) &amp;&amp; settings.allow_tested_pcr &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
-                android:paddingTop="0dp"
-                android:paddingBottom="16dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
                 android:focusable="true"
-                android:background="?android:attr/selectableItemBackground">
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.TESTED_PCR)) &amp;&amp; settings.allow_tested_pcr &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}">
 
                 <ImageView
                     android:id="@+id/ivTested"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
+                    android:visibility="@{!storedResults.containsKey(Proof.TESTED_PCR) ? View.VISIBLE : View.INVISIBLE}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.0"
                     app:srcCompat="@drawable/ic_microscope_24" />
+
+                <ImageView
+                    android:id="@+id/ivTestedOK"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:visibility="@{storedResults.containsKey(Proof.TESTED_PCR) ? View.VISIBLE : View.GONE}"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_baseline_check_circle_24" />
 
                 <TextView
                     android:id="@+id/tvTestedHead"
@@ -431,8 +485,8 @@
                     android:gravity="right"
                     android:text="@string/covid_check_max"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:visibility="@{settings.allow_tested_pcr_min > 0 ? View.VISIBLE : View.GONE}"
                     android:textSize="10sp"
+                    android:visibility="@{settings.allow_tested_pcr_min > 0 ? View.VISIBLE : View.GONE}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toEndOf="@+id/tvTestedMin"
@@ -473,23 +527,35 @@
                 android:id="@+id/clTested2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.TESTED_AG_UNKNOWN)) &amp;&amp; settings.allow_tested_antigen_unknown &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
-                android:paddingTop="0dp"
-                android:paddingBottom="16dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
                 android:focusable="true"
-                android:background="?android:attr/selectableItemBackground">
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.TESTED_AG_UNKNOWN)) &amp;&amp; settings.allow_tested_antigen_unknown &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}">
 
                 <ImageView
                     android:id="@+id/ivTested2"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
+                    android:visibility="@{!storedResults.containsKey(Proof.TESTED_AG_UNKNOWN) ? View.VISIBLE : View.INVISIBLE}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.0"
                     app:srcCompat="@drawable/ic_flask_outline_24" />
+
+                <ImageView
+                    android:id="@+id/ivTested2OK"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:visibility="@{storedResults.containsKey(Proof.TESTED_AG_UNKNOWN) ? View.VISIBLE : View.GONE}"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_baseline_check_circle_24" />
 
                 <TextView
                     android:id="@+id/tvTested2Head"
@@ -524,9 +590,9 @@
                     android:layout_marginTop="4dp"
                     android:gravity="right"
                     android:text="@string/covid_check_max"
-                    android:visibility="@{settings.allow_tested_antigen_unknown_min > 0 ? View.VISIBLE : View.GONE}"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
                     android:textSize="10sp"
+                    android:visibility="@{settings.allow_tested_antigen_unknown_min > 0 ? View.VISIBLE : View.GONE}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toEndOf="@+id/tvTested2Min"
@@ -567,23 +633,35 @@
                 android:id="@+id/clOther"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.OTHER)) &amp;&amp; settings.allow_other &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
-                android:paddingTop="0dp"
-                android:paddingBottom="16dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
                 android:focusable="true"
-                android:background="?android:attr/selectableItemBackground">
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.OTHER)) &amp;&amp; settings.allow_other &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}">
 
                 <ImageView
                     android:id="@+id/ivOther"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
+                    android:visibility="@{!storedResults.containsKey(Proof.OTHER) ? View.VISIBLE : View.INVISIBLE}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.0"
                     app:srcCompat="@drawable/ic_assignment_24" />
+
+                <ImageView
+                    android:id="@+id/ivOtherOK"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:visibility="@{storedResults.containsKey(Proof.OTHER) ? View.VISIBLE : View.GONE}"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:srcCompat="@drawable/ic_baseline_check_circle_24" />
 
                 <TextView
                     android:id="@+id/tvOtherHead"
@@ -601,13 +679,13 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/clScannedData"
-                android:visibility="@{(uiState == UIState.REVIEW_SCAN &amp;&amp; scanResult.name != null) ? View.VISIBLE : View.GONE}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingTop="0dp"
-                android:paddingBottom="16dp"
                 android:paddingStart="16dp"
-                android:paddingEnd="16dp">
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="@{(uiState == UIState.REVIEW_SCAN &amp;&amp; scanResult.name != null) ? View.VISIBLE : View.GONE}">
 
                 <ImageView
                     android:id="@+id/ivScannedData"
@@ -637,10 +715,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
+                    android:text="@{scanResult.name}"
                     android:textColor="@color/BLACK"
                     android:textSize="18dp"
                     android:textStyle="bold"
-                    android:text="@{scanResult.name}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.062"
                     app:layout_constraintStart_toEndOf="@+id/ivScannedData"
@@ -653,10 +731,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="@{scanResult.dob}"
-                    tools:text="1960-01-01"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/ivScannedData"
-                    app:layout_constraintTop_toBottomOf="@id/tvScannedDataPersonName" />
+                    app:layout_constraintTop_toBottomOf="@id/tvScannedDataPersonName"
+                    tools:text="1960-01-01" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -727,11 +805,11 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
+                    android:text="@{scanResult.text}"
                     android:textAllCaps="true"
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:textColor="@color/WHITE"
                     android:textStyle="bold"
-                    android:text="@{scanResult.text}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/ivScanValid"
@@ -742,14 +820,13 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(uiState == UIState.REVIEW_SCAN &amp;&amp; scanResult.isValid()) ? View.VISIBLE : View.GONE}"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:visibility="@{(uiState == UIState.REVIEW_SCAN &amp;&amp; scanResult.isValid()) ? View.VISIBLE : View.GONE}">
 
                 <com.ncorti.slidetoact.SlideToActView
                     android:id="@+id/staConfirm"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    app:layout_constraintWidth_max="500dp"
                     android:elevation="0dp"
                     app:animate_completion="false"
                     app:inner_color="@color/WHITE"
@@ -757,6 +834,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="500dp"
                     app:outer_color="@color/pretix_brand_green"
                     app:text="@string/covid_check_slide"
                     app:text_size="14sp"

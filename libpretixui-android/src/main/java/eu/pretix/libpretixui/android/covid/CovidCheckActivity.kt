@@ -41,21 +41,6 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         REVIEW_SCAN
     }
 
-    enum class Proof {
-        INVALID,
-        VACC,
-        CURED,
-        TESTED_PCR,
-        TESTED_AG_UNKNOWN,
-        OTHER
-    }
-
-    data class ScanResult (val proof: Proof, val provider: String, val validUntil: ZonedDateTime?, val text: String?, val name: String?, val dob: String?) {
-        fun isValid(): Boolean {
-            return proof != Proof.INVALID
-        }
-    }
-
     private var mediaPlayers: MutableMap<Int, MediaPlayer> = mutableMapOf()
     lateinit var binding: ActivityCovidCheckBinding
 
@@ -87,6 +72,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         binding.name = intent.extras?.getString(EXTRA_NAME)
         binding.hasHardwareScanner = intent.extras?.getBoolean(EXTRA_HARDWARE_SCAN, false) ?: false
         binding.acceptBarcode = binding.settings!!.accept_eudgc
+        binding.storedResults = emptyMap()
 
         val acceptBarcode = binding.acceptBarcode!!
         when {
@@ -154,14 +140,20 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
 
         staConfirm.onSlideCompleteListener = object : SlideToActView.OnSlideCompleteListener {
             override fun onSlideComplete(view: SlideToActView) {
-                setResult(
-                    Activity.RESULT_OK,
-                    Intent().putExtra(
-                        RESULT_CODE,
-                        getQuestionResult()
-                    )
-                )
-                finish()
+                binding.storedResults = (binding.storedResults!!.keys + setOf(binding.scanResult!!.proof)).associateWith {
+                    if (it == binding.scanResult!!.proof) {
+                        binding.scanResult!!
+                    } else {
+                        binding.storedResults!![it]
+                    }
+                }
+                binding.uiState = UIState.READY_TO_SCAN
+                binding.scanResult = null
+                staConfirm.resetSlider()
+                if (binding.acceptBarcode == true) {
+                    hardwareScanner.start(this@CovidCheckActivity)
+                }
+                checkIfDone()
             }
         }
 
@@ -215,7 +207,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         }
     }
 
-    fun handleScan(result: String) {
+    private fun handleScan(result: String) {
         mediaPlayers[R.raw.beep]?.start()
         binding.uiState = UIState.REVIEW_SCAN
 
@@ -352,47 +344,62 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         }
     }
 
-    fun getValidationException(ruleIdentifier: String): Int {
+    private fun getValidationException(ruleIdentifier: String): Int {
         return resources.getIdentifier(String.format("covid_check_rules_%s", ruleIdentifier), "string", packageName)
     }
 
-    fun getQuestionResult(): String {
-        val discloseProof = when {
-            binding.scanResult!!.proof == Proof.VACC && binding.settings!!.record_proof_vaccinated -> {
-                true
-            }
-            binding.scanResult!!.proof == Proof.CURED && binding.settings!!.record_proof_cured -> {
-                true
-            }
-            binding.scanResult!!.proof == Proof.OTHER && binding.settings!!.record_proof_other -> {
-                true
-            }
-            binding.scanResult!!.proof == Proof.TESTED_PCR && binding.settings!!.record_proof_tested_pcr -> {
-                true
-            }
-            binding.scanResult!!.proof == Proof.TESTED_AG_UNKNOWN && binding.settings!!.record_proof_tested_antigen_unknown -> {
-                true
-            }
-            else -> {
-                false
-            }
-        }
-        val discloseValidityTime = binding.settings!!.record_validity_time
-
-        val components = mutableListOf<String>(
-                String.format("provider: %s", binding.scanResult!!.provider)
-        )
-        components.add(
-                String.format("proof: %s", if (discloseProof) binding.scanResult!!.proof else "withheld")
-        )
-        if (discloseValidityTime) {
-            // TODO: use time zone of event instead?
-            val validityTime = binding.scanResult!!.validUntil ?: java.time.LocalDate.now().atStartOfDay(ZoneId.systemDefault()).plusDays(1)
-            components.add(
-                    String.format("expires: %s", validityTime.toOffsetDateTime().toString())
+    private fun checkIfDone() {
+        if (binding.storedResults!!.size > 2) {
+            setResult(
+                Activity.RESULT_OK,
+                Intent().putExtra(
+                    RESULT_CODE,
+                    getQuestionResult()
+                )
             )
+            finish()
         }
-        return components.joinToString(", ")
+    }
+
+    private fun getQuestionResult(): String {
+        return binding.storedResults!!.entries.map {
+            val discloseProof = when {
+                it.value.proof == Proof.VACC && binding.settings!!.record_proof_vaccinated -> {
+                    true
+                }
+                it.value.proof == Proof.CURED && binding.settings!!.record_proof_cured -> {
+                    true
+                }
+                it.value.proof == Proof.OTHER && binding.settings!!.record_proof_other -> {
+                    true
+                }
+                it.value.proof == Proof.TESTED_PCR && binding.settings!!.record_proof_tested_pcr -> {
+                    true
+                }
+                it.value.proof == Proof.TESTED_AG_UNKNOWN && binding.settings!!.record_proof_tested_antigen_unknown -> {
+                    true
+                }
+                else -> {
+                    false
+                }
+            }
+            val discloseValidityTime = binding.settings!!.record_validity_time
+
+            val components = mutableListOf<String>(
+                String.format("provider: %s", it.value.provider)
+            )
+            components.add(
+                String.format("proof: %s", if (discloseProof) it.value.proof else "withheld")
+            )
+            if (discloseValidityTime) {
+                // TODO: use time zone of event instead?
+                val validityTime = it.value.validUntil ?: java.time.LocalDate.now().atStartOfDay(ZoneId.systemDefault()).plusDays(1)
+                components.add(
+                    String.format("expires: %s", validityTime.toOffsetDateTime().toString())
+                )
+            }
+            return@map components.joinToString(", ")
+        }.joinToString("\n")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
