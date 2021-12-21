@@ -129,6 +129,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                 null,
                 null,
                 null,
+                null
             )
         }
 
@@ -307,7 +308,8 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                 validUntil,
                 text,
                 covCertificate.fullName,
-                covCertificate.birthDate
+                covCertificate.birthDate,
+                dgcEntry
             )
         } catch (exception: Exception) {
             val text = when (exception) {
@@ -334,6 +336,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                 null,
                 text,
                 null,
+                null,
                 null
             )
         }
@@ -349,7 +352,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
     }
 
     private fun checkIfDone() {
-        if (binding.storedResults!!.size > 2) {
+        if (CombinationRules(sampleRuleBadenWuerttembergDecember2021).isValid(binding.storedResults!!)) {
             setResult(
                 Activity.RESULT_OK,
                 Intent().putExtra(

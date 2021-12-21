@@ -31,6 +31,7 @@ android {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
     maven {
         url "https://maven.pkg.github.com/Digitaler-Impfnachweis/covpass-android"
         credentials(HttpHeaderCredentials) {
@@ -77,6 +78,7 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
+    implementation 'com.github.pretix:json-logic-kotlin:1.0.0'
 
     implementation(project(':libuvccamera'))
     implementation(project(':usbCameraCommon'))

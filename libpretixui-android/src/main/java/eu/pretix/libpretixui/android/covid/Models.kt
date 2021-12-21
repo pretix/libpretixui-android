@@ -1,5 +1,7 @@
 package eu.pretix.libpretixui.android.covid
 
+import de.rki.covpass.sdk.cert.models.DGCEntry
+import de.rki.covpass.sdk.cert.models.TestCert
 import java.time.ZonedDateTime
 
 
@@ -18,7 +20,8 @@ data class ScanResult(
     val validUntil: ZonedDateTime?,
     val text: String?,
     val name: String?,
-    val dob: String?
+    val dob: String?,
+    val dgcEntry: DGCEntry?
 ) {
     fun isValid(): Boolean {
         return proof != Proof.INVALID
