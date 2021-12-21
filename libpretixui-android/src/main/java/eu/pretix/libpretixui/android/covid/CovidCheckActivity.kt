@@ -81,31 +81,31 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         val acceptBarcode = binding.acceptBarcode!!
         when {
             binding.settings!!.accept_manual and acceptBarcode -> {
-                tvInstructions.text = String.format(
+                binding.instructionsText = String.format(
                     "%s %s",
                     resources.getString(R.string.covid_check_instructions_manual),
                     resources.getString(R.string.covid_check_instructions_also_barcode)
                 )
             }
             binding.settings!!.accept_manual -> {
-                tvInstructions.text = resources.getString(R.string.covid_check_instructions_manual)
+                binding.instructionsText = resources.getString(R.string.covid_check_instructions_manual)
             }
             acceptBarcode -> {
-                tvInstructions.text = resources.getString(R.string.covid_check_instructions_barcode)
+                binding.instructionsText = resources.getString(R.string.covid_check_instructions_barcode)
             }
             else -> {
-                tvInstructions.text = resources.getString(R.string.covid_check_instructions_none)
+                binding.instructionsText = resources.getString(R.string.covid_check_instructions_none)
             }
         }
 
         // covpass-android-sdk requires at least SDK-Level 23, so we disable barcode-parsing for everything below that
         if (android.os.Build.VERSION.SDK_INT < 23) {
-            tvDGCserver.text = "No DGC"
-            tvDGCupdate.text = String.format("SDK_INT: %d", android.os.Build.VERSION.SDK_INT)
+            binding.dgcServer = "No DGC"
+            binding.dgcState = String.format("SDK_INT: %d", android.os.Build.VERSION.SDK_INT)
             binding.acceptBarcode = false
         } else {
-            tvDGCserver.text = sdkDeps.trustServiceHost
-            tvDGCupdate.text = sdkDeps.dscRepository.lastUpdate.value.toString()
+            binding.dgcServer = sdkDeps.trustServiceHost
+            binding.dgcState = sdkDeps.dscRepository.lastUpdate.value.toString()
         }
 
         if (intent.extras?.containsKey(EXTRA_BIRTHDATE) == true) {

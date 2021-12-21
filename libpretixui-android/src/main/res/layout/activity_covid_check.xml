@@ -22,6 +22,15 @@
             name="birthdate"
             type="org.joda.time.LocalDate" />
         <variable
+            name="instructionsText"
+            type="java.lang.String" />
+        <variable
+            name="dgcServer"
+            type="java.lang.String" />
+        <variable
+            name="dgcState"
+            type="java.lang.String" />
+        <variable
             name="hasResult"
             type="java.lang.Boolean" />
         <variable
@@ -82,7 +91,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="DGC server"
+                    android:text="@{dgcServer}"
                     android:gravity="right"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
                     android:textSize="10sp"
@@ -98,7 +107,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="DGC Update"
+                    android:text="@{dgcState}"
                     android:gravity="right"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
                     android:textSize="10sp"
@@ -166,6 +175,7 @@
                     android:id="@+id/tvInstructions"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:text="@{instructionsText}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/btCapture"
                     app:layout_constraintStart_toStartOf="parent"
