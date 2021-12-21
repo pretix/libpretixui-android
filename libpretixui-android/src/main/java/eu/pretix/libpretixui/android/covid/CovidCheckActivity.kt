@@ -352,7 +352,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
     }
 
     private fun checkIfDone() {
-        var rules = binding.settings.combination_rules
+        var rules = binding.settings!!.combination_rules
         if (rules.isNullOrBlank()) {
             rules = sampleRuleSingleFactor
         }
