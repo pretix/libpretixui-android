@@ -6,9 +6,17 @@
     <data>
 
         <import type="android.view.View" />
+        <import type="eu.pretix.libpretixui.android.covid.CovidCheckActivity.UIState" />
+        <import type="eu.pretix.libpretixui.android.covid.CovidCheckActivity.Proof" />
         <variable
             name="settings"
             type="eu.pretix.libpretixui.android.covid.CovidCheckSettings" />
+        <variable
+            name="uiState"
+            type="eu.pretix.libpretixui.android.covid.CovidCheckActivity.UIState" />
+        <variable
+            name="scanResult"
+            type="eu.pretix.libpretixui.android.covid.CovidCheckActivity.ScanResult" />
         <variable
             name="hasHardwareScanner"
             type="java.lang.Boolean" />
@@ -30,15 +38,6 @@
         <variable
             name="dgcState"
             type="java.lang.String" />
-        <variable
-            name="hasResult"
-            type="java.lang.Boolean" />
-        <variable
-            name="hasAcceptableResult"
-            type="java.lang.Boolean" />
-        <variable
-            name="hasScannedResult"
-            type="java.lang.Boolean" />
     </data>
 
     <ScrollView
@@ -165,7 +164,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{hasResult ? View.GONE : View.VISIBLE}"
+                android:visibility="@{uiState == UIState.REVIEW_SCAN ? View.GONE : View.VISIBLE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -196,7 +195,7 @@
                 android:id="@+id/clVacc"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(settings.allow_vaccinated &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.VACC)) &amp;&amp; settings.allow_vaccinated &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -288,7 +287,7 @@
                 android:id="@+id/clCured"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(settings.allow_cured &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.CURED)) &amp;&amp; settings.allow_cured &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -380,7 +379,7 @@
                 android:id="@+id/clTested"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(settings.allow_tested_pcr &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.TESTED_PCR)) &amp;&amp; settings.allow_tested_pcr &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -474,7 +473,7 @@
                 android:id="@+id/clTested2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(settings.allow_tested_antigen_unknown &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.TESTED_AG_UNKNOWN)) &amp;&amp; settings.allow_tested_antigen_unknown &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -568,7 +567,7 @@
                 android:id="@+id/clOther"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{(settings.allow_other &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{((uiState == UIState.READY_TO_SCAN || (scanResult != null &amp;&amp; scanResult.provider == &quot;manual&quot; &amp;&amp; scanResult.proof == Proof.OTHER)) &amp;&amp; settings.allow_other &amp;&amp; settings.accept_manual) ? View.VISIBLE : View.GONE}"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -602,9 +601,9 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/clScannedData"
+                android:visibility="@{(uiState == UIState.REVIEW_SCAN &amp;&amp; scanResult.name != null) ? View.VISIBLE : View.GONE}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone"
                 android:paddingTop="0dp"
                 android:paddingBottom="16dp"
                 android:paddingStart="16dp"
@@ -641,6 +640,7 @@
                     android:textColor="@color/BLACK"
                     android:textSize="18dp"
                     android:textStyle="bold"
+                    android:text="@{scanResult.name}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.062"
                     app:layout_constraintStart_toEndOf="@+id/ivScannedData"
@@ -652,6 +652,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
+                    android:text="@{scanResult.dob}"
                     tools:text="1960-01-01"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/ivScannedData"
@@ -664,7 +665,7 @@
                 android:layout_height="match_parent"
                 android:background="@color/pretix_brand_red"
                 android:padding="16dp"
-                android:visibility="@{(hasResult &amp;&amp; !hasAcceptableResult) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{(uiState == UIState.REVIEW_SCAN &amp;&amp; !scanResult.isValid()) ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent">
 
                 <ImageView
@@ -695,7 +696,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text=""
+                    android:text="@{scanResult.text}"
                     android:textColor="@color/WHITE"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -709,7 +710,7 @@
                 android:layout_height="match_parent"
                 android:background="@color/pretix_brand_green"
                 android:padding="16dp"
-                android:visibility="@{(hasScannedResult &amp;&amp; hasAcceptableResult) ? View.VISIBLE : View.GONE}"
+                android:visibility="@{(uiState == UIState.REVIEW_SCAN &amp;&amp; scanResult.isValid() &amp;&amp; scanResult.text != null) ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent">
 
                 <ImageView
@@ -730,6 +731,7 @@
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:textColor="@color/WHITE"
                     android:textStyle="bold"
+                    android:text="@{scanResult.text}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/ivScanValid"
@@ -740,7 +742,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="@{hasAcceptableResult ? View.VISIBLE : View.GONE}"
+                android:visibility="@{(uiState == UIState.REVIEW_SCAN &amp;&amp; scanResult.isValid()) ? View.VISIBLE : View.GONE}"
                 android:padding="16dp">
 
                 <com.ncorti.slidetoact.SlideToActView
