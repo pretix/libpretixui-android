@@ -5,27 +5,28 @@ import org.joda.time.LocalDateTime
 import java.io.Serializable
 
 data class CovidCheckSettings(
-        val allow_vaccinated: Boolean,
-        val allow_vaccinated_min: Int,  // days ago
-        val allow_vaccinated_max: Int, // days ago
-        val record_proof_vaccinated: Boolean,
-        val allow_cured: Boolean,
-        val allow_cured_min: Int, // days ago
-        val allow_cured_max: Int, // days ago
-        val record_proof_cured: Boolean,
-        val allow_tested_pcr: Boolean,
-        val allow_tested_pcr_min: Int, // hours ago
-        val allow_tested_pcr_max: Int,  // hours ago
-        val record_proof_tested_pcr: Boolean,
-        val allow_tested_antigen_unknown: Boolean,
-        val allow_tested_antigen_unknown_min: Int, // hours ago
-        val allow_tested_antigen_unknown_max: Int,  // hours ago
-        val record_proof_tested_antigen_unknown: Boolean,
-        val allow_other: Boolean,
-        val record_proof_other: Boolean,
-        val record_validity_time: Boolean,
-        val accept_eudgc: Boolean,
-        val accept_manual: Boolean,
+    val allow_vaccinated: Boolean,
+    val allow_vaccinated_min: Int,  // days ago
+    val allow_vaccinated_max: Int, // days ago
+    val record_proof_vaccinated: Boolean,
+    val allow_cured: Boolean,
+    val allow_cured_min: Int, // days ago
+    val allow_cured_max: Int, // days ago
+    val record_proof_cured: Boolean,
+    val allow_tested_pcr: Boolean,
+    val allow_tested_pcr_min: Int, // hours ago
+    val allow_tested_pcr_max: Int,  // hours ago
+    val record_proof_tested_pcr: Boolean,
+    val allow_tested_antigen_unknown: Boolean,
+    val allow_tested_antigen_unknown_min: Int, // hours ago
+    val allow_tested_antigen_unknown_max: Int,  // hours ago
+    val record_proof_tested_antigen_unknown: Boolean,
+    val allow_other: Boolean,
+    val record_proof_other: Boolean,
+    val record_validity_time: Boolean,
+    val accept_eudgc: Boolean,
+    val accept_manual: Boolean,
+    val combination_rules: String?,
 ) : Serializable {
 
     // Helper method for the actual checks.
@@ -65,26 +66,27 @@ data class CovidCheckSettings(
 }
 
 val SAMPLE_SETTINGS = CovidCheckSettings(
-        true,
-        14,
-        365,
-        false,
-        true,
-        27,
-        180,
-        false,
-        true,
-        0,
-        72,
-        false,
-        true,
-        0,
-        48,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+    true,
+    14,
+    365,
+    false,
+    true,
+    27,
+    180,
+    false,
+    true,
+    0,
+    72,
+    false,
+    true,
+    0,
+    48,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    sampleRuleSingleFactor
 )
 

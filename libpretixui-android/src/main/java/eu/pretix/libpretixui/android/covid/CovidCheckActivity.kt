@@ -352,7 +352,11 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
     }
 
     private fun checkIfDone() {
-        if (CombinationRules(sampleRuleBadenWuerttembergDecember2021).isValid(binding.storedResults!!)) {
+        var rules = binding.settings.combination_rules
+        if (rules.isNullOrBlank()) {
+            rules = sampleRuleSingleFactor
+        }
+        if (CombinationRules(rules).isValid(binding.storedResults!!)) {
             setResult(
                 Activity.RESULT_OK,
                 Intent().putExtra(
