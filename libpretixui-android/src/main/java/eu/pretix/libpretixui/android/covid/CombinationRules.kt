@@ -74,89 +74,77 @@ val sampleRuleBadenWuerttembergDecember2021 = """
 
 class CombinationRules(val logic: String) {
     fun isValid(results: Map<Proof, ScanResult>): Boolean {
-        val data = mutableMapOf<String, Any>()
+        val data = mutableMapOf<String, Any?>()
 
         if (results.containsKey(Proof.VACC)) {
             data.put("VACC", true)
-            val cert = results[Proof.VACC]!!.dgcEntry
-            if (cert is Vaccination) {
-                data.put("VACC.targetDisease", cert.targetDisease)
-                data.put("VACC.vaccineCode", cert.vaccineCode)
-                data.put("VACC.product", cert.product)
-                data.put("VACC.manufacturer", cert.manufacturer)
-                data.put("VACC.doseNumber", cert.doseNumber)
-                data.put("VACC.totalSerialDoses", cert.totalSerialDoses)
-                data.put("VACC.occurence_days_since", ChronoUnit.DAYS.between(cert.occurrence, LocalDate.now()))
-                data.put("VACC.country", cert.country)
-                data.put("VACC.certificateIssuer", cert.certificateIssuer)
-                data.put("VACC.isComplete", cert.isComplete)
-                data.put("VACC.isCompleteSingleDose", cert.isCompleteSingleDose)
-                data.put("VACC.isBooster", cert.isBooster)
-                data.put("VACC.hasFullProtectionAfterRecovery", cert.hasFullProtectionAfterRecovery)
-                data.put("VACC.hasFullProtection", cert.hasFullProtection)
-            }
+            val cert = results[Proof.VACC]!!.dgcEntry as? Vaccination
+            data.put("VACC.targetDisease", cert?.targetDisease)
+            data.put("VACC.vaccineCode", cert?.vaccineCode)
+            data.put("VACC.product", cert?.product)
+            data.put("VACC.manufacturer", cert?.manufacturer)
+            data.put("VACC.doseNumber", cert?.doseNumber)
+            data.put("VACC.totalSerialDoses", cert?.totalSerialDoses)
+            data.put("VACC.occurence_days_since", if (cert == null) null else ChronoUnit.DAYS.between(cert.occurrence, LocalDate.now()))
+            data.put("VACC.country", cert?.country)
+            data.put("VACC.certificateIssuer", cert?.certificateIssuer)
+            data.put("VACC.isComplete", cert?.isComplete)
+            data.put("VACC.isCompleteSingleDose", cert?.isCompleteSingleDose)
+            data.put("VACC.isBooster", cert?.isBooster)
+            data.put("VACC.hasFullProtectionAfterRecovery", cert?.hasFullProtectionAfterRecovery)
+            data.put("VACC.hasFullProtection", cert?.hasFullProtection)
         } else {
             data.put("VACC", false)
         }
 
         if (results.containsKey(Proof.CURED)) {
             data.put("CURED", true)
-            val cert = results[Proof.CURED]!!.dgcEntry
-            if (cert is Recovery) {
-                data.put("CURED.targetDisease", cert.targetDisease)
-                data.put("CURED.firstResult_days_since", ChronoUnit.DAYS.between(cert.firstResult, LocalDate.now()))
-                data.put("CURED.validFrom_days_since", ChronoUnit.DAYS.between(cert.validFrom, LocalDate.now()))
-                data.put("CURED.validUntil_days_until", ChronoUnit.DAYS.between(LocalDate.now(), cert.validUntil))
-                data.put("CURED.country", cert.country)
-                data.put("CURED.certificateIssuer", cert.certificateIssuer)
-            }
+            val cert = results[Proof.CURED]!!.dgcEntry as? Recovery
+            data.put("CURED.targetDisease", cert?.targetDisease)
+            data.put("CURED.firstResult_days_since", if (cert == null) null else ChronoUnit.DAYS.between(cert.firstResult, LocalDate.now()))
+            data.put("CURED.validFrom_days_since", if (cert == null) null else ChronoUnit.DAYS.between(cert.validFrom, LocalDate.now()))
+            data.put("CURED.validUntil_days_until", if (cert == null) null else ChronoUnit.DAYS.between(LocalDate.now(), cert.validUntil))
+            data.put("CURED.country", cert?.country)
+            data.put("CURED.certificateIssuer", cert?.certificateIssuer)
         } else {
             data.put("CURED", false)
         }
 
         if (results.containsKey(Proof.TESTED_PCR)) {
             data.put("TESTED_PCR", true)
-            val cert = results[Proof.VACC]!!.dgcEntry
-            if (cert is TestCert) {
-                data.put("TESTED_PCR.targetDisease", cert.targetDisease)
-                data.put("TESTED_PCR.testType", cert.testType)
-                data.put("TESTED_PCR.testName", cert.testName ?: "")
-                data.put("TESTED_PCR.manufacturer", cert.manufacturer ?: "")
-                data.put("TESTED_PCR.sampleCollection_hours_since", ChronoUnit.HOURS.between(cert.sampleCollection, ZonedDateTime.now()))
-                data.put("TESTED_PCR.testResult", cert.testResult)
-                data.put("TESTED_PCR.testingCenter", cert.testingCenter)
-                data.put("TESTED_PCR.country", cert.country)
-                data.put("TESTED_PCR.certificateIssuer", cert.certificateIssuer)
-                data.put("TESTED_PCR.isPositive", cert.isPositive)
-            }
+            val cert = results[Proof.TESTED_PCR]!!.dgcEntry as? TestCert
+            data.put("TESTED_PCR.targetDisease", cert?.targetDisease)
+            data.put("TESTED_PCR.testType", cert?.testType)
+            data.put("TESTED_PCR.testName", cert?.testName)
+            data.put("TESTED_PCR.manufacturer", cert?.manufacturer)
+            data.put("TESTED_PCR.sampleCollection_hours_since", if (cert == null) null else ChronoUnit.HOURS.between(cert.sampleCollection, ZonedDateTime.now()))
+            data.put("TESTED_PCR.testResult", cert?.testResult)
+            data.put("TESTED_PCR.testingCenter", cert?.testingCenter)
+            data.put("TESTED_PCR.country", cert?.country)
+            data.put("TESTED_PCR.certificateIssuer", cert?.certificateIssuer)
+            data.put("TESTED_PCR.isPositive", cert?.isPositive)
         } else {
             data.put("TESTED_PCR", false)
         }
 
         if (results.containsKey(Proof.TESTED_AG_UNKNOWN)) {
             data.put("TESTED_AG_UNKNOWN", true)
-            val cert = results[Proof.VACC]!!.dgcEntry
-            if (cert is TestCert) {
-                data.put("TESTED_AG_UNKNOWN.targetDisease", cert.targetDisease)
-                data.put("TESTED_AG_UNKNOWN.testType", cert.testType)
-                data.put("TESTED_AG_UNKNOWN.testName", cert.testName ?: "")
-                data.put("TESTED_AG_UNKNOWN.manufacturer", cert.manufacturer ?: "")
-                data.put("TESTED_AG_UNKNOWN.sampleCollection_hours_since", ChronoUnit.HOURS.between(cert.sampleCollection, ZonedDateTime.now()))
-                data.put("TESTED_AG_UNKNOWN.testResult", cert.testResult)
-                data.put("TESTED_AG_UNKNOWN.testingCenter", cert.testingCenter)
-                data.put("TESTED_AG_UNKNOWN.country", cert.country)
-                data.put("TESTED_AG_UNKNOWN.certificateIssuer", cert.certificateIssuer)
-                data.put("TESTED_AG_UNKNOWN.isPositive", cert.isPositive)
-            }
+            val cert = results[Proof.TESTED_AG_UNKNOWN]!!.dgcEntry as? TestCert
+            data.put("TESTED_AG_UNKNOWN.targetDisease", cert?.targetDisease)
+            data.put("TESTED_AG_UNKNOWN.testType", cert?.testType)
+            data.put("TESTED_AG_UNKNOWN.testName", cert?.testName)
+            data.put("TESTED_AG_UNKNOWN.manufacturer", cert?.manufacturer)
+            data.put("TESTED_AG_UNKNOWN.sampleCollection_hours_since", if (cert == null) null else ChronoUnit.HOURS.between(cert.sampleCollection, ZonedDateTime.now()))
+            data.put("TESTED_AG_UNKNOWN.testResult", cert?.testResult)
+            data.put("TESTED_AG_UNKNOWN.testingCenter", cert?.testingCenter)
+            data.put("TESTED_AG_UNKNOWN.country", cert?.country)
+            data.put("TESTED_AG_UNKNOWN.certificateIssuer", cert?.certificateIssuer)
+            data.put("TESTED_AG_UNKNOWN.isPositive", cert?.isPositive)
         } else {
             data.put("TESTED_AG_UNKNOWN", false)
         }
 
-        if (results.containsKey(Proof.OTHER)) {
-            data.put("OTHER", true)
-        } else {
-            data.put("OTHER", false)
-        }
+        data.put("OTHER", results.containsKey(Proof.OTHER))
 
         return JsonLogic().applyString(logic, data, true).truthy
     }
