@@ -36,20 +36,14 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         val EXTRA_SETTINGS = "settings"
     }
 
-    enum class Proof {
-        INVLAID,
-        VACC,
-        CURED,
-        TESTED_PCR,
-        TESTED_AG_UNKNOWN,
-        OTHER
+    enum class UIState {
+        READY_TO_SCAN,
+        REVIEW_SCAN
     }
 
     private var mediaPlayers: MutableMap<Int, MediaPlayer> = mutableMapOf()
     lateinit var binding: ActivityCovidCheckBinding
-    var checkProvider = "unset"
-    var checkProof = Proof.INVLAID
-    var checkProofValidUntil: java.time.ZonedDateTime? = null
+
     val REQUEST_BARCODE = 30999
 
     private val hardwareScanner = HardwareScanner(object : ScanReceiver {
@@ -62,6 +56,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         super.onCreate(savedInstanceState)
 
         binding = DataBindingUtil.setContentView<ActivityCovidCheckBinding>(this, R.layout.activity_covid_check)
+        binding.uiState = UIState.READY_TO_SCAN
 
         if (intent.extras?.containsKey(EXTRA_SETTINGS) == true) {
             binding.settings = intent.extras?.getSerializable(EXTRA_SETTINGS) as CovidCheckSettings
@@ -77,35 +72,36 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
         binding.name = intent.extras?.getString(EXTRA_NAME)
         binding.hasHardwareScanner = intent.extras?.getBoolean(EXTRA_HARDWARE_SCAN, false) ?: false
         binding.acceptBarcode = binding.settings!!.accept_eudgc
+        binding.storedResults = emptyMap()
 
         val acceptBarcode = binding.acceptBarcode!!
         when {
             binding.settings!!.accept_manual and acceptBarcode -> {
-                tvInstructions.text = String.format(
+                binding.instructionsText = String.format(
                     "%s %s",
                     resources.getString(R.string.covid_check_instructions_manual),
                     resources.getString(R.string.covid_check_instructions_also_barcode)
                 )
             }
             binding.settings!!.accept_manual -> {
-                tvInstructions.text = resources.getString(R.string.covid_check_instructions_manual)
+                binding.instructionsText = resources.getString(R.string.covid_check_instructions_manual)
             }
             acceptBarcode -> {
-                tvInstructions.text = resources.getString(R.string.covid_check_instructions_barcode)
+                binding.instructionsText = resources.getString(R.string.covid_check_instructions_barcode)
             }
             else -> {
-                tvInstructions.text = resources.getString(R.string.covid_check_instructions_none)
+                binding.instructionsText = resources.getString(R.string.covid_check_instructions_none)
             }
         }
 
         // covpass-android-sdk requires at least SDK-Level 23, so we disable barcode-parsing for everything below that
         if (android.os.Build.VERSION.SDK_INT < 23) {
-            tvDGCserver.text = "No DGC"
-            tvDGCupdate.text = String.format("SDK_INT: %d", android.os.Build.VERSION.SDK_INT)
+            binding.dgcServer = "No DGC"
+            binding.dgcState = String.format("SDK_INT: %d", android.os.Build.VERSION.SDK_INT)
             binding.acceptBarcode = false
         } else {
-            tvDGCserver.text = sdkDeps.trustServiceHost
-            tvDGCupdate.text = sdkDeps.dscRepository.lastUpdate.value.toString()
+            binding.dgcServer = sdkDeps.trustServiceHost
+            binding.dgcState = sdkDeps.dscRepository.lastUpdate.value.toString()
         }
 
         if (intent.extras?.containsKey(EXTRA_BIRTHDATE) == true) {
@@ -118,19 +114,23 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
 
         val proofClickListener = View.OnClickListener {
             hardwareScanner.stop(this)
-            hideAllSections(except=it)
-            binding.hasResult = true
-            binding.hasAcceptableResult = true
-            checkProvider = "manual"
-            checkProofValidUntil = null
-            checkProof = when (it) {
-                clVacc -> Proof.VACC
-                clCured -> Proof.CURED
-                clOther -> Proof.OTHER
-                clTested -> Proof.TESTED_PCR
-                clTested2 -> Proof.TESTED_AG_UNKNOWN
-                else -> Proof.INVLAID
-            }
+            binding.uiState = UIState.REVIEW_SCAN
+            binding.scanResult = ScanResult(
+                when (it) {
+                    clVacc -> Proof.VACC
+                    clCured -> Proof.CURED
+                    clOther -> Proof.OTHER
+                    clTested -> Proof.TESTED_PCR
+                    clTested2 -> Proof.TESTED_AG_UNKNOWN
+                    else -> Proof.INVALID
+                },
+                "manual",
+                null,
+                null,
+                null,
+                null,
+                null
+            )
         }
 
         clVacc.setOnClickListener(proofClickListener)
@@ -141,14 +141,20 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
 
         staConfirm.onSlideCompleteListener = object : SlideToActView.OnSlideCompleteListener {
             override fun onSlideComplete(view: SlideToActView) {
-                setResult(
-                    Activity.RESULT_OK,
-                    Intent().putExtra(
-                        RESULT_CODE,
-                        getQuestionResult()
-                    )
-                )
-                finish()
+                binding.storedResults = (binding.storedResults!!.keys + setOf(binding.scanResult!!.proof)).associateWith {
+                    if (it == binding.scanResult!!.proof) {
+                        binding.scanResult!!
+                    } else {
+                        binding.storedResults!![it]
+                    }
+                }
+                binding.uiState = UIState.READY_TO_SCAN
+                binding.scanResult = null
+                staConfirm.resetSlider()
+                if (binding.acceptBarcode == true) {
+                    hardwareScanner.start(this@CovidCheckActivity)
+                }
+                checkIfDone()
             }
         }
 
@@ -191,18 +197,20 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
     }
 
     override fun onBackPressed() {
-        if (binding.hasResult == true) {
-            this.recreate()
+        if (binding.uiState == UIState.REVIEW_SCAN) {
+            binding.uiState = UIState.READY_TO_SCAN
+            binding.scanResult = null
+            if (binding.acceptBarcode == true) {
+                hardwareScanner.start(this)
+            }
         } else {
             super.onBackPressed()
         }
     }
 
-    fun handleScan(result: String) {
+    private fun handleScan(result: String) {
         mediaPlayers[R.raw.beep]?.start()
-        binding.hasResult = true
-        binding.hasScannedResult = true
-        hideAllSections()
+        binding.uiState = UIState.REVIEW_SCAN
 
         try {
             val dgc = DGC()
@@ -210,19 +218,16 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
             val dgcEntry = dgcResult.first
             val covCertificate = dgcResult.second
 
-            checkProvider = "DGC"
-            checkProofValidUntil = null
-            tvScannedDataPersonName.text = covCertificate.fullName
-            tvScannedDataPersonDetails.text = covCertificate.birthDate.toString()
-            hideAllSections(clScannedData as View)
-            binding.hasAcceptableResult = true
+            var text = ""
+            var proof: Proof
+            var validUntil: ZonedDateTime? = null
 
             when (dgcEntry.type) {
                 VaccinationCertType.VACCINATION_INCOMPLETE,
                 VaccinationCertType.VACCINATION_COMPLETE,
                 VaccinationCertType.VACCINATION_FULL_PROTECTION -> {
-                    checkProof = Proof.VACC
-                    tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_vaccinated))
+                    proof = Proof.VACC
+                    text = String.format("%s (DGC)", resources.getString(R.string.covid_check_vaccinated))
                     dgc.assertVaccinationRules(
                         dgcEntry as Vaccination,
                         binding.settings!!.allow_vaccinated_min,
@@ -230,17 +235,17 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                     )
 
                     if (!binding.settings!!.allow_vaccinated) {
-                        binding.hasAcceptableResult = false
-                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notallowed)
+                        proof = Proof.INVALID
+                        text = resources.getString(R.string.covid_check_scan_notallowed)
                     }
 
                     // TODO: use time zone of event instead?
-                    checkProofValidUntil = dgcEntry.occurrence!!.plusDays(binding.settings!!.allow_vaccinated_max.toLong()).atStartOfDay(ZoneId.systemDefault())
+                    validUntil = dgcEntry.occurrence!!.plusDays(binding.settings!!.allow_vaccinated_max.toLong()).atStartOfDay(ZoneId.systemDefault())
                 }
                 TestCertType.POSITIVE_PCR_TEST,
                 TestCertType.NEGATIVE_PCR_TEST -> {
-                    checkProof = Proof.TESTED_PCR
-                    tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_tested_pcr))
+                    proof = Proof.TESTED_PCR
+                    text = String.format("%s (DGC)", resources.getString(R.string.covid_check_tested_pcr))
                     dgc.assertTestPCRRules(
                         dgcEntry as TestCert,
                         binding.settings!!.allow_tested_pcr_min,
@@ -248,16 +253,16 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                     )
 
                     if (!binding.settings!!.allow_tested_pcr) {
-                        binding.hasAcceptableResult = false
-                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notallowed)
+                        proof = Proof.INVALID
+                        text = resources.getString(R.string.covid_check_scan_notallowed)
                     }
 
-                    checkProofValidUntil = dgcEntry.sampleCollection!!.plusHours(binding.settings!!.allow_tested_pcr_max.toLong())
+                    validUntil = dgcEntry.sampleCollection!!.plusHours(binding.settings!!.allow_tested_pcr_max.toLong())
                 }
                 TestCertType.POSITIVE_ANTIGEN_TEST,
                 TestCertType.NEGATIVE_ANTIGEN_TEST -> {
-                    checkProof = Proof.TESTED_AG_UNKNOWN
-                    tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_tested_other))
+                    proof = Proof.TESTED_AG_UNKNOWN
+                    text = String.format("%s (DGC)", resources.getString(R.string.covid_check_tested_other))
                     dgc.assertTestAGRules(
                         dgcEntry as TestCert,
                         binding.settings!!.allow_tested_antigen_unknown_min,
@@ -265,15 +270,15 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                     )
 
                     if (!binding.settings!!.allow_tested_antigen_unknown) {
-                        binding.hasAcceptableResult = false
-                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notallowed)
+                        proof = Proof.INVALID
+                        text = resources.getString(R.string.covid_check_scan_notallowed)
                     }
 
-                    checkProofValidUntil = dgcEntry.sampleCollection!!.plusHours(binding.settings!!.allow_tested_antigen_unknown_max.toLong())
+                    validUntil = dgcEntry.sampleCollection!!.plusHours(binding.settings!!.allow_tested_antigen_unknown_max.toLong())
                 }
                 RecoveryCertType.RECOVERY -> {
-                    checkProof = Proof.CURED
-                    tvScanValid.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_recovered))
+                    proof = Proof.CURED
+                    text = String.format("%s (DGC)", resources.getString(R.string.covid_check_recovered))
                     dgc.assertRecoveryRules(
                         dgcEntry as Recovery,
                         binding.settings!!.allow_cured_min,
@@ -281,101 +286,127 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                     )
 
                     if (!binding.settings!!.allow_cured) {
-                        binding.hasAcceptableResult = false
-                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notallowed)
+                        proof = Proof.INVALID
+                        text = resources.getString(R.string.covid_check_scan_notallowed)
                     }
 
                     if (!isValid(dgcEntry.validFrom, dgcEntry.validUntil)) {
-                        binding.hasAcceptableResult = false
-                        tvScanInvalidReason.text = resources.getString(R.string.covid_check_scan_notvalid)
+                        proof = Proof.INVALID
+                        text = resources.getString(R.string.covid_check_scan_notvalid)
                     }
 
                     // TODO: use time zone of event instead?
-                    checkProofValidUntil = dgcEntry.firstResult!!.plusDays(binding.settings!!.allow_vaccinated_max.toLong()).atStartOfDay(ZoneId.systemDefault())
+                    validUntil = dgcEntry.firstResult!!.plusDays(binding.settings!!.allow_vaccinated_max.toLong()).atStartOfDay(ZoneId.systemDefault())
                 }
                 else -> {
-                    binding.hasAcceptableResult = false
-
+                    proof = Proof.INVALID
                 }
             }
+            binding.scanResult = ScanResult(
+                proof,
+                "DGC",
+                validUntil,
+                text,
+                covCertificate.fullName,
+                covCertificate.birthDate,
+                dgcEntry
+            )
         } catch (exception: Exception) {
-            binding.hasAcceptableResult = false
-            when (exception) {
+            val text = when (exception) {
                 is ValidationRuleViolationException -> {
-                    tvScanInvalidReason.text = String.format("%s (%s)", resources.getString(getValidationException(exception.ruleIdentifier)), exception.ruleIdentifier)
+                    String.format("%s (%s)", resources.getString(getValidationException(exception.ruleIdentifier)), exception.ruleIdentifier)
                 }
                 is BadCoseSignatureException -> {
-                    tvScanInvalidReason.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_badcosesignature))
+                    String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_badcosesignature))
                 }
                 is ExpiredCwtException -> {
-                    tvScanInvalidReason.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_expiredcwt))
+                    String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_expiredcwt))
                 }
                 is NoMatchingExtendedKeyUsageException -> {
-                    tvScanInvalidReason.text = String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_nomatchingextendedkeyusage))
+                    String.format("%s (DGC)", resources.getString(R.string.covid_check_scan_nomatchingextendedkeyusage))
                 }
                 else -> {
                     exception.printStackTrace()
-                    tvScanInvalidReason.text = String.format("%s (EX)", resources.getString(R.string.covid_check_scan_invalid_unknown_error))
+                    String.format("%s (EX)", resources.getString(R.string.covid_check_scan_invalid_unknown_error))
                 }
             }
+            binding.scanResult = ScanResult(
+                Proof.INVALID,
+                "DGC",
+                null,
+                text,
+                null,
+                null,
+                null
+            )
         }
 
         // If the result is not good, we allow to scan a new document right away.
-        if (binding.hasAcceptableResult == true) {
+        if (binding.scanResult?.isValid() == true) {
             hardwareScanner.stop(this)
         }
     }
 
-    fun getValidationException(ruleIdentifier: String): Int {
+    private fun getValidationException(ruleIdentifier: String): Int {
         return resources.getIdentifier(String.format("covid_check_rules_%s", ruleIdentifier), "string", packageName)
     }
 
-    fun hideAllSections(except: View? = null) {
-        clVacc.visibility = View.GONE
-        clCured.visibility = View.GONE
-        clOther.visibility = View.GONE
-        clTested.visibility = View.GONE
-        clTested2.visibility = View.GONE
-        except?.visibility = View.VISIBLE
+    private fun checkIfDone() {
+        var rules = binding.settings!!.combination_rules
+        if (rules.isNullOrBlank()) {
+            rules = sampleRuleSingleFactor
+        }
+        if (CombinationRules(rules).isValid(binding.storedResults!!)) {
+            setResult(
+                Activity.RESULT_OK,
+                Intent().putExtra(
+                    RESULT_CODE,
+                    getQuestionResult()
+                )
+            )
+            finish()
+        }
     }
 
-    fun getQuestionResult(): String {
-        val discloseProof = when {
-            checkProof == Proof.VACC && binding.settings!!.record_proof_vaccinated -> {
-                true
+    private fun getQuestionResult(): String {
+        return binding.storedResults!!.entries.map {
+            val discloseProof = when {
+                it.value.proof == Proof.VACC && binding.settings!!.record_proof_vaccinated -> {
+                    true
+                }
+                it.value.proof == Proof.CURED && binding.settings!!.record_proof_cured -> {
+                    true
+                }
+                it.value.proof == Proof.OTHER && binding.settings!!.record_proof_other -> {
+                    true
+                }
+                it.value.proof == Proof.TESTED_PCR && binding.settings!!.record_proof_tested_pcr -> {
+                    true
+                }
+                it.value.proof == Proof.TESTED_AG_UNKNOWN && binding.settings!!.record_proof_tested_antigen_unknown -> {
+                    true
+                }
+                else -> {
+                    false
+                }
             }
-            checkProof == Proof.CURED && binding.settings!!.record_proof_cured -> {
-                true
-            }
-            checkProof == Proof.OTHER && binding.settings!!.record_proof_other -> {
-                true
-            }
-            checkProof == Proof.TESTED_PCR && binding.settings!!.record_proof_tested_pcr -> {
-                true
-            }
-            checkProof == Proof.TESTED_AG_UNKNOWN && binding.settings!!.record_proof_tested_antigen_unknown -> {
-                true
-            }
-            else -> {
-                false
-            }
-        }
-        val discloseValidityTime = binding.settings!!.record_validity_time
+            val discloseValidityTime = binding.settings!!.record_validity_time
 
-        val components = mutableListOf<String>(
-                String.format("provider: %s", checkProvider)
-        )
-        components.add(
-                String.format("proof: %s", if (discloseProof) checkProof else "withheld")
-        )
-        if (discloseValidityTime) {
-            // TODO: use time zone of event instead?
-            val validityTime = checkProofValidUntil ?: java.time.LocalDate.now().atStartOfDay(ZoneId.systemDefault()).plusDays(1)
-            components.add(
-                    String.format("expires: %s", validityTime.toOffsetDateTime().toString())
+            val components = mutableListOf<String>(
+                String.format("provider: %s", it.value.provider)
             )
-        }
-        return components.joinToString(", ")
+            components.add(
+                String.format("proof: %s", if (discloseProof) it.value.proof else "withheld")
+            )
+            if (discloseValidityTime) {
+                // TODO: use time zone of event instead?
+                val validityTime = it.value.validUntil ?: java.time.LocalDate.now().atStartOfDay(ZoneId.systemDefault()).plusDays(1)
+                components.add(
+                    String.format("expires: %s", validityTime.toOffsetDateTime().toString())
+                )
+            }
+            return@map components.joinToString(", ")
+        }.joinToString("\n")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
