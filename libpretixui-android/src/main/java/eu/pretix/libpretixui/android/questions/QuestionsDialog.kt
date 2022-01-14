@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Bundle
 import android.text.InputType
 import android.view.*
 import android.widget.*
@@ -86,6 +87,10 @@ interface QuestionsDialogInterface : DialogInterface {
     fun setOnCancelListener(listener: DialogInterface.OnCancelListener?)
 
     fun isShowing(): Boolean
+
+    fun onRestoreInstanceState(savedInstanceState: Bundle)
+
+    fun onSaveInstanceState(): Bundle
 }
 
 class QuestionsDialog(
@@ -101,7 +106,8 @@ class QuestionsDialog(
         val attendeeDOB: String? = null,
         val ticketId: String? = null,
         val ticketType: String? = null,
-        val useHardwareScan: Boolean = false
+        val useHardwareScan: Boolean = false,
+        val isResumed: Boolean = false
 ) : AlertDialog(ctx), QuestionsDialogInterface {
     companion object {
         val hf = SimpleDateFormat("HH:mm", Locale.US)
@@ -169,7 +175,7 @@ class QuestionsDialog(
             }
         }
 
-        if (questions.size == 1 && questions[0].identifier == "pretix_covid_certificates_question" && questions[0].type == QuestionType.T) {
+        if (questions.size == 1 && questions[0].identifier == "pretix_covid_certificates_question" && questions[0].type == QuestionType.T && !isResumed && (values == null || values[questions[0]].isNullOrBlank())) {
             // Don't have the user click manually
             startCovidValidation(questions[0])
         }
@@ -512,122 +518,131 @@ class QuestionsDialog(
         }
     }
 
+    class QuestionInvalid(val msgid: Int) : Exception()
+
+    private fun serializeAnswer(question: QuestionLike): Answer {
+        var answer = ""
+        var empty = false
+        var invalid = false
+        val options = mutableListOf<QuestionOption>()
+        val field = fieldViews[question]
+        when (question.type) {
+            QuestionType.S, QuestionType.T, QuestionType.EMAIL -> {
+                if (question.identifier == "pretix_covid_certificates_question") {
+                    val fieldset = field as List<View>
+                    answer = (field[0] as TextView).tag as String? ?: ""
+                } else {
+                    answer = (field as EditText).text.toString()
+                }
+                empty = answer.trim() == ""
+            }
+            QuestionType.TEL -> {
+                answer = (field as PhoneEditText).phoneNumberE164 ?: ""
+                empty = answer.trim() == ""
+                invalid = !(field as PhoneEditText).isValid()
+            }
+            QuestionType.N -> {
+                answer = (field as EditText).text.toString()
+                empty = answer.trim() == ""
+            }
+            QuestionType.B -> {
+                answer = if ((field as CheckBox).isChecked) "True" else "False"
+                empty = answer == "False"
+            }
+            QuestionType.F -> {
+                val fieldset = field as List<View>
+                answer = if (fieldset[0].tag is String && (fieldset[0].tag as String).contains("://"))
+                    fieldset[0].tag as String
+                else if (fieldset[0].tag != null)
+                    "file://${fieldset[0].tag as String}"
+                else
+                    ""
+                empty = answer.trim() == ""
+            }
+            QuestionType.M -> {
+                empty = true
+                val aw = StringBuilder()
+                for (f in (field as List<CheckBox>)) {
+                    if (f.isChecked) {
+                        if (!empty) {
+                            aw.append(",")
+                        }
+                        aw.append((f.tag as QuestionOption).server_id)
+                        options.add(f.tag as QuestionOption)
+                        empty = false
+                    }
+                }
+                answer = aw.toString()
+            }
+            QuestionType.CC -> {
+                val opt = ((field as Spinner).selectedItem as CountryCode)
+                answer = opt.alpha2
+            }
+            QuestionType.C -> {
+                val opt = ((field as Spinner).selectedItem as QuestionOption)
+                if (opt.server_id == 0L) {
+                    empty = true
+                } else {
+                    answer = opt.server_id.toString()
+                    options.add(opt)
+                }
+            }
+            QuestionType.D -> {
+                empty = ((field as DatePickerField).value == null)
+                if (!empty) {
+                    answer = df.format(field.value!!.time)
+                }
+            }
+            QuestionType.H -> {
+                empty = ((field as TimePickerField).value == null)
+                if (!empty) {
+                    answer = hf.format(field.value!!.toDateTimeToday().toDate())
+                }
+            }
+            QuestionType.W -> {
+                val fieldset = field as List<View>
+                empty = (
+                        (fieldset[0] as DatePickerField).value == null
+                                || (fieldset[1] as TimePickerField).value == null
+                        )
+                if (!empty) {
+                    answer = wf.format(
+                            LocalDate.fromCalendarFields((fieldset[0] as DatePickerField).value).toDateTime(
+                                    (fieldset[1] as TimePickerField).value
+                            ).toDate()
+                    )
+                }
+            }
+        }
+        if (empty && question.requiresAnswer()) {
+            throw QuestionInvalid(R.string.question_input_required)
+        } else if (empty) {
+            return Answer(question, "", options)
+        } else if (invalid) {
+            throw QuestionInvalid(R.string.question_input_invalid)
+        } else {
+            try {
+                question.clean_answer(answer, question.options!!)
+            } catch (e: QuestionLike.ValidationException) {
+                throw QuestionInvalid(R.string.question_input_invalid)
+            }
+            return Answer(question, answer, options)
+        }
+    }
+
     private fun validate() {
         val answers = ArrayList<Answer>()
         var has_errors = false
 
         for (question in questions) {
-            var answer = ""
-            var empty = false
-            var invalid = false
-            val options = mutableListOf<QuestionOption>()
             val field = fieldViews[question]
-            when (question.type) {
-                QuestionType.S, QuestionType.T, QuestionType.EMAIL -> {
-                    if (question.identifier == "pretix_covid_certificates_question") {
-                        val fieldset = field as List<View>
-                        answer = (field[0] as TextView).tag as String? ?: ""
-                    } else {
-                        answer = (field as EditText).text.toString()
-                    }
-                    empty = answer.trim() == ""
-                }
-                QuestionType.TEL -> {
-                    answer = (field as PhoneEditText).phoneNumberE164 ?: ""
-                    empty = answer.trim() == ""
-                    invalid = !(field as PhoneEditText).isValid()
-                }
-                QuestionType.N -> {
-                    answer = (field as EditText).text.toString()
-                    empty = answer.trim() == ""
-                }
-                QuestionType.B -> {
-                    answer = if ((field as CheckBox).isChecked) "True" else "False"
-                    empty = answer == "False"
-                }
-                QuestionType.F -> {
-                    val fieldset = field as List<View>
-                    answer = if (fieldset[0].tag is String && (fieldset[0].tag as String).contains("://"))
-                        fieldset[0].tag as String
-                    else if (fieldset[0].tag != null)
-                        "file://${fieldset[0].tag as String}"
-                    else
-                        ""
-                    empty = answer.trim() == ""
-                }
-                QuestionType.M -> {
-                    empty = true
-                    val aw = StringBuilder()
-                    for (f in (field as List<CheckBox>)) {
-                        if (f.isChecked) {
-                            if (!empty) {
-                                aw.append(",")
-                            }
-                            aw.append((f.tag as QuestionOption).server_id)
-                            options.add(f.tag as QuestionOption)
-                            empty = false
-                        }
-                    }
-                    answer = aw.toString()
-                }
-                QuestionType.CC -> {
-                    val opt = ((field as Spinner).selectedItem as CountryCode)
-                    answer = opt.alpha2
-                }
-                QuestionType.C -> {
-                    val opt = ((field as Spinner).selectedItem as QuestionOption)
-                    if (opt.server_id == 0L) {
-                        empty = true
-                    } else {
-                        answer = opt.server_id.toString()
-                        options.add(opt)
-                    }
-                }
-                QuestionType.D -> {
-                    empty = ((field as DatePickerField).value == null)
-                    if (!empty) {
-                        answer = df.format(field.value!!.time)
-                    }
-                }
-                QuestionType.H -> {
-                    empty = ((field as TimePickerField).value == null)
-                    if (!empty) {
-                        answer = hf.format(field.value!!.toDateTimeToday().toDate())
-                    }
-                }
-                QuestionType.W -> {
-                    val fieldset = field as List<View>
-                    empty = (
-                            (fieldset[0] as DatePickerField).value == null
-                                    || (fieldset[1] as TimePickerField).value == null
-                            )
-                    if (!empty) {
-                        answer = wf.format(
-                                LocalDate.fromCalendarFields((fieldset[0] as DatePickerField).value).toDateTime(
-                                        (fieldset[1] as TimePickerField).value
-                                ).toDate()
-                        )
-                    }
-                }
-            }
 
-            if (empty && question.requiresAnswer()) {
+            try {
+                answers.add(serializeAnswer(question))
+                addQuestionsError(ctx, field, labels[question], 0)
+            } catch (e: QuestionInvalid) {
+                addQuestionsError(ctx, field, labels[question], e.msgid)
                 has_errors = true
-                addQuestionsError(ctx, field, labels[question], R.string.question_input_required)
-            } else if (empty) {
-                answers.add(Answer(question, "", options))
-            } else if (invalid) {
-                has_errors = true
-                addQuestionsError(ctx, field, labels[question], R.string.question_input_invalid)
-            } else {
-                try {
-                    question.clean_answer(answer, question.options!!)
-                    addQuestionsError(ctx, field, labels[question], 0)
-                } catch (e: QuestionLike.ValidationException) {
-                    has_errors = true
-                    addQuestionsError(ctx, field, labels[question], R.string.question_input_invalid)
-                }
-                answers.add(Answer(question, answer, options))
             }
         }
         if (!has_errors) {
@@ -636,6 +651,28 @@ class QuestionsDialog(
         } else {
             Toast.makeText(ctx, R.string.question_validation_error, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+       if (savedInstanceState.getString("_waitingForAnswerFor", "") != "") {
+           waitingForAnswerFor = questions.find { it.identifier == savedInstanceState.getString("_waitingForAnswerFor", "") }
+       }
+    }
+
+    override fun onSaveInstanceState(): Bundle {
+        val state = Bundle()
+        for (question in questions) {
+            try {
+                val a = serializeAnswer(question)
+                state.putString(a.question.identifier, a.value)
+            } catch (e: QuestionInvalid) {
+                // We do not store invalid answers, that's not perfect, but good enough for now
+            }
+        }
+        if (waitingForAnswerFor != null) {
+            state.putString("_waitingForAnswerFor", waitingForAnswerFor!!.identifier)
+        }
+        return state
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -695,18 +732,21 @@ class QuestionsDialog(
     }
 }
 
-fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
-                        values: Map<QuestionLike, String>? = null,
-                        defaultCountry: String?,
-                        glideLoader: ((String) -> GlideUrl)? = null,
-                        retryHandler: ((MutableList<Answer>) -> Unit),
-                        copyFrom: Map<QuestionLike, String>? = null,
-                        covidCheckSettings: CovidCheckSettings? = SAMPLE_SETTINGS,
-                        attendeeName: String? = null,
-                        attendeeDOB: String? = null,
-                        ticketId: String? = null,
-                        ticketType: String? = null,
-                        useHardwareScan: Boolean = false): QuestionsDialogInterface {
+fun showQuestionsDialog(
+        ctx: Activity, questions: List<QuestionLike>,
+        values: Map<QuestionLike, String>? = null,
+        defaultCountry: String?,
+        glideLoader: ((String) -> GlideUrl)? = null,
+        retryHandler: ((MutableList<Answer>) -> Unit),
+        copyFrom: Map<QuestionLike, String>? = null,
+        covidCheckSettings: CovidCheckSettings? = SAMPLE_SETTINGS,
+        attendeeName: String? = null,
+        attendeeDOB: String? = null,
+        ticketId: String? = null,
+        ticketType: String? = null,
+        useHardwareScan: Boolean = false,
+        isResumed: Boolean = false,
+): QuestionsDialogInterface {
     val dialog = QuestionsDialog(
             ctx,
             questions,
@@ -720,7 +760,8 @@ fun showQuestionsDialog(ctx: Activity, questions: List<QuestionLike>,
             attendeeDOB,
             ticketId,
             ticketType,
-            useHardwareScan
+            useHardwareScan,
+            isResumed
     )
     dialog.setCanceledOnTouchOutside(false)
     dialog.show()
