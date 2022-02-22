@@ -1,25 +1,22 @@
 package eu.pretix.libpretixui.android.covid
 
 import android.app.Application
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
 import com.ensody.reactivestate.DependencyAccessor
-import de.rki.covpass.sdk.cert.*
+import de.rki.covpass.sdk.cert.QRCoder
 import de.rki.covpass.sdk.cert.models.*
-import de.rki.covpass.sdk.dependencies.sdkDeps
-import de.rki.covpass.sdk.cert.models.DGCEntry
-import de.rki.covpass.sdk.cert.models.Recovery
-import de.rki.covpass.sdk.cert.models.TestCert
-import de.rki.covpass.sdk.cert.models.Vaccination
+import de.rki.covpass.sdk.cert.toTrustedCerts
 import de.rki.covpass.sdk.dependencies.SdkDependencies
+import de.rki.covpass.sdk.dependencies.sdkDeps
 import de.rki.covpass.sdk.utils.isOlderThan
-import de.rki.covpass.sdk.worker.DSC_UPDATE_INTERVAL_HOURS
-import de.rki.covpass.sdk.worker.DscListWorker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.conscrypt.Conscrypt
 import java.security.Security
-import java.util.concurrent.TimeUnit
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 const val RULE_VR_001: String = "VR_001"
 const val RULE_VR_002: String = "VR_002"
@@ -37,6 +34,10 @@ class ValidationRuleViolationException(val ruleIdentifier: String) : Exception()
 
 @OptIn(DependencyAccessor::class)
 class DGC() {
+    public companion object {
+        public const val UPDATE_INTERVAL_HOURS: Long = 24
+    }
+
     fun check(qrContent: String): Pair<DGCEntry, CovCertificate> {
 
         val qrCoder: QRCoder = sdkDeps.qrCoder
@@ -50,9 +51,9 @@ class DGC() {
         }
     }
 
-    fun assertVaccinationRules(vaccination: Vaccination, minDays: Int, maxDays: Int) {
+    fun assertVaccinationRules(vaccination: Vaccination, minDays: Int, maxDays: Int, products: Set<String>) {
         assertRuleVr001(vaccination)
-        assertRuleVr002(vaccination)
+        assertRuleVr002(vaccination, products)
         assertRuleVr003(vaccination, minDays)
         assertRuleVr004(vaccination, maxDays)
     }
@@ -80,14 +81,9 @@ class DGC() {
         assertValidationSuccess(vaccination.doseNumber == vaccination.totalSerialDoses || vaccination.isBooster, RULE_VR_001)
     }
 
-    private fun assertRuleVr002(vaccination: Vaccination) {
+    private fun assertRuleVr002(vaccination: Vaccination, products: Set<String>) {
         assertValidationSuccess(
-            vaccination.product in listOf(
-                "EU/1/20/1528", // Comirnaty
-                "EU/1/20/1525", // Janssen
-                "EU/1/20/1507", // Moderna
-                "EU/1/21/1529"  // Vaxzevria
-            ),
+            vaccination.product in products,
             RULE_VR_002
         )
     }
@@ -151,16 +147,28 @@ class DGC() {
         }
 
         sdkDeps.validator.updateTrustedCerts(sdkDeps.dscRepository.dscList.value.toTrustedCerts())
-
-        val tag = "dscListWorker"
-        val dscListWorker: PeriodicWorkRequest =
-            PeriodicWorkRequest.Builder(DscListWorker::class.java, DSC_UPDATE_INTERVAL_HOURS, TimeUnit.HOURS)
-                .addTag(tag)
-                .build()
-        WorkManager.getInstance(application).enqueueUniquePeriodicWork(
-            tag,
-            ExistingPeriodicWorkPolicy.KEEP,
-            dscListWorker,
-        )
     }
+
+    val uiScope = CoroutineScope(Dispatchers.Main)
+
+    inner class Updater(private var block: suspend CoroutineScope.() -> Unit) {
+        private var job: Job? = null
+
+        fun update() {
+            if (job?.isActive != true) {
+                job = uiScope.launch(block = block)
+            }
+        }
+    }
+
+    val backgroundDscListUpdater: Updater = Updater {
+        if (sdkDeps.dscRepository.lastUpdate.value.isBeforeUpdateInterval()) {
+            sdkDeps.dscListUpdater.update()
+        }
+    }
+}
+
+
+public fun Instant.isBeforeUpdateInterval(): Boolean {
+    return isBefore(Instant.now().minus(DGC.UPDATE_INTERVAL_HOURS, ChronoUnit.HOURS))
 }

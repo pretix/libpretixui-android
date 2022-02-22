@@ -231,7 +231,8 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                     dgc.assertVaccinationRules(
                         dgcEntry as Vaccination,
                         binding.settings!!.allow_vaccinated_min,
-                        binding.settings!!.allow_vaccinated_max
+                        binding.settings!!.allow_vaccinated_max,
+                        binding.settings!!.allow_vaccinated_products,
                     )
 
                     if (!binding.settings!!.allow_vaccinated) {
@@ -369,6 +370,9 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
     }
 
     private fun getQuestionResult(): String {
+        if (!binding.settings!!.record_proof) {
+            return ""
+        }
         return binding.storedResults!!.entries.map {
             val discloseProof = when {
                 it.value.proof == Proof.VACC && binding.settings!!.record_proof_vaccinated -> {

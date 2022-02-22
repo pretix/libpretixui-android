@@ -5,9 +5,11 @@ import org.joda.time.LocalDateTime
 import java.io.Serializable
 
 data class CovidCheckSettings(
+    val record_proof: Boolean,
     val allow_vaccinated: Boolean,
     val allow_vaccinated_min: Int,  // days ago
     val allow_vaccinated_max: Int, // days ago
+    val allow_vaccinated_products: Set<String>,
     val record_proof_vaccinated: Boolean,
     val allow_cured: Boolean,
     val allow_cured_min: Int, // days ago
@@ -67,8 +69,15 @@ data class CovidCheckSettings(
 
 val SAMPLE_SETTINGS = CovidCheckSettings(
     true,
+    true,
     14,
-    365,
+    365, 
+    setOf(
+            "EU/1/20/1528", // Comirnaty
+            "EU/1/20/1525", // Janssen
+            "EU/1/20/1507", // Moderna
+            "EU/1/21/1529"  // Vaxzevria
+    ),
     false,
     true,
     27,
