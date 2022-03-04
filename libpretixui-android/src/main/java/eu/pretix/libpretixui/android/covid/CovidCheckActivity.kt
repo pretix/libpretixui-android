@@ -141,7 +141,12 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
 
         staConfirm.onSlideCompleteListener = object : SlideToActView.OnSlideCompleteListener {
             override fun onSlideComplete(view: SlideToActView) {
-                binding.storedResults = (binding.storedResults!!.keys + setOf(binding.scanResult!!.proof)).associateWith {
+                if (binding.scanResult == null) {
+                    // Weird race condition, but seems to be possible (PRETIXSCAN-ANDROID-F2)
+                    onBackPressed()
+                    return
+                }
+                binding.storedResults = ((binding.storedResults ?: emptyMap()).keys + setOf(binding.scanResult!!.proof)).associateWith {
                     if (it == binding.scanResult!!.proof) {
                         binding.scanResult!!
                     } else {
