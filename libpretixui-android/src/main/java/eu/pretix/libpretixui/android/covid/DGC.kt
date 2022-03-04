@@ -162,6 +162,9 @@ class DGC() {
     }
 
     val backgroundDscListUpdater: Updater = Updater {
+        if (android.os.Build.VERSION.SDK_INT < 23) {
+            return@Updater
+        }
         if (sdkDeps.dscRepository.lastUpdate.value.isBeforeUpdateInterval()) {
             sdkDeps.dscListUpdater.update()
         }
