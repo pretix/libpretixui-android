@@ -14,6 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.conscrypt.Conscrypt
+import java.io.IOException
 import java.security.Security
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -166,7 +167,12 @@ class DGC() {
             return@Updater
         }
         if (sdkDeps.dscRepository.lastUpdate.value.isBeforeUpdateInterval()) {
-            sdkDeps.dscListUpdater.update()
+            try {
+                sdkDeps.dscListUpdater.update()
+            } catch (e: IOException) {
+                // We do not want to crash for that
+                e.printStackTrace()
+            }
         }
     }
 }
