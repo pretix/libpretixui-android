@@ -717,7 +717,7 @@ class QuestionsDialog(
                 }
             }
             return true
-        } else if (requestCode == PhotoCaptureActivity.REQUEST_CODE) {
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && requestCode == PhotoCaptureActivity.REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 val filename = data!!.getStringExtra(PhotoCaptureActivity.RESULT_FILENAME)!!
                 val views = fieldViews[waitingForAnswerFor] as List<View>
