@@ -81,6 +81,7 @@ class HardwareScanner(val receiver: ScanReceiver) {
         // Active by default
         // Configure via Settings > System > Scanner Setting > Data Output Mode > Output via Broadcast
         filter.addAction("com.android.scanner.ACTION_DATA_CODE_RECEIVED")
+        filter.addAction("com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED")
 
         ctx.registerReceiver(scanReceiver, filter)
     }
