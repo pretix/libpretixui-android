@@ -428,7 +428,7 @@ class QuestionsDialog(
                     fieldC.adapter = OptionAdapter(ctx, opts.filter { it != null } as MutableList<QuestionOption>)
 
                     setters[question] = {
-                        var i = 0
+                        var i = 1  // 0 = empty opt
                         for (opt in question.options) {
                             if (opt.server_id.toString() == it) {
                                 fieldC.setSelection(i)
