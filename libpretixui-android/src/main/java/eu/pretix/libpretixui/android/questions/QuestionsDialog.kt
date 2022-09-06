@@ -49,8 +49,8 @@ internal class OptionAdapter(context: Context, objects: MutableList<QuestionOpti
 
 
 fun allCountries(): List<CountryCode> {
-    val countries = mutableListOf<CountryCode>();
-    countries.addAll(CountryCode.values())
+    val countries = mutableListOf<CountryCode>()
+    countries.addAll(CountryCode.values().filter { it.assignment == CountryCode.Assignment.OFFICIALLY_ASSIGNED })
     countries.sortBy { it.getName() }
     return countries
 }
