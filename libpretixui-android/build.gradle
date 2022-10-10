@@ -5,11 +5,11 @@ apply plugin: 'kotlin-kapt'
 
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 30
+        targetSdkVersion 32
         multiDexEnabled true
 
         vectorDrawables {
@@ -92,6 +92,9 @@ dependencies {
     implementation "com.ncorti:slidetoact:0.9.0"
     kapt 'com.github.bumptech.glide:compiler:4.12.0'
 
+    // bump viewmodel-ktx and workmanager used by covpass for sdk compat
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'com.ibm.health.de.rki.covpass:covpass-sdk:1.390.3'
 
     // Required by CovPass

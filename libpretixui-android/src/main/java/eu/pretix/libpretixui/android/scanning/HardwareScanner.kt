@@ -29,8 +29,8 @@ class HardwareScanner(val receiver: ScanReceiver) {
                 receiver.scanResult(barcode)
             } else if (intent.hasExtra("barocode")) {
                 // Intent receiver for LECOM-manufactured hardware scanners
-                val barcode = intent?.getByteArrayExtra("barocode")!! // sic!
-                val barocodelen = intent?.getIntExtra("length", 0)
+                val barcode = intent.getByteArrayExtra("barocode")!! // sic!
+                val barocodelen = intent.getIntExtra("length", 0)
                 val barcodeStr = String(barcode, 0, barocodelen)
                 receiver.scanResult(barcodeStr)
             } else if (intent.hasExtra("decode_rslt")) {
