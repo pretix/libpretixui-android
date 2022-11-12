@@ -80,10 +80,10 @@ dependencies {
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.github.pretix:json-logic-kotlin:1.0.0'
+    implementation implementation(project(':android-libuvccamera',))
+    implementation implementation(project(':android-libusbcameracommon',))
 
-    implementation(project(':libuvccamera'))
-    implementation(project(':usbCameraCommon'))
-    implementation(project(':common'))
+    implementation implementation(project(':android-libserenegiantcommon',))
 
     implementation(project(':libpretixsync')) {
         transitive = false
