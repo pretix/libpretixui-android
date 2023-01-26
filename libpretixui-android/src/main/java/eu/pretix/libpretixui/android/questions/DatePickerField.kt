@@ -2,6 +2,7 @@ package eu.pretix.libpretixui.android.questions
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.text.InputType
 import androidx.appcompat.widget.AppCompatEditText
 import java.text.DateFormat
 import java.util.*
@@ -33,7 +34,12 @@ class DatePickerField(context: Context) : AppCompatEditText(context) {
 
 
     init {
-        isFocusable = false
+        isFocusableInTouchMode = false
+        isFocusable = true
+        showSoftInputOnFocus = false
+        setRawInputType(InputType.TYPE_NULL)
+        setTextIsSelectable(true)
+        keyListener = null
 
         setOnClickListener {
             DatePickerDialog(

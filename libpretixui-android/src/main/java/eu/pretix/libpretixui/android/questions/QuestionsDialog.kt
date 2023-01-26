@@ -173,6 +173,13 @@ class QuestionsDialog(
 
                 }
             }
+            setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_ENTER && event.isCtrlPressed) {
+                    validate()
+                    return@setOnKeyListener true
+                }
+                return@setOnKeyListener false
+            }
         }
 
         if (questions.size == 1 && questions[0].identifier == "pretix_covid_certificates_question" && questions[0].type == QuestionType.T && !isResumed && (values == null || values[questions[0]].isNullOrBlank())) {
@@ -187,6 +194,13 @@ class QuestionsDialog(
 
     private fun addFields() {
         val llFormFields = v.findViewById<LinearLayout>(R.id.llFormFields)!!
+        val ctrlEnterListener: (View, Int, KeyEvent) -> Boolean = fun (_, keyCode, event):Boolean {
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.isCtrlPressed) {
+                validate()
+                return true
+            }
+            return false
+        }
         for (question in questions) {
             val tv = TextView(ctx)
             tv.text = question.question
@@ -211,6 +225,7 @@ class QuestionsDialog(
                         fieldS.setDefaultCountry(defaultCountry)
                     }
                     fieldS.setPadding(0, 0, 0, 0)
+                    fieldS.setOnKeyListener(ctrlEnterListener)
                     llFormFields.addView(fieldS)
                 }
                 QuestionType.EMAIL -> {
@@ -224,6 +239,7 @@ class QuestionsDialog(
                     fieldS.setLines(1)
                     fieldS.isSingleLine = true
                     fieldS.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                    fieldS.setOnKeyListener(ctrlEnterListener)
                     fieldViews[question] = fieldS
                     llFormFields.addView(fieldS)
                 }
@@ -237,6 +253,7 @@ class QuestionsDialog(
                     setters[question] = { fieldS.setText(it) }
                     fieldS.setLines(1)
                     fieldS.isSingleLine = true
+                    fieldS.setOnKeyListener(ctrlEnterListener)
                     fieldViews[question] = fieldS
                     llFormFields.addView(fieldS)
                 }
@@ -284,6 +301,7 @@ class QuestionsDialog(
                         }
                         setters[question] = { fieldT.setText(it) }
                         fieldT.setLines(2)
+                        fieldT.setOnKeyListener(ctrlEnterListener)
                         fieldViews[question] = fieldT
                         llFormFields.addView(fieldT)
                     }
@@ -299,6 +317,7 @@ class QuestionsDialog(
                     fieldN.inputType = InputType.TYPE_CLASS_NUMBER.or(InputType.TYPE_NUMBER_FLAG_DECIMAL).or(InputType.TYPE_NUMBER_FLAG_SIGNED)
                     fieldN.isSingleLine = true
                     fieldN.setLines(1)
+                    fieldN.setOnKeyListener(ctrlEnterListener)
                     fieldViews[question] = fieldN
                     llFormFields.addView(fieldN)
                 }
@@ -312,6 +331,7 @@ class QuestionsDialog(
                         fieldB.isChecked = "True" == question.default
                     }
                     setters[question] = { fieldB.isChecked = "True" == it }
+                    fieldB.setOnKeyListener(ctrlEnterListener)
                     fieldViews[question] = fieldB
                     llFormFields.addView(fieldB)
                 }
@@ -389,6 +409,7 @@ class QuestionsDialog(
                         if (selected.contains(opt.server_id.toString())) {
                             field.isChecked = true
                         }
+                        field.setOnKeyListener(ctrlEnterListener)
                         fields.add(field)
                         llFormFields.addView(field)
                     }
@@ -417,6 +438,7 @@ class QuestionsDialog(
                     } else {
                         setters[question]!!(defaultcc.alpha2)
                     }
+                    fieldC.setOnKeyListener(ctrlEnterListener)
                     fieldViews[question] = fieldC
                     llFormFields.addView(fieldC)
                 }
@@ -443,6 +465,7 @@ class QuestionsDialog(
                     } else if (!question.default.isNullOrBlank()) {
                         setters[question]!!(question.default)
                     }
+                    fieldC.setOnKeyListener(ctrlEnterListener)
                     fieldViews[question] = fieldC
                     llFormFields.addView(fieldC)
                 }
@@ -460,6 +483,7 @@ class QuestionsDialog(
                     } else if (!question.default.isNullOrBlank()) {
                         setters[question]!!(question.default)
                     }
+                    fieldD.setOnKeyListener(ctrlEnterListener)
                     fieldViews[question] = fieldD
                     llFormFields.addView(fieldD)
                 }
@@ -477,6 +501,7 @@ class QuestionsDialog(
                     } else if (!question.default.isNullOrBlank()) {
                         setters[question]!!(question.default)
                     }
+                    fieldH.setOnKeyListener(ctrlEnterListener)
                     fieldViews[question] = fieldH
                     llFormFields.addView(fieldH)
                 }
@@ -488,12 +513,14 @@ class QuestionsDialog(
                     val fieldWD = DatePickerField(ctx)
                     fieldWD.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, 1f)
                     fieldWD.gravity = Gravity.CENTER
+                    fieldWD.setOnKeyListener(ctrlEnterListener)
                     fieldsW.add(fieldWD)
                     llInner.addView(fieldWD)
 
                     val fieldWH = TimePickerField(ctx)
                     fieldWH.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, 1f)
                     fieldWH.gravity = Gravity.CENTER
+                    fieldWH.setOnKeyListener(ctrlEnterListener)
                     fieldsW.add(fieldWH)
                     llInner.addView(fieldWH)
 
