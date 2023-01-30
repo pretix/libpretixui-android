@@ -2,6 +2,7 @@ package eu.pretix.libpretixui.android.questions
 
 import android.app.TimePickerDialog
 import android.content.Context
+import android.os.Build
 import android.text.InputType
 import androidx.appcompat.widget.AppCompatEditText
 import org.joda.time.LocalTime
@@ -31,7 +32,9 @@ class TimePickerField(context: Context) : AppCompatEditText(context) {
     init {
         isFocusableInTouchMode = false
         isFocusable = true
-        showSoftInputOnFocus = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            showSoftInputOnFocus = false
+        }
         setRawInputType(InputType.TYPE_NULL)
         setTextIsSelectable(true)
         keyListener = null
