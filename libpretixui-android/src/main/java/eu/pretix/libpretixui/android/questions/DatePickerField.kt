@@ -9,7 +9,7 @@ import java.text.DateFormat
 import java.util.*
 
 
-class DatePickerField(context: Context) : AppCompatEditText(context) {
+class DatePickerField(context: Context, minDate: Long? = null, maxDate: Long? = null) : AppCompatEditText(context) {
     internal var cal = Calendar.getInstance()
     internal var dateFormat: DateFormat = android.text.format.DateFormat.getDateFormat(context)
     internal var set = false
@@ -45,13 +45,20 @@ class DatePickerField(context: Context) : AppCompatEditText(context) {
         keyListener = null
 
         setOnClickListener {
-            DatePickerDialog(
+            val dialog = DatePickerDialog(
                     context,
                     dateChangeListener,
                     cal.get(Calendar.YEAR),
                     cal.get(Calendar.MONTH),
                     cal.get(Calendar.DAY_OF_MONTH)
-            ).show()
+            )
+            if (maxDate != null) {
+                dialog.datePicker.maxDate = maxDate
+            }
+            if (minDate != null) {
+                dialog.datePicker.minDate = minDate
+            }
+            dialog.show()
         }
     }
 

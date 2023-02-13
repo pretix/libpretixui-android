@@ -470,7 +470,7 @@ class QuestionsDialog(
                     llFormFields.addView(fieldC)
                 }
                 QuestionType.D -> {
-                    val fieldD = DatePickerField(ctx)
+                    val fieldD = DatePickerField(ctx, question.valid_date_min, question.valid_date_max)
                     setters[question] = {
                         try {
                             fieldD.setValue(df.parse(it))
@@ -510,7 +510,7 @@ class QuestionsDialog(
                     val llInner = LinearLayout(ctx)
                     llInner.orientation = LinearLayout.HORIZONTAL
 
-                    val fieldWD = DatePickerField(ctx)
+                    val fieldWD = DatePickerField(ctx, question.valid_datetime_min, question.valid_datetime_max)
                     fieldWD.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, 1f)
                     fieldWD.gravity = Gravity.CENTER
                     fieldWD.setOnKeyListener(ctrlEnterListener)
