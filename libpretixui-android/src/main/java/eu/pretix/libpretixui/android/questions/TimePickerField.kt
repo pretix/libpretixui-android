@@ -39,6 +39,11 @@ class TimePickerField(context: Context) : AppCompatEditText(context) {
         setTextIsSelectable(true)
         keyListener = null
 
+        setOnFocusChangeListener { view, b ->
+            if (b && view.isInTouchMode) {
+                view.callOnClick()
+            }
+        }
         setOnClickListener {
             TimePickerDialog(
                     context,

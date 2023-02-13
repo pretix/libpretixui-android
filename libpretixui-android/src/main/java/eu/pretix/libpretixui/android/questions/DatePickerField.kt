@@ -44,6 +44,11 @@ class DatePickerField(context: Context, minDate: Long? = null, maxDate: Long? = 
         setTextIsSelectable(true)
         keyListener = null
 
+        setOnFocusChangeListener { view, b ->
+            if (b && view.isInTouchMode) {
+                view.callOnClick()
+            }
+        }
         setOnClickListener {
             val dialog = DatePickerDialog(
                     context,
