@@ -166,7 +166,7 @@ class QuestionsDialog(
                             setters[cf.key]!!(cf.value)
                         }
                     }
-                    if (fieldViews[questions.first()] is EditText) {
+                    if (fieldViews[questions.first()] is EditText && fieldViews[questions.first()] !is DatePickerField) {
                         (fieldViews[questions.first()] as EditText).selectAll()
                         (fieldViews[questions.first()] as EditText).requestFocus()
                     }
