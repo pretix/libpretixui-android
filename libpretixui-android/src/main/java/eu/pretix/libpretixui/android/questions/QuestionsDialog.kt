@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.*
 import android.widget.*
+import android.widget.AdapterView.OnItemSelectedListener
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
@@ -332,6 +333,7 @@ class QuestionsDialog(
                     }
                     setters[question] = { fieldB.isChecked = "True" == it }
                     fieldB.setOnKeyListener(ctrlEnterListener)
+                    fieldB.setOnCheckedChangeListener { buttonView, isChecked -> updateDependencyVisibilities() }
                     fieldViews[question] = fieldB
                     llFormFields.addView(fieldB)
                 }
@@ -410,6 +412,7 @@ class QuestionsDialog(
                             field.isChecked = true
                         }
                         field.setOnKeyListener(ctrlEnterListener)
+                        field.setOnCheckedChangeListener { buttonView, isChecked -> updateDependencyVisibilities() }
                         fields.add(field)
                         llFormFields.addView(field)
                     }
@@ -466,6 +469,20 @@ class QuestionsDialog(
                         setters[question]!!(question.default)
                     }
                     fieldC.setOnKeyListener(ctrlEnterListener)
+                    fieldC.onItemSelectedListener = object : OnItemSelectedListener {
+                        override fun onItemSelected(
+                            parent: AdapterView<*>?,
+                            view: View?,
+                            position: Int,
+                            id: Long
+                        ) {
+                            updateDependencyVisibilities()
+                        }
+
+                        override fun onNothingSelected(parent: AdapterView<*>?) {
+                            updateDependencyVisibilities()
+                        }
+                    }
                     fieldViews[question] = fieldC
                     llFormFields.addView(fieldC)
                 }
@@ -542,6 +559,7 @@ class QuestionsDialog(
                     llFormFields.addView(llInner)
                 }
             }
+            updateDependencyVisibilities()
         }
     }
 
@@ -657,12 +675,86 @@ class QuestionsDialog(
         }
     }
 
+    private fun questionIsVisible(question: QuestionLike): Boolean {
+        if (question.dependency == null) {
+            return true
+        }
+        if (question.dependency.dependency !== null && !questionIsVisible(question.dependency)) {
+            return false
+        }
+        val field = fieldViews[question.dependency] ?: return false
+        when (question.dependency.type) {
+            QuestionType.C -> {
+                val opt = ((field as Spinner).selectedItem as QuestionOption)
+                if (question.dependencyValues.contains(opt.identifier)) {
+                    return true
+                }
+                return false
+            }
+            QuestionType.M -> {
+                for (f in (field as List<CheckBox>)) {
+                    if (f.isChecked) {
+                        if (question.dependencyValues.contains((f.tag as QuestionOption).identifier)) {
+                            return true
+                        }
+                    }
+                }
+                return false
+            }
+            QuestionType.B -> {
+                val value = (field as CheckBox).isChecked
+                return (question.dependencyValues.contains("True") && value) || (question.dependencyValues.contains("False") && !value)
+            }
+            else -> return false
+        }
+    }
+
+    private fun updateDependencyVisibilities() {
+        for (question in questions) {
+            if (question.dependency == null) continue
+
+            val shouldBeVisible = questionIsVisible(question)
+
+            val fields = when (question.type) {
+                QuestionType.T -> {
+                    if (question.identifier == "pretix_covid_certificates_question") {
+                        val l = mutableListOf<View>()
+                        l.addAll(fieldViews[question] as List<View>)
+                        l.add(labels[question]!!)
+                        l
+                    } else {
+                        listOf(labels[question], fieldViews[question] as View)
+                    }
+                }
+                QuestionType.F, QuestionType.M, QuestionType.W -> {
+                    val l = mutableListOf<View>()
+                    l.addAll(fieldViews[question] as List<View>)
+                    l.add(labels[question]!!)
+                    l
+                }
+                else -> {
+                    listOf(labels[question], fieldViews[question] as View?)
+                }
+            }
+
+            val desiredVisibility = if (shouldBeVisible) View.VISIBLE else View.GONE
+            if (fields.any { it != null && it.visibility != desiredVisibility }) {
+                for (f in fields) {
+                    f?.visibility = desiredVisibility
+                }
+            }
+        }
+    }
+
     private fun validate() {
         val answers = ArrayList<Answer>()
         var has_errors = false
 
         for (question in questions) {
             val field = fieldViews[question]
+            if (!questionIsVisible(question)) {
+                continue
+            }
 
             try {
                 answers.add(serializeAnswer(question))
@@ -760,7 +852,8 @@ class QuestionsDialog(
 }
 
 fun showQuestionsDialog(
-        ctx: Activity, questions: List<QuestionLike>,
+        ctx: Activity,
+        questions: List<QuestionLike>,
         values: Map<QuestionLike, String>? = null,
         defaultCountry: String?,
         glideLoader: ((String) -> GlideUrl)? = null,
