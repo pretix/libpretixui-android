@@ -723,7 +723,7 @@ class QuestionsDialog(
                         l.add(labels[question]!!)
                         l
                     } else {
-                        listOf(labels[question], fieldViews[question] as View)
+                        listOf(labels[question], fieldViews[question] as View?)
                     }
                 }
                 QuestionType.F, QuestionType.M, QuestionType.W -> {
