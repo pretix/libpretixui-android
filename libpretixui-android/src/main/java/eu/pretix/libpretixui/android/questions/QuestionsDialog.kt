@@ -717,7 +717,7 @@ class QuestionsDialog(
 
             val fields = when (question.type) {
                 QuestionType.T -> {
-                    if (question.identifier == "pretix_covid_certificates_question") {
+                    if (question.identifier == "pretix_covid_certificates_question" && fieldViews[question] != null) {
                         val l = mutableListOf<View>()
                         l.addAll(fieldViews[question] as List<View>)
                         l.add(labels[question]!!)
@@ -728,8 +728,10 @@ class QuestionsDialog(
                 }
                 QuestionType.F, QuestionType.M, QuestionType.W -> {
                     val l = mutableListOf<View>()
-                    l.addAll(fieldViews[question] as List<View>)
-                    l.add(labels[question]!!)
+                    if (fieldViews[question] != null) {
+                        l.addAll(fieldViews[question] as List<View>)
+                        l.add(labels[question]!!)
+                    }
                     l
                 }
                 else -> {
