@@ -13,7 +13,11 @@ import android.widget.*
 import android.widget.AdapterView.OnItemSelectedListener
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.text.bold
+import androidx.core.text.buildSpannedString
+import androidx.core.text.color
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -204,7 +208,19 @@ class QuestionsDialog(
         }
         for (question in questions) {
             val tv = TextView(ctx)
-            tv.text = question.question
+            tv.text = if (question.requiresAnswer()) {
+                buildSpannedString {
+                    append(question.question)
+                    append(" ")
+                    bold {
+                        color(ContextCompat.getColor(context, R.color.pretix_brand_light)) {
+                            append("*")
+                        }
+                    }
+                }
+            } else {
+                question.question
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 tv.setTextAppearance(R.style.TextAppearance_AppCompat_Medium)
             }
