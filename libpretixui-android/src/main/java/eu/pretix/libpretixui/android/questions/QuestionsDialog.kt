@@ -420,12 +420,8 @@ class QuestionsDialog(
                                                     dataSource: DataSource?,
                                                     isFirstResource: Boolean
                                                 ): Boolean {
-                                                    val mediaDir = ctx.externalMediaDirs.firstOrNull()?.let {
-                                                        File(it, "tmp").apply { mkdirs() }
-                                                    }
-                                                    val outDir = if (mediaDir != null && mediaDir.exists())  mediaDir else ctx.filesDir
                                                     val photoFile = File(
-                                                        outDir,
+                                                        getTmpDir(ctx),
                                                         SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()) + ".jpg"
                                                     )
                                                     resource.copyTo(photoFile)

@@ -27,6 +27,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.UVCCamera
+import eu.pretix.libpretixui.android.questions.getTmpDir
 import eu.pretix.libpretixui.android.uvc.CameraDialog
 import kotlinx.android.synthetic.main.activity_photo_capture.*
 import java.io.File
@@ -336,11 +337,7 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
     }
 
     private fun getOutputDirectory(): File {
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it, "tmp").apply { mkdirs() }
-        }
-        return if (mediaDir != null && mediaDir.exists())
-            mediaDir else filesDir
+        return getTmpDir(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
