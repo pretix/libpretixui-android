@@ -383,10 +383,12 @@ class QuestionsDialog(
                         circularProgressDrawable.start()
 
                         val imgF = ImageView(ctx)
+                        val btnFD = Button(ctx)
 
                         setters[question] = {
                             if (it.isNullOrBlank()) {
                                 imgF.visibility = View.GONE
+                                btnFD.visibility = View.GONE
                             } else {
                                 imgF.tag = it
                                 imgF.visibility = View.VISIBLE
@@ -406,6 +408,7 @@ class QuestionsDialog(
                                                 ): Boolean {
                                                     ctx.runOnUiThread {
                                                         imgF.tag = null
+                                                        btnFD.visibility = View.GONE
                                                     }
                                                     return false
                                                 }
@@ -451,6 +454,11 @@ class QuestionsDialog(
                         fieldsF.add(imgF)
                         llInner.addView(imgF)
 
+                        val llButtons = LinearLayout(ctx)
+                        llButtons.orientation = LinearLayout.VERTICAL
+                        llButtons.gravity = Gravity.CENTER
+                        llButtons.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+
                         val btnF = Button(ctx)
                         btnF.setText(R.string.take_photo)
                         btnF.setCompoundDrawablesWithIntrinsicBounds(ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_add_a_photo_24, null), null, null, null)
@@ -459,8 +467,20 @@ class QuestionsDialog(
                             startTakePhoto(question)
                         }
                         fieldsF.add(btnF)
-                        llInner.addView(btnF)
+                        llButtons.addView(btnF)
 
+                        btnFD.setText(R.string.delete_photo)
+                        btnFD.setCompoundDrawablesWithIntrinsicBounds(ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_baseline_cancel_24, null), null, null, null)
+                        btnFD.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                        btnFD.setOnClickListener {
+                            imgF.tag = null
+                            imgF.visibility = View.GONE
+                            btnFD.visibility = View.GONE
+                        }
+                        fieldsF.add(btnFD)
+                        llButtons.addView(btnFD)
+
+                        llInner.addView(llButtons)
                         fieldViews[question] = fieldsF
                         llFormFields.addView(llInner)
                     }
@@ -915,6 +935,8 @@ class QuestionsDialog(
                 val imageView = views[0] as ImageView
                 imageView.visibility = View.VISIBLE
                 imageView.tag = filename
+                val btnFD = views[2]
+                btnFD.visibility = View.VISIBLE
                 Glide.with(context).load(File(filename)).into(imageView)
             }
             return true
