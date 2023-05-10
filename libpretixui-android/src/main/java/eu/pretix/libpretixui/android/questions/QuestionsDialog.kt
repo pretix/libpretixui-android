@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -15,12 +17,20 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.text.bold
 import androidx.core.text.buildSpannedString
 import androidx.core.text.color
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.Request
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.target.Target
 import com.github.ialokim.phonefield.PhoneEditText
 import com.neovisionaries.i18n.CountryCode
 import eu.pretix.libpretixsync.check.QuestionType
@@ -35,6 +45,7 @@ import eu.pretix.libpretixui.android.covid.SAMPLE_SETTINGS
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
 import java.io.File
+import java.io.FileOutputStream
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -112,7 +123,8 @@ class QuestionsDialog(
         val ticketId: String? = null,
         val ticketType: String? = null,
         val useHardwareScan: Boolean = false,
-        val isResumed: Boolean = false
+        val isResumed: Boolean = false,
+        val clonePictures: Boolean = false,
 ) : AlertDialog(ctx), QuestionsDialogInterface {
     companion object {
         val hf = SimpleDateFormat("HH:mm", Locale.US)
@@ -378,13 +390,55 @@ class QuestionsDialog(
                             } else {
                                 imgF.tag = it
                                 imgF.visibility = View.VISIBLE
-                                if (it?.startsWith("http") == true && glideLoader != null) {
+                                if (it.startsWith("http") == true && glideLoader != null) {
+                                    if (clonePictures) {
+                                        imgF.tag = null
+                                        Glide.with(context)
+                                            .asFile()
+                                            .load(glideLoader.invoke(it))
+                                            .diskCacheStrategy(DiskCacheStrategy.DATA)
+                                            .listener(object: RequestListener<File>{
+                                                override fun onLoadFailed(
+                                                    e: GlideException?,
+                                                    model: Any?,
+                                                    target: Target<File>?,
+                                                    isFirstResource: Boolean
+                                                ): Boolean {
+                                                    ctx.runOnUiThread {
+                                                        imgF.tag = null
+                                                    }
+                                                    return false
+                                                }
+
+                                                override fun onResourceReady(
+                                                    resource: File,
+                                                    model: Any?,
+                                                    target: Target<File>?,
+                                                    dataSource: DataSource?,
+                                                    isFirstResource: Boolean
+                                                ): Boolean {
+                                                    val mediaDir = ctx.externalMediaDirs.firstOrNull()?.let {
+                                                        File(it, "tmp").apply { mkdirs() }
+                                                    }
+                                                    val outDir = if (mediaDir != null && mediaDir.exists())  mediaDir else ctx.filesDir
+                                                    val photoFile = File(
+                                                        outDir,
+                                                        SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()) + ".jpg"
+                                                    )
+                                                    resource.copyTo(photoFile)
+                                                    imgF.tag = "file:///" + photoFile.absolutePath
+                                                    return false
+                                                }
+                                            })
+                                            .submit()
+                                    }
                                     Glide.with(context)
-                                            .load(glideLoader!!(it!!))
+                                            .load(glideLoader.invoke(it))
                                             .placeholder(circularProgressDrawable)
+                                            .diskCacheStrategy(if (clonePictures) DiskCacheStrategy.ALL else DiskCacheStrategy.AUTOMATIC)
                                             .error(R.drawable.ic_baseline_broken_image_24)
                                             .into(imgF)
-                                } else if (it?.startsWith("file:///") == true) {
+                                } else if (it.startsWith("file:///") == true) {
                                     Glide.with(context).load(File(it.substring(7))).into(imgF)
                                 } else {
                                     Glide.with(context).load(File(it)).into(imgF)
@@ -884,6 +938,7 @@ fun showQuestionsDialog(
         ticketType: String? = null,
         useHardwareScan: Boolean = false,
         isResumed: Boolean = false,
+        clonePictures: Boolean = false,
 ): QuestionsDialogInterface {
     val dialog = QuestionsDialog(
             ctx,
@@ -899,7 +954,8 @@ fun showQuestionsDialog(
             ticketId,
             ticketType,
             useHardwareScan,
-            isResumed
+            isResumed,
+            clonePictures
     )
     dialog.setCanceledOnTouchOutside(false)
     dialog.show()
