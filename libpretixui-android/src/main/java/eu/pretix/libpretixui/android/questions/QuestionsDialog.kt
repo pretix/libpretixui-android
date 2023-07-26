@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -17,7 +15,6 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.text.bold
 import androidx.core.text.buildSpannedString
 import androidx.core.text.color
@@ -27,9 +24,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.request.Request
 import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
 import com.github.ialokim.phonefield.PhoneEditText
 import com.neovisionaries.i18n.CountryCode
@@ -45,7 +40,6 @@ import eu.pretix.libpretixui.android.covid.SAMPLE_SETTINGS
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
 import java.io.File
-import java.io.FileOutputStream
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -125,6 +119,7 @@ class QuestionsDialog(
         val useHardwareScan: Boolean = false,
         val isResumed: Boolean = false,
         val clonePictures: Boolean = false,
+        val allAnswersAreOptional: Boolean = false,
 ) : AlertDialog(ctx), QuestionsDialogInterface {
     companion object {
         val hf = SimpleDateFormat("HH:mm", Locale.US)
@@ -220,7 +215,7 @@ class QuestionsDialog(
         }
         for (question in questions) {
             val tv = TextView(ctx)
-            tv.text = if (question.requiresAnswer()) {
+            tv.text = if (!allAnswersAreOptional && question.requiresAnswer()) {
                 buildSpannedString {
                     append(question.question)
                     append(" ")
@@ -651,7 +646,7 @@ class QuestionsDialog(
 
     class QuestionInvalid(val msgid: Int) : Exception()
 
-    private fun serializeAnswer(question: QuestionLike): Answer {
+    private fun serializeAnswer(question: QuestionLike, allAnswersAreOptional: Boolean): Answer {
         var answer = ""
         var empty = false
         var invalid = false
@@ -745,7 +740,7 @@ class QuestionsDialog(
                 }
             }
         }
-        if (empty && question.requiresAnswer()) {
+        if (!allAnswersAreOptional && empty && question.requiresAnswer()) {
             throw QuestionInvalid(R.string.question_input_required)
         } else if (empty) {
             return Answer(question, "", options)
@@ -753,7 +748,7 @@ class QuestionsDialog(
             throw QuestionInvalid(R.string.question_input_invalid)
         } else {
             try {
-                question.clean_answer(answer, question.options!!)
+                question.clean_answer(answer, question.options!!, allAnswersAreOptional)
             } catch (e: QuestionLike.ValidationException) {
                 throw QuestionInvalid(R.string.question_input_invalid)
             }
@@ -845,7 +840,7 @@ class QuestionsDialog(
             }
 
             try {
-                answers.add(serializeAnswer(question))
+                answers.add(serializeAnswer(question, allAnswersAreOptional))
                 addQuestionsError(ctx, field, labels[question], 0)
             } catch (e: QuestionInvalid) {
                 addQuestionsError(ctx, field, labels[question], e.msgid)
@@ -870,7 +865,8 @@ class QuestionsDialog(
         val state = Bundle()
         for (question in questions) {
             try {
-                val a = serializeAnswer(question)
+                // force answers are optional, we want to save them all
+                val a = serializeAnswer(question, true)
                 state.putString(a.question.identifier, a.value)
             } catch (e: QuestionInvalid) {
                 // We do not store invalid answers, that's not perfect, but good enough for now
@@ -957,6 +953,7 @@ fun showQuestionsDialog(
         useHardwareScan: Boolean = false,
         isResumed: Boolean = false,
         clonePictures: Boolean = false,
+        allAnswersAreOptional: Boolean = false,
 ): QuestionsDialogInterface {
     val dialog = QuestionsDialog(
             ctx,
@@ -973,7 +970,8 @@ fun showQuestionsDialog(
             ticketType,
             useHardwareScan,
             isResumed,
-            clonePictures
+            clonePictures,
+            allAnswersAreOptional
     )
     dialog.setCanceledOnTouchOutside(false)
     dialog.show()
