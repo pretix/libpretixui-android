@@ -27,9 +27,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.UVCCamera
+import eu.pretix.libpretixui.android.databinding.ActivityPhotoCaptureBinding
 import eu.pretix.libpretixui.android.questions.getTmpDir
 import eu.pretix.libpretixui.android.uvc.CameraDialog
-import kotlinx.android.synthetic.main.activity_photo_capture.*
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.UnsupportedOperationException
@@ -56,6 +56,7 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
         public val RESULT_FILENAME = "filename"
     }
 
+    private lateinit var binding: ActivityPhotoCaptureBinding
     private var imageCapture: ImageCapture? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var requestedCameraString: String? = "back"
@@ -85,8 +86,8 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
             releaseUVCCamera()
             if (requestedCameraString == "usb:${device.serialNumber}") {
                 runOnUiThread {
-                    viewFinder.visibility = View.GONE
-                    uvcTexture.visibility = View.VISIBLE
+                    binding.viewFinder.visibility = View.GONE
+                    binding.uvcTexture.visibility = View.VISIBLE
                     cameraProvider?.unbindAll()
                 }
                 prefs.edit().putString("camera", requestedCameraString).apply()
@@ -143,8 +144,8 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                         }
                     }
                     if (uvcPreviewSize != null) {
-                        uvcTexture.setDataSize(uvcPreviewSize!!.width, uvcPreviewSize!!.height)
-                        val st: SurfaceTexture = uvcTexture.surfaceTexture ?: return@execute
+                        binding.uvcTexture.setDataSize(uvcPreviewSize!!.width, uvcPreviewSize!!.height)
+                        val st: SurfaceTexture = binding.uvcTexture.surfaceTexture ?: return@execute
                         uvcPreviewSurface = Surface(st)
                         camera.setPreviewDisplay(uvcPreviewSurface)
                         camera.startPreview()
@@ -172,7 +173,8 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_photo_capture)
+        binding = ActivityPhotoCaptureBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         outputDirectory = getOutputDirectory()
         prefs = getSharedPreferences("PhotoCaptureActivity", Context.MODE_PRIVATE)
@@ -185,21 +187,21 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                     this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
 
-        btCapture.setOnClickListener { takePhoto() }
-        uvcTexture.setAspectRatio(3.0 / 4.0)
+        binding.btCapture.setOnClickListener { takePhoto() }
+        binding.uvcTexture.setAspectRatio(3.0 / 4.0)
         usbMonitor = USBMonitor(this, onDeviceConnectListener)
-        ivPreview.visibility = View.GONE
-        btCapture.visibility = View.VISIBLE
-        btReject.visibility = View.GONE
-        btAccept.visibility = View.GONE
+        binding.ivPreview.visibility = View.GONE
+        binding.btCapture.visibility = View.VISIBLE
+        binding.btReject.visibility = View.GONE
+        binding.btAccept.visibility = View.GONE
 
-        btReject.setOnClickListener {
-            ivPreview.visibility = View.GONE
-            btCapture.visibility = View.VISIBLE
-            btReject.visibility = View.GONE
-            btAccept.visibility = View.GONE
+        binding.btReject.setOnClickListener {
+            binding.ivPreview.visibility = View.GONE
+            binding.btCapture.visibility = View.VISIBLE
+            binding.btReject.visibility = View.GONE
+            binding.btAccept.visibility = View.GONE
         }
-        btAccept.setOnClickListener {
+        binding.btAccept.setOnClickListener {
             // todo set result
             if (lastCapturedFile != null) {
                 setResult(Activity.RESULT_OK, Intent().putExtra(RESULT_FILENAME, lastCapturedFile!!.absolutePath))
@@ -223,11 +225,11 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
         }
         runOnUiThread {
             lastCapturedFile = photoFile
-            ivPreview.setImageBitmap(scaled)
-            ivPreview.visibility = View.VISIBLE
-            btCapture.visibility = View.GONE
-            btReject.visibility = View.VISIBLE
-            btAccept.visibility = View.VISIBLE
+            binding.ivPreview.setImageBitmap(scaled)
+            binding.ivPreview.visibility = View.VISIBLE
+            binding.btCapture.visibility = View.GONE
+            binding.btReject.visibility = View.VISIBLE
+            binding.btAccept.visibility = View.VISIBLE
         }
     }
 
@@ -294,14 +296,14 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
 
             if (requestedCameraString == "front" || requestedCameraString == "back") {
                 runOnUiThread {
-                    viewFinder.visibility = View.VISIBLE
-                    uvcTexture.visibility = View.GONE
+                    binding.viewFinder.visibility = View.VISIBLE
+                    binding.uvcTexture.visibility = View.GONE
                 }
 
                 val preview = Preview.Builder()
                         .build()
                         .also {
-                            it.setSurfaceProvider(viewFinder.surfaceProvider)
+                            it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                         }
 
                 imageCapture = ImageCapture.Builder()
@@ -324,8 +326,8 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
                 }
             } else if (requestedCameraString == "usb") {
                 runOnUiThread {
-                    viewFinder.visibility = View.GONE
-                    uvcTexture.visibility = View.VISIBLE
+                    binding.viewFinder.visibility = View.GONE
+                    binding.uvcTexture.visibility = View.VISIBLE
                 }
                 cameraProvider!!.unbindAll()
             }

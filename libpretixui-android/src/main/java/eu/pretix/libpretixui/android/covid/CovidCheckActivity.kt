@@ -20,7 +20,6 @@ import eu.pretix.libpretixui.android.databinding.ActivityCovidCheckBinding
 import eu.pretix.libpretixui.android.scanning.HardwareScanner
 import eu.pretix.libpretixui.android.scanning.ScanActivity
 import eu.pretix.libpretixui.android.scanning.ScanReceiver
-import kotlinx.android.synthetic.main.activity_covid_check.*
 import org.joda.time.LocalDate
 import java.io.IOException
 import java.time.ZoneId
@@ -64,7 +63,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
             finish()
         }
 
-        btCapture.setOnClickListener {
+        binding.btCapture.setOnClickListener {
             val i = Intent(this, ScanActivity::class.java)
             startActivityForResult(i, REQUEST_BARCODE)
         }
@@ -117,11 +116,11 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
             binding.uiState = UIState.REVIEW_SCAN
             binding.scanResult = ScanResult(
                 when (it) {
-                    clVacc -> Proof.VACC
-                    clCured -> Proof.CURED
-                    clOther -> Proof.OTHER
-                    clTested -> Proof.TESTED_PCR
-                    clTested2 -> Proof.TESTED_AG_UNKNOWN
+                    binding.clVacc -> Proof.VACC
+                    binding.clCured -> Proof.CURED
+                    binding.clOther -> Proof.OTHER
+                    binding.clTested -> Proof.TESTED_PCR
+                    binding.clTested2 -> Proof.TESTED_AG_UNKNOWN
                     else -> Proof.INVALID
                 },
                 "manual",
@@ -133,13 +132,13 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
             )
         }
 
-        clVacc.setOnClickListener(proofClickListener)
-        clCured.setOnClickListener(proofClickListener)
-        clTested.setOnClickListener(proofClickListener)
-        clTested2.setOnClickListener(proofClickListener)
-        clOther.setOnClickListener(proofClickListener)
+        binding.clVacc.setOnClickListener(proofClickListener)
+        binding.clCured.setOnClickListener(proofClickListener)
+        binding.clTested.setOnClickListener(proofClickListener)
+        binding.clTested2.setOnClickListener(proofClickListener)
+        binding.clOther.setOnClickListener(proofClickListener)
 
-        staConfirm.onSlideCompleteListener = object : SlideToActView.OnSlideCompleteListener {
+        binding.staConfirm.onSlideCompleteListener = object : SlideToActView.OnSlideCompleteListener {
             override fun onSlideComplete(view: SlideToActView) {
                 if (binding.scanResult == null) {
                     // Weird race condition, but seems to be possible (PRETIXSCAN-ANDROID-F2)
@@ -155,7 +154,7 @@ class CovidCheckActivity : AppCompatActivity(), MediaPlayer.OnCompletionListener
                 }
                 binding.uiState = UIState.READY_TO_SCAN
                 binding.scanResult = null
-                staConfirm.resetSlider()
+                binding.staConfirm.resetSlider()
                 if (binding.acceptBarcode == true) {
                     hardwareScanner.start(this@CovidCheckActivity)
                 }

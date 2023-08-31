@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.zxing.Result
 import eu.pretix.libpretixui.android.R
-import kotlinx.android.synthetic.main.activity_scan.*
+import eu.pretix.libpretixui.android.databinding.ActivityScanBinding
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 
 class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
@@ -20,12 +20,16 @@ class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
         val RESULT = "RESULT"
     }
 
+    private lateinit var binding: ActivityScanBinding
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         supportActionBar?.setDisplayUseLogoEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-        setContentView(R.layout.activity_scan)
+        binding = ActivityScanBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
 
         val requestPermissionLauncher =
                 registerForActivityResult(ActivityResultContracts.RequestPermission()
@@ -34,7 +38,7 @@ class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
                         Toast.makeText(this, R.string.android_permission_required, Toast.LENGTH_SHORT).show()
                         finish()
                     } else {
-                        scanner_view.startCamera()
+                        binding.scannerView.startCamera()
                     }
                 }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -44,13 +48,13 @@ class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
 
     override fun onResume() {
         super.onResume()
-        scanner_view.setResultHandler(this)
-        scanner_view.startCamera()
+        binding.scannerView.setResultHandler(this)
+        binding.scannerView.startCamera()
     }
 
     override fun onPause() {
         super.onPause()
-        scanner_view.stopCamera()
+        binding.scannerView.stopCamera()
     }
 
     override fun handleResult(rawResult: Result) {
