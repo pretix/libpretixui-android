@@ -56,9 +56,6 @@ repositories {
             header(HttpHeaderAuthentication)
         }
     }
-    flatDir {
-        dirs 'libs'
-    }
 }
 
 dependencies {
