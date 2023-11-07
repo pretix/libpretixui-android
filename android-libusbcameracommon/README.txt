@@ -1,12 +1,9 @@
 To avoid everyone working on pretix apps having to compile native code themselves, this folder
 contains binary libraries.
 
-The binaries in this folder have been compiled by Raphael Michel in January 2021 using this
-source tree:
-https://github.com/raphaelm/UVCCamera/tree/raphaelm-fixes
-
-The build environment consisted of plain Android SDK and NDK installations, provided by the
-docker image available on docker hub as bitriseio/android-ndk:v2021_01_09-08_39-b2261
+The binaries in this folder have been compiled by GitHub Actions in and using this
+repository:
+https://github.com/pretix-unofficial/UVCCamera
 
 The usbCameraCommon.aar binary contains the following components:
 
