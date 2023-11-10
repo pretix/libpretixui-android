@@ -1,6 +1,5 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 
@@ -24,8 +23,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    dataBinding {
-        enabled = true
+    buildFeatures {
+        dataBinding = true
+        viewBinding = true
     }
 }
 
@@ -55,9 +55,6 @@ repositories {
         authentication {
             header(HttpHeaderAuthentication)
         }
-    }
-    flatDir {
-        dirs 'libs'
     }
 }
 
