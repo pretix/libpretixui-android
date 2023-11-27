@@ -77,8 +77,14 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
 
     private val onDeviceConnectListener = object : USBMonitor.OnDeviceConnectListener {
         override fun onAttach(device: UsbDevice) {
-            if (requestedCameraString == "usb:${device.serialNumber}") {
-                usbMonitor!!.requestPermission(device)
+            try {
+                if (requestedCameraString == "usb:${device.serialNumber}") {
+                    usbMonitor!!.requestPermission(device)
+                }
+            } catch (e: SecurityException) {
+                // On Android 10, USBDevices that have not expressively been granted access to
+                // will raise an SecurityException upon accessing the Serial Number. We are just
+                // ignoring those devices.
             }
         }
 
