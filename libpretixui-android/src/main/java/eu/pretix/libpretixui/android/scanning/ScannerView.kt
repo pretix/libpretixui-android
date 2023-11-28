@@ -1,13 +1,20 @@
 package eu.pretix.libpretixui.android.scanning
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.ImageFormat
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraMetadata
+import android.hardware.camera2.CaptureRequest
 import android.util.AttributeSet
 import android.util.Size
 import android.view.OrientationEventListener
 import android.view.Surface
 import android.view.View
 import android.widget.FrameLayout
+import androidx.camera.camera2.interop.Camera2CameraControl
+import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.CaptureRequestOptions
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -19,18 +26,19 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
-import com.google.common.util.concurrent.ListenableFuture
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.NotFoundException
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
+import java.lang.IllegalArgumentException
 import java.nio.ByteBuffer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 
+@SuppressLint("UnsafeOptInUsageError")
 class ScannerView : FrameLayout {
     data class Result(
         val text: String,
@@ -42,11 +50,13 @@ class ScannerView : FrameLayout {
     }
 
     private var resultHandler: ResultHandler? = null
-    private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
-    private lateinit var cameraExecutor: ExecutorService
-    private lateinit var previewView: PreviewView
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var cameraExecutor: ExecutorService? = null
+    private var previewView: PreviewView? = null
     private var torchState: Boolean = false
     private var torchTarget: Boolean = false
+    private var autofocusState: Boolean = false
+    private var autofocusTarget: Boolean = false
     private var camera: Camera? = null
 
     constructor(context: Context) : super(context) {}
@@ -54,11 +64,20 @@ class ScannerView : FrameLayout {
     constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet) {}
 
     var torch: Boolean
-        get() = torchState
+        get() = torchTarget
         set(value) {
             torchTarget = value
             if (torchState != torchTarget) {
                 camera?.cameraControl?.enableTorch(torchTarget)
+            }
+        }
+
+    var autofocus: Boolean
+        get() = autofocusTarget
+        set(value) {
+            autofocusTarget = value
+            if (autofocusTarget != autofocusState) {
+                enableAutofocus(autofocusTarget)
             }
         }
 
@@ -73,24 +92,43 @@ class ScannerView : FrameLayout {
     fun startCamera() {
         removeAllViews()
         previewView = PreviewView(context)
-        previewView.scaleType = PreviewView.ScaleType.FILL_CENTER
+        previewView!!.scaleType = PreviewView.ScaleType.FILL_CENTER
         addView(previewView)
 
-        cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-            bindPreview(cameraProvider)
+            bindPreview(cameraProviderFuture.get())
         }, ContextCompat.getMainExecutor(context))
     }
 
+    @androidx.camera.camera2.interop.ExperimentalCamera2Interop
+    private fun enableAutofocus(enabled: Boolean) {
+        if (camera == null) return
+        if (enabled) {
+            Camera2CameraControl.from(camera!!.cameraControl).captureRequestOptions =
+                CaptureRequestOptions.Builder()
+                    .setCaptureRequestOption(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                    .build()
+        } else {
+            val chars = Camera2CameraInfo.from(camera!!.cameraInfo)
+            Camera2CameraControl.from(camera!!.cameraControl).captureRequestOptions =
+                CaptureRequestOptions.Builder()
+                    .setCaptureRequestOption(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_OFF)
+                    .setCaptureRequestOption(CaptureRequest.LENS_FOCUS_DISTANCE, chars.getCameraCharacteristic(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)!!)
+                    .build()
+        }
+        autofocusState = enabled
+    }
+
     private fun bindPreview(cameraProvider: ProcessCameraProvider) {
+        this.cameraProvider = cameraProvider
         cameraProvider.unbindAll()
 
         val preview: Preview = Preview.Builder()
             .build()
-        preview.setSurfaceProvider(previewView.surfaceProvider)
+        preview.setSurfaceProvider(previewView!!.surfaceProvider)
 
         val cameraSelector: CameraSelector = CameraSelector.Builder()
             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
@@ -117,7 +155,7 @@ class ScannerView : FrameLayout {
                 }
             }
         })
-        imageAnalysis.setAnalyzer(cameraExecutor, analyzer)
+        imageAnalysis.setAnalyzer(cameraExecutor!!, analyzer)
 
 
         val orientationEventListener = object : OrientationEventListener(context) {
@@ -135,25 +173,32 @@ class ScannerView : FrameLayout {
         }
         orientationEventListener.enable()
 
-        camera = cameraProvider.bindToLifecycle(
-            findViewTreeLifecycleOwner()!!,
-            cameraSelector,
-            imageAnalysis,
-            preview
-        )
+        try {
+            camera = cameraProvider.bindToLifecycle(
+                findViewTreeLifecycleOwner()!!,
+                cameraSelector,
+                imageAnalysis,
+                preview
+            )
+        } catch (e: IllegalArgumentException) {
+            return  // Lifecycle no longer available
+        }
 
         camera?.cameraControl?.enableTorch(torchTarget)
-        camera!!.cameraInfo.torchState.observe(findViewTreeLifecycleOwner()!!) {
+        if (!autofocusTarget) {
+            enableAutofocus(autofocusTarget)
+        }
+
+        camera?.cameraInfo?.torchState?.observe(findViewTreeLifecycleOwner()!!) {
             this.torchState = it == TorchState.ON
         }
-    }
 
-    fun resumeCameraPreview(rh: ResultHandler) {
-        resultHandler = rh
+        camera?.cameraControl?.cancelFocusAndMetering()
     }
 
     fun stopCamera() {
-        cameraExecutor.shutdown()
+        cameraProvider?.unbindAll()
+        cameraExecutor?.shutdown()
     }
 
 
@@ -204,7 +249,7 @@ class ScannerView : FrameLayout {
         }
 
         private fun rotateImageArray(image: RotatedImage, degrees: Int) {
-            val rotationCount = degrees / 90;
+            val rotationCount = degrees / 90
             if (rotationCount == 1 || rotationCount == 3) {
                 for (i in 0 until rotationCount) {
                     val rotatedData = ByteArray(image.width * image.height)
