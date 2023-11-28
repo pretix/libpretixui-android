@@ -1,30 +1,238 @@
 package eu.pretix.libpretixui.android.scanning
 
 import android.content.Context
-import android.graphics.Rect
+import android.graphics.ImageFormat
 import android.util.AttributeSet
-import me.dm7.barcodescanner.zxing.ZXingScannerView
+import android.util.Size
+import android.view.OrientationEventListener
+import android.view.Surface
+import android.view.View
+import android.widget.FrameLayout
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.ImageProxy.PlaneProxy
+import androidx.camera.core.Preview
+import androidx.camera.core.TorchState
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.NotFoundException
+import com.google.zxing.PlanarYUVLuminanceSource
+import com.google.zxing.common.HybridBinarizer
+import java.nio.ByteBuffer
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 
-class ScannerView : ZXingScannerView {
-    private var mFramingRectInPreview: Rect? = null
+class ScannerView : FrameLayout {
+    data class Result(
+        val text: String,
+        val rawBytes: ByteArray,
+    )
+
+    interface ResultHandler {
+        fun handleResult(rawResult: Result)
+    }
+
+    private var resultHandler: ResultHandler? = null
+    private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
+    private lateinit var cameraExecutor: ExecutorService
+    private lateinit var previewView: PreviewView
+    private var torchOn: Boolean = false
 
     constructor(context: Context) : super(context) {}
 
     constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet) {}
 
-    @Synchronized
-    override fun getFramingRectInPreview(previewWidth: Int, previewHeight: Int): Rect {
-        if (this.mFramingRectInPreview == null) {
-            val rect = Rect()
-            rect.left = 0
-            rect.top = 0
-            rect.right = previewWidth
-            rect.bottom = previewHeight
+    override fun addView(child: View?) {
+        super.addView(child)
+    }
 
-            this.mFramingRectInPreview = rect
+    fun setResultHandler(rh: ResultHandler) {
+        this.resultHandler = rh
+    }
+
+    fun startCamera() {
+        removeAllViews()
+        previewView = PreviewView(context)
+        previewView.scaleType = PreviewView.ScaleType.FILL_CENTER
+        addView(previewView)
+
+        cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        cameraProviderFuture.addListener({
+            val cameraProvider = cameraProviderFuture.get()
+            bindPreview(cameraProvider)
+        }, ContextCompat.getMainExecutor(context))
+    }
+
+    private fun bindPreview(cameraProvider: ProcessCameraProvider) {
+        cameraProvider.unbindAll()
+
+        val preview: Preview = Preview.Builder()
+            .build()
+        preview.setSurfaceProvider(previewView.surfaceProvider)
+
+        val cameraSelector: CameraSelector = CameraSelector.Builder()
+            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+            .build()
+
+        val imageAnalysis = ImageAnalysis.Builder()
+            .setTargetResolution(Size(this.width, this.height))
+            /*.setResolutionSelector(
+                ResolutionSelector.Builder()
+                    .setResolutionStrategy(
+                        ResolutionStrategy(
+                            Size(this.width, this.height),
+                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                        )
+                    )
+                    .build()
+            )*/
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+        val analyzer = ZXingBarcodeAnalyzer(object : ResultHandler {
+            override fun handleResult(rawResult: Result) {
+                resultHandler?.handleResult(rawResult)
+            }
+        })
+        imageAnalysis.setAnalyzer(cameraExecutor, analyzer)
+
+
+        val orientationEventListener = object : OrientationEventListener(context) {
+            override fun onOrientationChanged(orientation: Int) {
+                // Monitors orientation values to determine the target rotation value
+                val rotation: Int = when (orientation) {
+                    in 45..134 -> Surface.ROTATION_270
+                    in 135..224 -> Surface.ROTATION_180
+                    in 225..314 -> Surface.ROTATION_90
+                    else -> Surface.ROTATION_0
+                }
+
+                imageAnalysis.targetRotation = rotation
+            }
+        }
+        orientationEventListener.enable()
+
+        val camera = cameraProvider.bindToLifecycle(
+            findViewTreeLifecycleOwner()!!,
+            cameraSelector,
+            imageAnalysis,
+            preview
+        )
+
+        camera.cameraInfo.torchState.observe(findViewTreeLifecycleOwner()!!) {
+            this.torchOn = it == TorchState.ON
+        }
+    }
+
+    fun resumeCameraPreview(rh: ResultHandler) {
+        resultHandler = rh
+    }
+
+    fun stopCamera() {
+        cameraExecutor.shutdown()
+    }
+
+
+    class ZXingBarcodeAnalyzer(private val listener: ResultHandler) : ImageAnalysis.Analyzer {
+        private var multiFormatReader: MultiFormatReader = MultiFormatReader()
+        private var isScanning = AtomicBoolean(false)
+
+        override fun analyze(image: ImageProxy) {
+            if (isScanning.get()) {
+                image.close()
+                return
+            }
+
+            isScanning.set(true)
+
+            if ((image.format == ImageFormat.YUV_420_888 || image.format == ImageFormat.YUV_422_888 || image.format == ImageFormat.YUV_444_888) && image.planes.size == 3) {
+                val luminancePlane = image.planes[0]
+                val rotatedImage = RotatedImage(
+                    getPixelData(image.width, image.height, luminancePlane),
+                    image.width,
+                    image.height
+                )
+                rotateImageArray(rotatedImage, image.imageInfo.rotationDegrees)
+
+                val planarYUVLuminanceSource = PlanarYUVLuminanceSource(
+                    rotatedImage.byteArray,
+                    rotatedImage.width,
+                    rotatedImage.height,
+                    0, 0,
+                    rotatedImage.width,
+                    rotatedImage.height,
+                    false
+                )
+                val hybridBinarizer = HybridBinarizer(planarYUVLuminanceSource)
+                val binaryBitmap = BinaryBitmap(hybridBinarizer)
+                try {
+                    val rawResult = multiFormatReader.decodeWithState(binaryBitmap)
+                    listener.handleResult(Result(rawResult.text, rawResult.rawBytes))
+                } catch (e: NotFoundException) {
+                    e.printStackTrace()
+                } finally {
+                    multiFormatReader.reset()
+                    image.close()
+                }
+
+                isScanning.set(false)
+            }
         }
 
-        return this.mFramingRectInPreview!!
+        private fun rotateImageArray(image: RotatedImage, degrees: Int) {
+            val rotationCount = degrees / 90;
+            if (rotationCount == 1 || rotationCount == 3) {
+                for (i in 0 until rotationCount) {
+                    val rotatedData = ByteArray(image.width * image.height)
+                    for (y in 0 until image.height) {
+                        for (x in 0 until image.width) {
+                            rotatedData[x * image.height + image.height - y - 1] =
+                                image.byteArray[x + y * image.width]
+                        }
+                    }
+                    image.byteArray = rotatedData
+                    val tmp = image.width
+                    image.width = image.height
+                    image.height = tmp
+                }
+            }
+        }
+
+        private fun byteBufferToByteArray(buf: ByteBuffer): ByteArray {
+            val ba = ByteArray(buf.remaining())
+            buf.get(ba)
+            buf.rewind()
+            return ba
+        }
+
+        private fun getPixelData(width: Int, height: Int, plane: PlaneProxy): ByteArray {
+            // On some devices, the data from camerax has a plane.pixelStride > 1 that is not handled by zxing
+            val rawData = byteBufferToByteArray(plane.buffer)
+            if (plane.pixelStride == 1 && plane.pixelStride == width) {
+                return rawData
+            }
+            val rowOffset = plane.rowStride
+            val nextPixelOffset = plane.pixelStride
+
+            val cleanData = ByteArray(width * height)
+            for (y in 0 until height) {
+                for (x in 0 until width) {
+                    cleanData[y * width + x] = rawData[y * rowOffset + x * nextPixelOffset]
+                }
+            }
+            return cleanData
+        }
+
+
+        private class RotatedImage(var byteArray: ByteArray, var width: Int, var height: Int)
     }
 }

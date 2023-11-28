@@ -10,12 +10,10 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.google.zxing.Result
 import eu.pretix.libpretixui.android.R
 import eu.pretix.libpretixui.android.databinding.ActivityScanBinding
-import me.dm7.barcodescanner.zxing.ZXingScannerView
 
-class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
+class ScanActivity : AppCompatActivity(), ScannerView.ResultHandler {
     companion object {
         val RESULT = "RESULT"
     }
@@ -57,7 +55,7 @@ class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
         binding.scannerView.stopCamera()
     }
 
-    override fun handleResult(rawResult: Result) {
+    override fun handleResult(rawResult: ScannerView.Result) {
         val i = Intent()
         i.putExtra(RESULT, rawResult.text)
         setResult(Activity.RESULT_OK, i)
