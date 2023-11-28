@@ -8,6 +8,7 @@ import android.view.OrientationEventListener
 import android.view.Surface
 import android.view.View
 import android.widget.FrameLayout
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -44,11 +45,22 @@ class ScannerView : FrameLayout {
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var previewView: PreviewView
-    private var torchOn: Boolean = false
+    private var torchState: Boolean = false
+    private var torchTarget: Boolean = false
+    private var camera: Camera? = null
 
     constructor(context: Context) : super(context) {}
 
     constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet) {}
+
+    var torch: Boolean
+        get() = torchState
+        set(value) {
+            torchTarget = value
+            if (torchState != torchTarget) {
+                camera?.cameraControl?.enableTorch(torchTarget)
+            }
+        }
 
     override fun addView(child: View?) {
         super.addView(child)
@@ -123,15 +135,16 @@ class ScannerView : FrameLayout {
         }
         orientationEventListener.enable()
 
-        val camera = cameraProvider.bindToLifecycle(
+        camera = cameraProvider.bindToLifecycle(
             findViewTreeLifecycleOwner()!!,
             cameraSelector,
             imageAnalysis,
             preview
         )
 
-        camera.cameraInfo.torchState.observe(findViewTreeLifecycleOwner()!!) {
-            this.torchOn = it == TorchState.ON
+        camera?.cameraControl?.enableTorch(torchTarget)
+        camera!!.cameraInfo.torchState.observe(findViewTreeLifecycleOwner()!!) {
+            this.torchState = it == TorchState.ON
         }
     }
 
