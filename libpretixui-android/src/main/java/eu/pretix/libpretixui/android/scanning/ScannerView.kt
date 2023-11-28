@@ -100,7 +100,9 @@ class ScannerView : FrameLayout {
             .build()
         val analyzer = ZXingBarcodeAnalyzer(object : ResultHandler {
             override fun handleResult(rawResult: Result) {
-                resultHandler?.handleResult(rawResult)
+                post {
+                    resultHandler?.handleResult(rawResult)
+                }
             }
         })
         imageAnalysis.setAnalyzer(cameraExecutor, analyzer)
