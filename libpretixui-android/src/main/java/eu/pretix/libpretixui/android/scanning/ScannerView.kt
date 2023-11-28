@@ -180,7 +180,7 @@ class ScannerView : FrameLayout {
                     val rawResult = multiFormatReader.decodeWithState(binaryBitmap)
                     listener.handleResult(Result(rawResult.text, rawResult.rawBytes))
                 } catch (e: NotFoundException) {
-                    e.printStackTrace()
+                    // ignore, no barcode found
                 } finally {
                     multiFormatReader.reset()
                     image.close()
