@@ -31,7 +31,6 @@ import com.google.zxing.MultiFormatReader
 import com.google.zxing.NotFoundException
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
-import java.lang.IllegalArgumentException
 import java.nio.ByteBuffer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -91,8 +90,10 @@ class ScannerView : FrameLayout {
 
     fun startCamera() {
         removeAllViews()
-        previewView = PreviewView(context)
-        previewView!!.scaleType = PreviewView.ScaleType.FILL_CENTER
+        previewView = PreviewView(context).apply {
+            scaleType = PreviewView.ScaleType.FILL_CENTER
+            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+        }
         addView(previewView)
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
