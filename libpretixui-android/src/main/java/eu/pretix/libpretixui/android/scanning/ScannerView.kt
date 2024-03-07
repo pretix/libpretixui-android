@@ -131,9 +131,10 @@ class ScannerView : FrameLayout {
             .build()
         preview.setSurfaceProvider(previewView!!.surfaceProvider)
 
-        val cameraSelector: CameraSelector = CameraSelector.Builder()
-            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-            .build()
+        var cameraSelector = CameraSelector.Builder().build()
+        if (cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)) {
+            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        }
 
         val imageAnalysis = ImageAnalysis.Builder()
             .setTargetResolution(Size(this.width, this.height))
