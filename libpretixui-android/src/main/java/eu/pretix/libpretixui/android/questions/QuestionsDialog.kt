@@ -361,7 +361,7 @@ class QuestionsDialog(
                     llFormFields.addView(fieldB)
                 }
                 QuestionType.F -> {
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !ctx.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                         val tv = TextView(ctx)
                         tv.text = "Not supported on this Android version or device"
                         llFormFields.addView(tv)
