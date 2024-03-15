@@ -74,11 +74,17 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
     private var uvcBitmapCallback: ((Bitmap) -> Unit)? = null
     val executorService = Executors.newFixedThreadPool(3)
 
+    private fun usbDeviceId(device: UsbDevice): String {
+        return "usb:${String.format("%04x", device.vendorId)}:${String.format("%04x", device.productId)}"
+    }
+
 
     private val onDeviceConnectListener = object : USBMonitor.OnDeviceConnectListener {
         override fun onAttach(device: UsbDevice) {
             try {
-                if (requestedCameraString == "usb:${device.serialNumber}") {
+                if (usbDeviceId(device) == requestedCameraString) {
+                    usbMonitor!!.requestPermission(device)
+                } else if (requestedCameraString == "usb:${device.serialNumber}") {  // backwards compatibility
                     usbMonitor!!.requestPermission(device)
                 }
             } catch (e: SecurityException) {
@@ -90,7 +96,7 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
 
         override fun onConnect(device: UsbDevice, ctrlBlock: USBMonitor.UsbControlBlock, createNew: Boolean) {
             releaseUVCCamera()
-            if (requestedCameraString == "usb:${device.serialNumber}") {
+            if (requestedCameraString == usbDeviceId(device) || requestedCameraString == "usb:${device.serialNumber}") {
                 runOnUiThread {
                     binding.viewFinder.visibility = View.GONE
                     binding.uvcTexture.visibility = View.VISIBLE
@@ -433,7 +439,7 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
 
     override fun onDialogResult(canceled: Boolean, usbDevice: UsbDevice?) {
         if (!canceled) {
-            requestedCameraString = "usb:${usbDevice!!.serialNumber}"
+            requestedCameraString = usbDeviceId(usbDevice!!)
             cameraProvider?.unbindAll()
         }
     }
