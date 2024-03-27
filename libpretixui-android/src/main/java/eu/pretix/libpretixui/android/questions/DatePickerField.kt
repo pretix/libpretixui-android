@@ -19,8 +19,8 @@ class DatePickerField(context: Context, minDate: Long? = null, maxDate: Long? = 
         cal.set(Calendar.MONTH, monthOfYear)
         cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
 
-        setText(dateFormat.format(cal.time))
         set = true
+        setText(dateFormat.format(cal.time))
     }
 
     var value: Calendar?
