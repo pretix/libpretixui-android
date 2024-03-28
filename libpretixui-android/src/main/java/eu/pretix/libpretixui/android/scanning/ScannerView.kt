@@ -32,6 +32,7 @@ import com.google.zxing.NotFoundException
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import java.nio.ByteBuffer
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -90,6 +91,7 @@ class ScannerView : FrameLayout {
 
     fun startCamera() {
         removeAllViews()
+
         previewView = PreviewView(context).apply {
             scaleType = PreviewView.ScaleType.FILL_CENTER
             implementationMode = PreviewView.ImplementationMode.COMPATIBLE
@@ -100,7 +102,14 @@ class ScannerView : FrameLayout {
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         cameraProviderFuture.addListener({
-            bindPreview(cameraProviderFuture.get())
+            val provider = try {
+                cameraProviderFuture.get()
+            } catch (e: ExecutionException) {
+                // probably no camera? ignore
+                e.printStackTrace()
+                return@addListener
+            }
+            bindPreview(provider)
         }, ContextCompat.getMainExecutor(context))
     }
 
@@ -110,14 +119,23 @@ class ScannerView : FrameLayout {
         if (enabled) {
             Camera2CameraControl.from(camera!!.cameraControl).captureRequestOptions =
                 CaptureRequestOptions.Builder()
-                    .setCaptureRequestOption(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                    .setCaptureRequestOption(
+                        CaptureRequest.CONTROL_AF_MODE,
+                        CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+                    )
                     .build()
         } else {
             val chars = Camera2CameraInfo.from(camera!!.cameraInfo)
             Camera2CameraControl.from(camera!!.cameraControl).captureRequestOptions =
                 CaptureRequestOptions.Builder()
-                    .setCaptureRequestOption(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_OFF)
-                    .setCaptureRequestOption(CaptureRequest.LENS_FOCUS_DISTANCE, chars.getCameraCharacteristic(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)!!)
+                    .setCaptureRequestOption(
+                        CaptureRequest.CONTROL_AF_MODE,
+                        CameraMetadata.CONTROL_AF_MODE_OFF
+                    )
+                    .setCaptureRequestOption(
+                        CaptureRequest.LENS_FOCUS_DISTANCE,
+                        chars.getCameraCharacteristic(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)!!
+                    )
                     .build()
         }
         autofocusState = enabled
