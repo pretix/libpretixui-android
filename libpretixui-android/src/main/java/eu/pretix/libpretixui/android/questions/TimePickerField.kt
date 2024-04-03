@@ -15,8 +15,8 @@ class TimePickerField(context: Context) : AppCompatEditText(context) {
 
     internal var timeChangeListener: TimePickerDialog.OnTimeSetListener = TimePickerDialog.OnTimeSetListener { timePicker, i, i1 ->
         localTime = localTime.withHourOfDay(i).withMinuteOfHour(i1)
-        setText(dateFormat.format(localTime.toDateTimeToday().toDate()))
         set = true
+        setText(dateFormat.format(localTime.toDateTimeToday().toDate()))
     }
 
     var value: LocalTime?

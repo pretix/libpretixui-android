@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -18,6 +18,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.bold
 import androidx.core.text.buildSpannedString
 import androidx.core.text.color
+import androidx.core.widget.doAfterTextChanged
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -31,6 +32,7 @@ import com.neovisionaries.i18n.CountryCode
 import eu.pretix.libpretixsync.check.QuestionType
 import eu.pretix.libpretixsync.db.Answer
 import eu.pretix.libpretixsync.db.QuestionLike
+import eu.pretix.libpretixsync.db.QuestionLike.ValidationException
 import eu.pretix.libpretixsync.db.QuestionOption
 import eu.pretix.libpretixui.android.PhotoCaptureActivity
 import eu.pretix.libpretixui.android.R
@@ -129,6 +131,7 @@ class QuestionsDialog(
 
     private val fieldViews = HashMap<QuestionLike, Any>()
     private val labels = HashMap<QuestionLike, TextView>()
+    private val warnings = HashMap<QuestionLike, TextView>()
     private val setters = HashMap<QuestionLike, ((String?) -> Unit)>()
     private var v: View = LayoutInflater.from(context).inflate(R.layout.dialog_questions, null)
     private var waitingForAnswerFor: QuestionLike? = null
@@ -182,7 +185,7 @@ class QuestionsDialog(
                         (fieldViews[questions.first()] as EditText).selectAll()
                         (fieldViews[questions.first()] as EditText).requestFocus()
                     }
-
+                    checkForWarnings()
                 }
             }
             setOnKeyListener { _, keyCode, event ->
@@ -250,6 +253,9 @@ class QuestionsDialog(
                     }
                     fieldS.setPadding(0, 0, 0, 0)
                     fieldS.setOnKeyListener(ctrlEnterListener)
+                    fieldS.editText.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
                     llFormFields.addView(fieldS)
                 }
                 QuestionType.EMAIL -> {
@@ -264,6 +270,9 @@ class QuestionsDialog(
                     fieldS.isSingleLine = true
                     fieldS.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
                     fieldS.setOnKeyListener(ctrlEnterListener)
+                    fieldS.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
                     fieldViews[question] = fieldS
                     llFormFields.addView(fieldS)
                 }
@@ -278,6 +287,9 @@ class QuestionsDialog(
                     fieldS.setLines(1)
                     fieldS.isSingleLine = true
                     fieldS.setOnKeyListener(ctrlEnterListener)
+                    fieldS.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
                     fieldViews[question] = fieldS
                     llFormFields.addView(fieldS)
                 }
@@ -326,6 +338,9 @@ class QuestionsDialog(
                         setters[question] = { fieldT.setText(it) }
                         fieldT.setLines(2)
                         fieldT.setOnKeyListener(ctrlEnterListener)
+                        fieldT.doAfterTextChanged {
+                            checkForWarnings(listOf(question))
+                        }
                         fieldViews[question] = fieldT
                         llFormFields.addView(fieldT)
                     }
@@ -342,6 +357,9 @@ class QuestionsDialog(
                     fieldN.isSingleLine = true
                     fieldN.setLines(1)
                     fieldN.setOnKeyListener(ctrlEnterListener)
+                    fieldN.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
                     fieldViews[question] = fieldN
                     llFormFields.addView(fieldN)
                 }
@@ -356,7 +374,10 @@ class QuestionsDialog(
                     }
                     setters[question] = { fieldB.isChecked = "True" == it }
                     fieldB.setOnKeyListener(ctrlEnterListener)
-                    fieldB.setOnCheckedChangeListener { buttonView, isChecked -> updateDependencyVisibilities() }
+                    fieldB.setOnCheckedChangeListener { buttonView, isChecked ->
+                        updateDependencyVisibilities()
+                        checkForWarnings(listOf(question))
+                    }
                     fieldViews[question] = fieldB
                     llFormFields.addView(fieldB)
                 }
@@ -467,6 +488,7 @@ class QuestionsDialog(
                             imgF.tag = null
                             imgF.visibility = View.GONE
                             btnFD.visibility = View.GONE
+                            checkForWarnings(listOf(question))
                         }
                         fieldsF.add(btnFD)
                         llButtons.addView(btnFD)
@@ -493,7 +515,10 @@ class QuestionsDialog(
                             field.isChecked = true
                         }
                         field.setOnKeyListener(ctrlEnterListener)
-                        field.setOnCheckedChangeListener { buttonView, isChecked -> updateDependencyVisibilities() }
+                        field.setOnCheckedChangeListener { buttonView, isChecked ->
+                            updateDependencyVisibilities()
+                            checkForWarnings(listOf(question))
+                        }
                         fields.add(field)
                         llFormFields.addView(field)
                     }
@@ -523,6 +548,20 @@ class QuestionsDialog(
                         setters[question]!!(defaultcc.alpha2)
                     }
                     fieldC.setOnKeyListener(ctrlEnterListener)
+                    fieldC.onItemSelectedListener = object : OnItemSelectedListener {
+                        override fun onItemSelected(
+                            p0: AdapterView<*>?,
+                            p1: View?,
+                            p2: Int,
+                            p3: Long
+                        ) {
+                            checkForWarnings(listOf(question))
+                        }
+
+                        override fun onNothingSelected(p0: AdapterView<*>?) {
+                            checkForWarnings(listOf(question))
+                        }
+                    }
                     fieldViews[question] = fieldC
                     llFormFields.addView(fieldC)
                 }
@@ -558,10 +597,12 @@ class QuestionsDialog(
                             id: Long
                         ) {
                             updateDependencyVisibilities()
+                            checkForWarnings(listOf(question))
                         }
 
                         override fun onNothingSelected(parent: AdapterView<*>?) {
                             updateDependencyVisibilities()
+                            checkForWarnings(listOf(question))
                         }
                     }
                     fieldViews[question] = fieldC
@@ -582,6 +623,9 @@ class QuestionsDialog(
                         setters[question]!!(question.default)
                     }
                     fieldD.setOnKeyListener(ctrlEnterListener)
+                    fieldD.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
                     fieldViews[question] = fieldD
                     llFormFields.addView(fieldD)
                 }
@@ -600,6 +644,9 @@ class QuestionsDialog(
                         setters[question]!!(question.default)
                     }
                     fieldH.setOnKeyListener(ctrlEnterListener)
+                    fieldH.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
                     fieldViews[question] = fieldH
                     llFormFields.addView(fieldH)
                 }
@@ -612,6 +659,9 @@ class QuestionsDialog(
                     fieldWD.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, 1f)
                     fieldWD.gravity = Gravity.CENTER
                     fieldWD.setOnKeyListener(ctrlEnterListener)
+                    fieldWD.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
                     fieldsW.add(fieldWD)
                     llInner.addView(fieldWD)
 
@@ -619,6 +669,9 @@ class QuestionsDialog(
                     fieldWH.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, 1f)
                     fieldWH.gravity = Gravity.CENTER
                     fieldWH.setOnKeyListener(ctrlEnterListener)
+                    fieldWH.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
                     fieldsW.add(fieldWH)
                     llInner.addView(fieldWH)
 
@@ -640,7 +693,21 @@ class QuestionsDialog(
                     llFormFields.addView(llInner)
                 }
             }
+
+            val warningTv = TextView(ctx)
+            warningTv.text = ""
+            warningTv.visibility = View.GONE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                warningTv.setTextAppearance(R.style.TextAppearance_AppCompat_Small)
+            }
+            warningTv.setTextColor(ContextCompat.getColor(ctx, R.color.pretix_brand_orange))
+            warningTv.setTypeface(null, Typeface.ITALIC)
+            warningTv.setPadding(0, 0, 0, 4)
+            llFormFields.addView(warningTv)
+            warnings[question] = warningTv
+
             updateDependencyVisibilities()
+            checkForWarnings()
         }
     }
 
@@ -790,6 +857,31 @@ class QuestionsDialog(
         }
     }
 
+    private fun checkForWarnings(questions: List<QuestionLike>? = null) {
+        for (question in (questions ?: this.questions)) {
+            val warningTv = warnings[question]
+            if (!questionIsVisible(question)) {
+                warningTv?.visibility = View.GONE
+                continue
+            }
+
+            val answer = try {
+                serializeAnswer(question, allAnswersAreOptional)
+            } catch (e: Throwable) {
+                warningTv?.visibility = View.GONE
+                continue
+            }
+
+            try {
+                question.warn_answer(answer.value, question.options!!, allAnswersAreOptional)
+                warningTv?.visibility = View.GONE
+            } catch (e: ValidationException) {
+                warningTv?.text = e.message
+                warningTv?.visibility = View.VISIBLE
+            }
+        }
+    }
+
     private fun updateDependencyVisibilities() {
         for (question in questions) {
             if (question.dependency == null) continue
@@ -913,6 +1005,7 @@ class QuestionsDialog(
 
                 if (questions.size == 1) {
                     validate()
+                    checkForWarnings()
                 }
             } else {
                 if (questions.size == 1) {
@@ -930,6 +1023,7 @@ class QuestionsDialog(
                 val btnFD = views[2]
                 btnFD.visibility = View.VISIBLE
                 Glide.with(context).load(File(filename)).into(imageView)
+                checkForWarnings()
             }
             return true
         }
