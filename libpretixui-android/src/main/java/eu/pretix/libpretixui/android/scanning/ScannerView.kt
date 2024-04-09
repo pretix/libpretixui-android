@@ -56,7 +56,7 @@ class ScannerView : FrameLayout {
     private var torchState: Boolean = false
     private var torchTarget: Boolean = false
     private var autofocusState: Boolean = false
-    private var autofocusTarget: Boolean = false
+    private var autofocusTarget: Boolean = true
     private var camera: Camera? = null
 
     constructor(context: Context) : super(context) {}
