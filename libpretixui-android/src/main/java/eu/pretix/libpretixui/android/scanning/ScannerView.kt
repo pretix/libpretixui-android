@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ScannerView : FrameLayout {
     data class Result(
         val text: String,
-        val rawBytes: ByteArray,
+        val rawBytes: ByteArray?,
     )
 
     interface ResultHandler {
