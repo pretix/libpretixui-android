@@ -36,9 +36,6 @@ import eu.pretix.libpretixsync.db.QuestionLike.ValidationException
 import eu.pretix.libpretixsync.db.QuestionOption
 import eu.pretix.libpretixui.android.PhotoCaptureActivity
 import eu.pretix.libpretixui.android.R
-import eu.pretix.libpretixui.android.covid.CovidCheckActivity
-import eu.pretix.libpretixui.android.covid.CovidCheckSettings
-import eu.pretix.libpretixui.android.covid.SAMPLE_SETTINGS
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
 import java.io.File
@@ -113,7 +110,6 @@ class QuestionsDialog(
         val glideLoader: ((String) -> GlideUrl)? = null,
         val retryHandler: ((MutableList<Answer>) -> Unit),
         val copyFrom: Map<QuestionLike, String>? = null,
-        val covidCheckSettings: CovidCheckSettings? = SAMPLE_SETTINGS,
         val attendeeName: String? = null,
         val attendeeDOB: String? = null,
         val ticketId: String? = null,
@@ -195,11 +191,6 @@ class QuestionsDialog(
                 }
                 return@setOnKeyListener false
             }
-        }
-
-        if (questions.size == 1 && questions[0].identifier == "pretix_covid_certificates_question" && questions[0].type == QuestionType.T && !isResumed && (values == null || values[questions[0]].isNullOrBlank())) {
-            // Don't have the user click manually
-            startCovidValidation(questions[0])
         }
 
         window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
@@ -294,56 +285,20 @@ class QuestionsDialog(
                     llFormFields.addView(fieldS)
                 }
                 QuestionType.T -> {
-                    if (question.identifier == "pretix_covid_certificates_question") {
-                        val fieldsF = ArrayList<View>()
-
-                        val llInner = LinearLayout(ctx)
-                        llInner.orientation = LinearLayout.HORIZONTAL
-                        llInner.gravity = Gravity.CENTER
-
-                        val textF = TextView(ctx)
-                        textF.text = context.getString(R.string.covid_check_validated)
-
-                        setters[question] = {
-                            if (it.isNullOrBlank()) {
-                                textF.visibility = View.GONE
-                            } else {
-                                textF.tag = it
-                                textF.visibility = View.VISIBLE
-                            }
-                        }
-                        setters[question]!!(values?.get(question))
-
-                        fieldsF.add(textF)
-                        llInner.addView(textF)
-
-                        val btnF = Button(ctx)
-                        btnF.setText(R.string.covid_check_validate)
-                        btnF.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-                        btnF.setOnClickListener {
-                            startCovidValidation(question)
-                        }
-                        fieldsF.add(btnF)
-                        llInner.addView(btnF)
-
-                        fieldViews[question] = fieldsF
-                        llFormFields.addView(llInner)
-                    } else {
-                        val fieldT = EditText(ctx)
-                        if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                            fieldT.setText(values[question])
-                        } else if (!question.default.isNullOrBlank()) {
-                            fieldT.setText(question.default)
-                        }
-                        setters[question] = { fieldT.setText(it) }
-                        fieldT.setLines(2)
-                        fieldT.setOnKeyListener(ctrlEnterListener)
-                        fieldT.doAfterTextChanged {
-                            checkForWarnings(listOf(question))
-                        }
-                        fieldViews[question] = fieldT
-                        llFormFields.addView(fieldT)
+                    val fieldT = EditText(ctx)
+                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                        fieldT.setText(values[question])
+                    } else if (!question.default.isNullOrBlank()) {
+                        fieldT.setText(question.default)
                     }
+                    setters[question] = { fieldT.setText(it) }
+                    fieldT.setLines(2)
+                    fieldT.setOnKeyListener(ctrlEnterListener)
+                    fieldT.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
+                    fieldViews[question] = fieldT
+                    llFormFields.addView(fieldT)
                 }
                 QuestionType.N -> {
                     val fieldN = EditText(ctx)
@@ -721,12 +676,7 @@ class QuestionsDialog(
         val field = fieldViews[question]
         when (question.type) {
             QuestionType.S, QuestionType.T, QuestionType.EMAIL -> {
-                if (question.identifier == "pretix_covid_certificates_question") {
-                    val fieldset = field as List<View>
-                    answer = (field[0] as TextView).tag as String? ?: ""
-                } else {
-                    answer = (field as EditText).text.toString()
-                }
+                answer = (field as EditText).text.toString()
                 empty = answer.trim() == ""
             }
             QuestionType.TEL -> {
@@ -890,14 +840,7 @@ class QuestionsDialog(
 
             val fields = when (question.type) {
                 QuestionType.T -> {
-                    if (question.identifier == "pretix_covid_certificates_question" && fieldViews[question] != null) {
-                        val l = mutableListOf<View>()
-                        l.addAll(fieldViews[question] as List<View>)
-                        l.add(labels[question]!!)
-                        l
-                    } else {
-                        listOf(labels[question], fieldViews[question] as View?)
-                    }
+                    listOf(labels[question], fieldViews[question] as View?)
                 }
                 QuestionType.F, QuestionType.M, QuestionType.W -> {
                     val l = mutableListOf<View>()
@@ -977,43 +920,8 @@ class QuestionsDialog(
         ctx.startActivityForResult(intent, PhotoCaptureActivity.REQUEST_CODE)
     }
 
-    private fun startCovidValidation(question: QuestionLike) {
-        val intent = Intent(ctx, CovidCheckActivity::class.java)
-        waitingForAnswerFor = question
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-        if (attendeeName != null) {
-            intent.putExtra(CovidCheckActivity.EXTRA_NAME, attendeeName)
-        }
-        if (attendeeDOB != null) {
-            intent.putExtra(CovidCheckActivity.EXTRA_BIRTHDATE, attendeeDOB)
-        }
-        intent.putExtra(CovidCheckActivity.EXTRA_SETTINGS, covidCheckSettings)
-        intent.putExtra(CovidCheckActivity.EXTRA_HARDWARE_SCAN, useHardwareScan)
-        ctx.startActivityForResult(intent, CovidCheckActivity.REQUEST_CODE)
-    }
-
     override fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode == CovidCheckActivity.REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                val result = data!!.getStringExtra(CovidCheckActivity.RESULT_CODE)!!
-                val views = fieldViews[waitingForAnswerFor] as List<View>
-                val textView = views[0] as TextView
-                textView.visibility = View.VISIBLE
-                textView.tag = result
-                val btn = views[1] as Button
-                btn.visibility = View.GONE
-
-                if (questions.size == 1) {
-                    validate()
-                    checkForWarnings()
-                }
-            } else {
-                if (questions.size == 1) {
-                    cancel()
-                }
-            }
-            return true
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && requestCode == PhotoCaptureActivity.REQUEST_CODE) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && requestCode == PhotoCaptureActivity.REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 val filename = data!!.getStringExtra(PhotoCaptureActivity.RESULT_FILENAME)!!
                 val views = fieldViews[waitingForAnswerFor] as List<View>
@@ -1039,7 +947,6 @@ fun showQuestionsDialog(
         glideLoader: ((String) -> GlideUrl)? = null,
         retryHandler: ((MutableList<Answer>) -> Unit),
         copyFrom: Map<QuestionLike, String>? = null,
-        covidCheckSettings: CovidCheckSettings? = SAMPLE_SETTINGS,
         attendeeName: String? = null,
         attendeeDOB: String? = null,
         ticketId: String? = null,
@@ -1057,7 +964,6 @@ fun showQuestionsDialog(
             glideLoader,
             retryHandler,
             copyFrom,
-            covidCheckSettings,
             attendeeName,
             attendeeDOB,
             ticketId,
