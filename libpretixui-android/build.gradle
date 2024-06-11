@@ -32,30 +32,6 @@ android {
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
-    maven {
-        url "https://maven.pkg.github.com/Digitaler-Impfnachweis/covpass-android"
-        credentials(HttpHeaderCredentials) {
-            name = "Authorization"
-            Properties properties = new Properties()
-            properties.load(project.rootProject.file('local.properties').newDataInputStream())
-            value = "Bearer ${properties.getProperty("github.token") as String}"
-        }
-        authentication {
-            header(HttpHeaderAuthentication)
-        }
-    }
-    maven {
-        url "https://maven.pkg.github.com/ehn-dcc-development/*"
-        credentials(HttpHeaderCredentials) {
-            name = "Authorization"
-            Properties properties = new Properties()
-            properties.load(project.rootProject.file('local.properties').newDataInputStream())
-            value = "Bearer ${properties.getProperty("github.token") as String}"
-        }
-        authentication {
-            header(HttpHeaderAuthentication)
-        }
-    }
 }
 
 dependencies {
@@ -65,8 +41,10 @@ dependencies {
     implementation 'com.neovisionaries:nv-i18n:1.27'
     implementation 'joda-time:joda-time:2.10.10'
     implementation 'com.github.ialokim:android-phone-field:0.2.3'
+    implementation 'androidx.core:core-ktx:1.10.0'
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-common:2.6.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'com.google.zxing:core:3.4.1'
     def camerax_version = "1.2.0"
@@ -88,16 +66,5 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     implementation "com.ncorti:slidetoact:0.9.0"
     kapt 'com.github.bumptech.glide:compiler:4.12.0'
-
-    implementation 'com.ibm.health.de.rki.covpass:covpass-sdk:1.552.1'
-
-    // Required by CovPass
-    implementation 'org.conscrypt:conscrypt-android'
-    implementation "org.bouncycastle:bcprov-jdk15to18"
-    implementation "org.bouncycastle:bcpkix-jdk15to18"
-
-    // CovPass relies in work-runtime 2.5.0 as of 2022-10-27, which does not work with target SDK 31+
-    // so we manually upgrade it
-    implementation "androidx.work:work-runtime-ktx:2.7.0"
 }
 
