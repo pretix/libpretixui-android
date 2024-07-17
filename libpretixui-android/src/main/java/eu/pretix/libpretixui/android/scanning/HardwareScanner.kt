@@ -101,6 +101,7 @@ fun defaultToScanner(): Boolean {
         "Zebra" -> Build.MODEL.startsWith("TC") || Build.MODEL.startsWith("M") || Build.MODEL.startsWith("CC6") || Build.MODEL.startsWith("EC")
         "Bluebird" -> Build.MODEL.startsWith("EF")
         "NewLand" -> Build.MODEL.startsWith("NQ")
+        "Newland" -> Build.MODEL.startsWith("NLS-NQ")
         "Honeywell" -> Build.MODEL.startsWith("EDA")
         "SUNMI" -> Build.MODEL.startsWith("L")
         "SEUIC" -> Build.MODEL.startsWith("AUTOID Pad Air")
