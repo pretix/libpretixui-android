@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
+import androidx.core.content.ContextCompat
 
 
 interface ScanReceiver {
@@ -83,7 +84,7 @@ class HardwareScanner(val receiver: ScanReceiver) {
         filter.addAction("com.android.scanner.ACTION_DATA_CODE_RECEIVED")
         filter.addAction("com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED")
 
-        ctx.registerReceiver(scanReceiver, filter)
+        ContextCompat.registerReceiver(ctx, scanReceiver, filter, ContextCompat.RECEIVER_EXPORTED)
     }
 
     fun stop(ctx: Context) {
