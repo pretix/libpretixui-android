@@ -20,9 +20,8 @@ fun getTmpDir(ctx: Context): File {
 }
 
 fun cleanOldFiles(ctx: Context) {
-    for (file in getTmpDir(ctx).listFiles { file, s ->
-        s.startsWith("20")
-    }!!) {
+    val files = getTmpDir(ctx).listFiles { file, s -> s.startsWith("20") } ?: emptyArray()
+    for (file in files) {
         if (System.currentTimeMillis() - file.lastModified() > 3600 * 1000 * 24 * 7) {  // 7 days
             file.delete()
         }
