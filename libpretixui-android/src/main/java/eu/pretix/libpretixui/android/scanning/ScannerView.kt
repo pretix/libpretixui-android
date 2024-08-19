@@ -57,6 +57,7 @@ class ScannerView : FrameLayout {
     private var torchTarget: Boolean = false
     private var autofocusState: Boolean = false
     private var autofocusTarget: Boolean = true
+    private var orientationEventListener: OrientationEventListener? = null
     private var camera: Camera? = null
 
     constructor(context: Context) : super(context) {}
@@ -180,7 +181,7 @@ class ScannerView : FrameLayout {
         imageAnalysis.setAnalyzer(cameraExecutor!!, analyzer)
 
 
-        val orientationEventListener = object : OrientationEventListener(context) {
+        orientationEventListener = object : OrientationEventListener(context) {
             override fun onOrientationChanged(orientation: Int) {
                 // Monitors orientation values to determine the target rotation value
                 val rotation: Int = when (orientation) {
@@ -193,7 +194,7 @@ class ScannerView : FrameLayout {
                 imageAnalysis.targetRotation = rotation
             }
         }
-        orientationEventListener.enable()
+        orientationEventListener!!.enable()
 
         try {
             camera = cameraProvider.bindToLifecycle(
@@ -221,6 +222,7 @@ class ScannerView : FrameLayout {
     fun stopCamera() {
         cameraProvider?.unbindAll()
         cameraExecutor?.shutdown()
+        orientationEventListener?.disable()
     }
 
 
