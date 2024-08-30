@@ -105,11 +105,11 @@ interface QuestionsDialogInterface : DialogInterface {
 class QuestionsDialog(
         val ctx: Activity,
         val questions: List<QuestionLike>,
-        val values: Map<QuestionLike, String>? = null,
+        val values: Map<String, String>? = null,
         val defaultCountry: String?,
         val glideLoader: ((String) -> GlideUrl)? = null,
         val retryHandler: ((MutableList<Answer>) -> Unit),
-        val copyFrom: Map<QuestionLike, String>? = null,
+        val copyFrom: Map<String, String>? = null,
         val attendeeName: String? = null,
         val attendeeDOB: String? = null,
         val ticketId: String? = null,
@@ -128,7 +128,7 @@ class QuestionsDialog(
     private val fieldViews = HashMap<QuestionLike, Any>()
     private val labels = HashMap<QuestionLike, TextView>()
     private val warnings = HashMap<QuestionLike, TextView>()
-    private val setters = HashMap<QuestionLike, ((String?) -> Unit)>()
+    private val setters = HashMap<String, ((String?) -> Unit)>()
     private var v: View = LayoutInflater.from(context).inflate(R.layout.dialog_questions, null)
     private var waitingForAnswerFor: QuestionLike? = null
 
@@ -232,13 +232,13 @@ class QuestionsDialog(
             when (question.type) {
                 QuestionType.TEL -> {
                     val fieldS = PhoneEditText(ctx)
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        fieldS.setPhoneNumber(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        fieldS.setPhoneNumber(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
                         fieldS.setPhoneNumber(question.default)
                     }
                     fieldViews[question] = fieldS
-                    setters[question] = { fieldS.setPhoneNumber(it) }
+                    setters[question.identifier] = { fieldS.setPhoneNumber(it) }
                     if (defaultCountry != null) {
                         fieldS.setDefaultCountry(defaultCountry)
                     }
@@ -251,12 +251,12 @@ class QuestionsDialog(
                 }
                 QuestionType.EMAIL -> {
                     val fieldS = EditText(ctx)
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        fieldS.setText(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        fieldS.setText(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
                         fieldS.setText(question.default)
                     }
-                    setters[question] = { fieldS.setText(it) }
+                    setters[question.identifier] = { fieldS.setText(it) }
                     fieldS.setLines(1)
                     fieldS.isSingleLine = true
                     fieldS.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
@@ -269,12 +269,12 @@ class QuestionsDialog(
                 }
                 QuestionType.S -> {
                     val fieldS = EditText(ctx)
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        fieldS.setText(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        fieldS.setText(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
                         fieldS.setText(question.default)
                     }
-                    setters[question] = { fieldS.setText(it) }
+                    setters[question.identifier] = { fieldS.setText(it) }
                     fieldS.setLines(1)
                     fieldS.isSingleLine = true
                     fieldS.setOnKeyListener(ctrlEnterListener)
@@ -286,12 +286,12 @@ class QuestionsDialog(
                 }
                 QuestionType.T -> {
                     val fieldT = EditText(ctx)
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        fieldT.setText(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        fieldT.setText(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
                         fieldT.setText(question.default)
                     }
-                    setters[question] = { fieldT.setText(it) }
+                    setters[question.identifier] = { fieldT.setText(it) }
                     fieldT.setLines(2)
                     fieldT.setOnKeyListener(ctrlEnterListener)
                     fieldT.doAfterTextChanged {
@@ -302,12 +302,12 @@ class QuestionsDialog(
                 }
                 QuestionType.N -> {
                     val fieldN = EditText(ctx)
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        fieldN.setText(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        fieldN.setText(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
                         fieldN.setText(question.default)
                     }
-                    setters[question] = { fieldN.setText(it) }
+                    setters[question.identifier] = { fieldN.setText(it) }
                     fieldN.inputType = InputType.TYPE_CLASS_NUMBER.or(InputType.TYPE_NUMBER_FLAG_DECIMAL).or(InputType.TYPE_NUMBER_FLAG_SIGNED)
                     fieldN.isSingleLine = true
                     fieldN.setLines(1)
@@ -322,12 +322,12 @@ class QuestionsDialog(
                 QuestionType.B -> {
                     val fieldB = CheckBox(ctx)
                     fieldB.setText(R.string.yes)
-                    if (values?.containsKey(question) == true) {
-                        fieldB.isChecked = "True" == values[question]
+                    if (values?.containsKey(question.identifier) == true) {
+                        fieldB.isChecked = "True" == values[question.identifier]
                     } else if (!question.default.isNullOrBlank()) {
                         fieldB.isChecked = "True" == question.default
                     }
-                    setters[question] = { fieldB.isChecked = "True" == it }
+                    setters[question.identifier] = { fieldB.isChecked = "True" == it }
                     fieldB.setOnKeyListener(ctrlEnterListener)
                     fieldB.setOnCheckedChangeListener { buttonView, isChecked ->
                         updateDependencyVisibilities()
@@ -356,7 +356,7 @@ class QuestionsDialog(
                         val imgF = ImageView(ctx)
                         val btnFD = Button(ctx)
 
-                        setters[question] = {
+                        setters[question.identifier] = {
                             if (it.isNullOrBlank()) {
                                 imgF.visibility = View.GONE
                                 btnFD.visibility = View.GONE
@@ -415,7 +415,7 @@ class QuestionsDialog(
                                 }
                             }
                         }
-                        setters[question]!!(values?.get(question))
+                        setters[question.identifier]!!(values?.get(question.identifier))
 
                         imgF.layoutParams = LinearLayout.LayoutParams(160, 120)
                         fieldsF.add(imgF)
@@ -455,8 +455,8 @@ class QuestionsDialog(
                 }
                 QuestionType.M -> {
                     val fields = ArrayList<CheckBox>()
-                    val selected = if (values?.containsKey(question) == true) {
-                        values[question]!!.split(",")
+                    val selected = if (values?.containsKey(question.identifier) == true) {
+                        values[question.identifier]!!.split(",")
                     } else if (!question.default.isNullOrBlank()) {
                         question.default.split(",")
                     } else {
@@ -477,7 +477,7 @@ class QuestionsDialog(
                         fields.add(field)
                         llFormFields.addView(field)
                     }
-                    setters[question] = {
+                    setters[question.identifier] = {
                         for (f in fields) {
                             if (it != null && it.contains((f.tag as QuestionOption).server_id.toString())) {
                                 f.isChecked = true
@@ -490,17 +490,17 @@ class QuestionsDialog(
                     val fieldC = Spinner(ctx)
                     fieldC.adapter = CountryAdapter(ctx)
                     val defaultcc = CountryCode.getByAlpha2Code(Locale.getDefault().country)
-                    setters[question] = {
+                    setters[question.identifier] = {
                         val cc = CountryCode.getByAlpha2Code(it)
                         fieldC.setSelection((fieldC.adapter as CountryAdapter).getIndex(cc
                                 ?: defaultcc))
                     }
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        setters[question]!!(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        setters[question.identifier]!!(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
-                        setters[question]!!(question.default)
+                        setters[question.identifier]!!(question.default)
                     } else {
-                        setters[question]!!(defaultcc.alpha2)
+                        setters[question.identifier]!!(defaultcc.alpha2)
                     }
                     fieldC.setOnKeyListener(ctrlEnterListener)
                     fieldC.onItemSelectedListener = object : OnItemSelectedListener {
@@ -527,7 +527,7 @@ class QuestionsDialog(
                     opts.add(0, emptyOpt)
                     fieldC.adapter = OptionAdapter(ctx, opts.filter { it != null } as MutableList<QuestionOption>)
 
-                    setters[question] = {
+                    setters[question.identifier] = {
                         var i = 1  // 0 = empty opt
                         for (opt in question.options) {
                             if (opt.server_id.toString() == it) {
@@ -538,10 +538,10 @@ class QuestionsDialog(
                         }
                     }
 
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        setters[question]!!(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        setters[question.identifier]!!(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
-                        setters[question]!!(question.default)
+                        setters[question.identifier]!!(question.default)
                     }
                     fieldC.setOnKeyListener(ctrlEnterListener)
                     fieldC.onItemSelectedListener = object : OnItemSelectedListener {
@@ -565,17 +565,17 @@ class QuestionsDialog(
                 }
                 QuestionType.D -> {
                     val fieldD = DatePickerField(ctx, question.valid_date_min, question.valid_date_max)
-                    setters[question] = {
+                    setters[question.identifier] = {
                         try {
                             fieldD.setValue(df.parse(it))
                         } catch (e: ParseException) {
                             e.printStackTrace()
                         }
                     }
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        setters[question]!!(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        setters[question.identifier]!!(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
-                        setters[question]!!(question.default)
+                        setters[question.identifier]!!(question.default)
                     }
                     fieldD.setOnKeyListener(ctrlEnterListener)
                     fieldD.doAfterTextChanged {
@@ -586,17 +586,17 @@ class QuestionsDialog(
                 }
                 QuestionType.H -> {
                     val fieldH = TimePickerField(ctx)
-                    setters[question] = {
+                    setters[question.identifier] = {
                         try {
                             fieldH.value = LocalTime.fromDateFields(hf.parse(it))
                         } catch (e: ParseException) {
                             e.printStackTrace()
                         }
                     }
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        setters[question]!!(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        setters[question.identifier]!!(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
-                        setters[question]!!(question.default)
+                        setters[question.identifier]!!(question.default)
                     }
                     fieldH.setOnKeyListener(ctrlEnterListener)
                     fieldH.doAfterTextChanged {
@@ -630,7 +630,7 @@ class QuestionsDialog(
                     fieldsW.add(fieldWH)
                     llInner.addView(fieldWH)
 
-                    setters[question] = {
+                    setters[question.identifier] = {
                         try {
                             fieldWD.setValue(wf.parse(it))
                             fieldWH.value = LocalTime.fromDateFields(wf.parse(it))
@@ -639,10 +639,10 @@ class QuestionsDialog(
                         }
                     }
 
-                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
-                        setters[question]!!(values[question])
+                    if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
+                        setters[question.identifier]!!(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
-                        setters[question]!!(question.default)
+                        setters[question.identifier]!!(question.default)
                     }
                     fieldViews[question] = fieldsW
                     llFormFields.addView(llInner)
@@ -942,11 +942,11 @@ class QuestionsDialog(
 fun showQuestionsDialog(
         ctx: Activity,
         questions: List<QuestionLike>,
-        values: Map<QuestionLike, String>? = null,
+        values: Map<String, String>? = null,
         defaultCountry: String?,
         glideLoader: ((String) -> GlideUrl)? = null,
         retryHandler: ((MutableList<Answer>) -> Unit),
-        copyFrom: Map<QuestionLike, String>? = null,
+        copyFrom: Map<String, String>? = null,
         attendeeName: String? = null,
         attendeeDOB: String? = null,
         ticketId: String? = null,
