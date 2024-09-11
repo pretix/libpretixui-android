@@ -122,6 +122,7 @@ class QuestionsDialog(
     companion object {
         val hf = SimpleDateFormat("HH:mm", Locale.US)
         val wf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US)
+        val wfServer = SimpleDateFormat("yyyy-MM-dd HH:mm:ssX", Locale.US)
         val df = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     }
 
@@ -635,7 +636,12 @@ class QuestionsDialog(
                             fieldWD.setValue(wf.parse(it))
                             fieldWH.value = LocalTime.fromDateFields(wf.parse(it))
                         } catch (e: ParseException) {
-                            e.printStackTrace()
+                            try {
+                                fieldWD.setValue(wfServer.parse(it))
+                                fieldWH.value = LocalTime.fromDateFields(wfServer.parse(it))
+                            } catch (e: ParseException) {
+                                e.printStackTrace()
+                            }
                         }
                     }
 
