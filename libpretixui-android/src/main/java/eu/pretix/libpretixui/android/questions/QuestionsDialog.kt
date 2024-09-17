@@ -13,6 +13,7 @@ import android.widget.*
 import android.widget.AdapterView.OnItemSelectedListener
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.bold
@@ -28,6 +29,8 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.github.ialokim.phonefield.PhoneEditText
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.neovisionaries.i18n.CountryCode
 import eu.pretix.libpretixsync.check.QuestionType
 import eu.pretix.libpretixsync.db.Answer
@@ -100,6 +103,8 @@ interface QuestionsDialogInterface : DialogInterface {
     fun onRestoreInstanceState(savedInstanceState: Bundle)
 
     fun onSaveInstanceState(): Bundle
+
+    fun handleScan(rawResult: String)
 }
 
 class QuestionsDialog(
@@ -229,7 +234,13 @@ class QuestionsDialog(
             llFormFields.addView(tv)
             labels[question] = tv
 
-            when (question.type) {
+            var type = question.type
+            // FIMXE: WORKAROUND until merged
+            if (question.identifier in listOf("pretix_seekink_question", "pretix_openepaperlink_question")) {
+                type = QuestionType.BARCODE
+            }
+
+            when (type) {
                 QuestionType.TEL -> {
                     val fieldS = PhoneEditText(ctx)
                     if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
@@ -266,6 +277,47 @@ class QuestionsDialog(
                     }
                     fieldViews[question] = fieldS
                     llFormFields.addView(fieldS)
+                }
+                QuestionType.BARCODE -> {
+                    val fieldTIL = TextInputLayout(ctx)
+                    fieldTIL.layoutParams =
+                        LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                    // fieldTIL.setHintTextAppearance(android.R.style.Base_Widget_MaterialComponents_TextInputLayout_TextInputLayout)
+                    fieldTIL.boxBackgroundColor = ContextCompat.getColor(context, android.R.color.white)
+                    fieldTIL.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE)
+                    fieldTIL.endIconMode = TextInputLayout.END_ICON_CUSTOM
+                    fieldTIL.endIconDrawable = AppCompatResources.getDrawable(context, R.drawable.ic_qr_code_scanner_24)
+                    fieldTIL.endIconContentDescription = "Scan Barcode"
+
+                    val fieldS = TextInputEditText(fieldTIL.context)
+                    fieldTIL.addView(
+                        fieldS,
+                        LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                        )
+                    )
+
+                    if (values?.containsKey(question) == true && !values[question].isNullOrBlank()) {
+                        fieldS.setText(values[question])
+                    } else if (!question.default.isNullOrBlank()) {
+                        fieldS.setText(question.default)
+                    }
+                    setters[question] = { fieldS.setText(it) }
+                    fieldS.setLines(1)
+                    fieldS.isSingleLine = true
+
+                    fieldS.setOnKeyListener(ctrlEnterListener)
+                    fieldS.doAfterTextChanged {
+                        checkForWarnings(listOf(question))
+                    }
+
+                    fieldTIL.setEndIconOnClickListener {
+                        // FIXME: spawn barcodescanner for devices that don't have scanning hardware
+                    }
+
+                    fieldViews[question] = fieldTIL
+                    llFormFields.addView(fieldTIL)
                 }
                 QuestionType.S -> {
                     val fieldS = EditText(ctx)
@@ -666,6 +718,38 @@ class QuestionsDialog(
         }
     }
 
+    override fun handleScan(rawResult: String) {
+        val onlyTextFields = fieldViews.filterKeys { questionLike ->
+                questionLike.type in listOf(QuestionType.BARCODE, QuestionType.S, QuestionType.T, QuestionType.EMAIL)
+            }
+        if (onlyTextFields.isEmpty()) return
+        val focusedFields = onlyTextFields.filterValues { field ->
+            when (field) {
+                is EditText -> field.isFocused
+                is TextInputLayout -> field.editText?.isFocused ?: false
+                else -> false
+            }
+        }
+        val emptyFields = onlyTextFields.filterValues { field ->
+            when (field) {
+                is EditText -> !field.text.isEmpty()
+                is TextInputLayout -> !(field.editText?.text?.isEmpty() == true)
+                else -> false
+            }
+        }
+        val field = focusedFields.ifEmpty { emptyFields }.ifEmpty { onlyTextFields }.entries.first().value // FIXME: select first empty one
+        when (field) {
+            is EditText -> field.setText(rawResult)
+            is TextInputLayout -> field.editText?.setText(rawResult)
+            else -> return
+        }
+
+        // we only have one field and just filled that? time to submit
+        if (fieldViews.size == 1 && fieldViews.values.first() == field) {
+            validate()
+        }
+    }
+
     class QuestionInvalid(val msgid: Int) : Exception()
 
     private fun serializeAnswer(question: QuestionLike, allAnswersAreOptional: Boolean): Answer {
@@ -674,7 +758,18 @@ class QuestionsDialog(
         var invalid = false
         val options = mutableListOf<QuestionOption>()
         val field = fieldViews[question]
-        when (question.type) {
+
+        var type = question.type
+        // FIMXE: WORKAROUND until merged
+        if (question.identifier in listOf("pretix_seekink_question", "pretix_openepaperlink_question")) {
+            type = QuestionType.BARCODE
+        }
+
+        when (type) {
+            QuestionType.BARCODE -> {
+                answer = (field as TextInputLayout).editText!!.text.toString()
+                empty = answer.trim() == ""
+            }
             QuestionType.S, QuestionType.T, QuestionType.EMAIL -> {
                 answer = (field as EditText).text.toString()
                 empty = answer.trim() == ""
