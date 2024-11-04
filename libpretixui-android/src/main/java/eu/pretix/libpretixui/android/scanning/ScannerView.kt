@@ -263,6 +263,8 @@ class ScannerView : FrameLayout {
                     listener.handleResult(Result(rawResult.text, rawResult.rawBytes))
                 } catch (e: NotFoundException) {
                     // ignore, no barcode found
+                } catch (e: ArrayIndexOutOfBoundsException) {
+                    // ignore, this is something zxing seems to do if it does not like the barcode
                 } finally {
                     multiFormatReader.reset()
                     image.close()
