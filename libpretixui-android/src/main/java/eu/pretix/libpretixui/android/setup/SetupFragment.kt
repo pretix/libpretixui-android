@@ -50,8 +50,9 @@ import java.lang.Exception
 import javax.net.ssl.SSLException
 
 interface SetupCallable {
+    fun config(useCamera: Boolean)
     fun setup(url: String, token: String)
-    fun onSucessfulSetup()
+    fun onSuccessfulSetup()
     fun onGenericSetupException(e: Exception)
 }
 
@@ -287,10 +288,10 @@ class SetupFragment : Fragment() {
             val bgScope = CoroutineScope(Dispatchers.IO)
             try {
                 bgScope.async {
-                    // FIXME: propagate useCamera back to appconfig
                     (requireActivity() as SetupCallable).setup(url, token)
                 }.await()
-                (requireActivity() as SetupCallable).onSucessfulSetup()
+                (requireActivity() as SetupCallable).onSuccessfulSetup()
+                (requireActivity() as SetupCallable).config(useCamera)
             } catch (e: SetupBadRequestException) {
                 e.printStackTrace()
                 if (parentFragmentManager.isDestroyed) {
