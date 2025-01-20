@@ -34,4 +34,5 @@
     <string name="setup_hardware_scanner_switch_to_camera">Use camera instead</string>
     <string name="setup_hint_url">URL</string>
     <string name="setup_hint_token">Token</string>
+    <string name="action_manual">Manual setup</string>
 </resources>

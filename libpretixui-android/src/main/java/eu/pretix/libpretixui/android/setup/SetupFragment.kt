@@ -138,7 +138,7 @@ class SetupFragment : Fragment() {
         val menuHost: MenuHost = requireActivity() as MenuHost
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_setup, menu)
+                menuInflater.inflate(R.menu.menu_setup_lib, menu)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
