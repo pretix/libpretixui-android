@@ -29,7 +29,8 @@
     <string name="setup_error_response">Der Server hat eine ungültige Antwort zurückgegeben.</string>
     <string name="setup_error_failed">Der initiale Verbindungstest ist fehlgeschlagen.</string>
     <string name="setup_error_permissions">pretixSCAN funktioniert ohne diese Berechtigungen nicht. Bitte starten Sie die App neu.</string>
-    <string name="setup_grant_camera_permission">Bitte erteilen Sie die Kamera-Berechtigung für den QR-Code-Scanner</string>
+    <string name="setup_camera_permission_needed">Bitte erteilen Sie die Kamera-Berechtigung für den QR-Code-Scanner</string>
+    <string name="setup_grant_camera_permission">Kamera-Berechtigung erteilen</string>
     <string name="setup_hardware_scanner">Bitte benutze die Hardware-Scantasten deines Gerätes zum Scannen.</string>
     <string name="setup_hardware_scanner_switch_to_camera">Stattdessen Kamera verwenden</string>
     <string name="setup_hint_url">URL</string>

@@ -29,7 +29,8 @@
     <string name="setup_error_response">The server returned an invalid response.</string>
     <string name="setup_error_failed">The initial connection test failed.</string>
     <string name="setup_error_permissions">The app does not work properly without granting those permissions. Please restart the app.</string>
-    <string name="setup_grant_camera_permission">Please grant camera permission to use the QR Scanner</string>
+    <string name="setup_camera_permission_needed">Please grant camera permission to use the QR Scanner</string>
+    <string name="setup_grant_camera_permission">Grant camera permission</string>
     <string name="setup_hardware_scanner">Please press the hardware scan buttons of your device to scan.</string>
     <string name="setup_hardware_scanner_switch_to_camera">Use camera instead</string>
     <string name="setup_hint_url">URL</string>

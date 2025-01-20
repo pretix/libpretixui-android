@@ -126,12 +126,15 @@ class SetupFragment : Fragment() {
         useCamera = !defaultToScanner()
 
         binding.btSwitchCamera.setOnClickListener {
+            hardwareScanner.stop(requireContext())
+            useCamera = true
+            binding.llHardwareScan.visibility = View.GONE
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                hardwareScanner.stop(requireContext())
-                useCamera = true
+                binding.llCameraPermission.visibility = View.GONE
                 binding.scannerView.setResultHandler(scannerResultHandler)
                 binding.scannerView.startCamera()
-                binding.llHardwareScan.visibility = if (useCamera) View.GONE else View.VISIBLE
+            } else {
+                binding.llCameraPermission.visibility = View.VISIBLE
             }
         }
 
@@ -157,8 +160,10 @@ class SetupFragment : Fragment() {
                 ActivityResultContracts.RequestPermission()
             ) { isGranted: Boolean ->
                 if (!isGranted) {
-                    Toast.makeText(requireContext(), getString(R.string.setup_grant_camera_permission), Toast.LENGTH_SHORT).show()
+                    binding.llCameraPermission.visibility = View.VISIBLE
+                    Toast.makeText(requireContext(), getString(R.string.setup_camera_permission_needed), Toast.LENGTH_SHORT).show()
                 } else {
+                    binding.llCameraPermission.visibility = View.GONE
                     binding.scannerView.startCamera()
                     if (useCamera) {
                         binding.scannerView.setResultHandler(scannerResultHandler)
@@ -166,17 +171,38 @@ class SetupFragment : Fragment() {
                     }
                 }
             }
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        binding.btCameraPermission.setOnClickListener {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+        if (useCamera) {
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                binding.llCameraPermission.visibility = View.VISIBLE
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            } else {
+                binding.llCameraPermission.visibility = View.GONE
+            }
+        } else {
+            binding.llCameraPermission.visibility = View.GONE
         }
     }
 
     override fun onResume() {
         super.onResume()
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            if (useCamera) {
+        if (useCamera) {
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                binding.llCameraPermission.visibility = View.GONE
                 binding.scannerView.setResultHandler(scannerResultHandler)
                 binding.scannerView.startCamera()
+            } else {
+                binding.llCameraPermission.visibility = View.VISIBLE
             }
         }
         binding.llHardwareScan.visibility = if (useCamera) View.GONE else View.VISIBLE
@@ -185,10 +211,8 @@ class SetupFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            if (useCamera) {
-                binding.scannerView.stopCamera()
-            }
+        if (useCamera && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            binding.scannerView.stopCamera()
         }
         hardwareScanner.stop(requireContext())
     }
