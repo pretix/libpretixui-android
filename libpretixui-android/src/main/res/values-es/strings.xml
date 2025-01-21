@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_manual">Configuración manual</string>
+    <string name="setup_error_failed">Ha fallado la prueba de conexión inicial.</string>
+    <string name="setup_error_invalid_qr_code">El código QR que escaneado no es un código de configuración válido. Asegúrese de haber creado el código en la sección Dispositivos de la cuenta del organizador pretix.</string>
+    <string name="setup_error_io">Error de conexión al intentar acceder al servidor.</string>
+    <string name="setup_error_legacy_qr_code">El código QR escaneado sólo es valido para predecesores antiguos. Debe registrar un nuevo dispositivo en la sección «Dispositivos» de la cuenta de organizador pretix.</string>
+    <string name="setup_error_permissions">La aplicación no funciona correctamente sin conceder los permisos necesarios. Por favor, reinicie la aplicación.</string>
+    <string name="setup_error_request">Solicitud rechazada por el servidor. Por favor, vuelva a comprobar los datos introducidos.</string>
+    <string name="setup_error_response">El servidor devolvió una respuesta no válida.</string>
+    <string name="setup_error_server">Error del servidor al intentar registrar el dispositivo.</string>
+    <string name="setup_error_ssl">Error de seguridad al intentar acceder al servidor.</string>
+    <string name="setup_error_version_too_high">El código QR que escaneado proviene de una versión más reciente de pretix. ¡Por favor, verifique si puede obtener una actualización de la aplicación!</string>
+    <string name="setup_grant_camera_permission">Debe conceder permisos para utilizar la cámara y escáner QR</string>
+    <string name="setup_progress">Inicializando dispositivo…</string>
+    <string name="setup_tutorial">Para empezar, debe crear un nuevo dispositivo en la sección dispositivos de la cuenta del organizador en el backend de pretix. Una vez registrado, aparecerá un código QR de configuración que deberá escanear.</string>
 </resources>

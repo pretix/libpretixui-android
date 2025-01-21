@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_manual">Mise en place manuelle</string>
+    <string name="setup_error_failed">Le test de connexion initial a échoué.</string>
+    <string name="setup_error_invalid_qr_code">Le QR code que vous avez scanné n\'est pas un code de configuration valide. Veuillez vous assurer que vous avez créé le code dans la section Appareils d\'un compte organisateur pretix.</string>
+    <string name="setup_error_io">Erreur de connexion lors de la tentative de connexion au serveur.</string>
+    <string name="setup_error_legacy_qr_code">Le QR code que vous avez scanné correspond à une ancienne version de cette application. Veuillez vous rendre dans la section Appareils de votre compte organisateur et y créer un nouveal appareil.</string>
+    <string name="setup_error_permissions">L\'application ne fonctionne pas correctement sans l\'octroi de ces autorisations. Veuillez redémarrer l\'application.</string>
+    <string name="setup_error_request">Demande rejetée par le serveur. Veuillez revérifier votre saisie.</string>
+    <string name="setup_error_response">Le serveur a retourné une réponse non valide.</string>
+    <string name="setup_error_server">Une erreur s\'est produite sur le serveur lors de l\'enregistrement de l\'appareil.</string>
+    <string name="setup_error_ssl">Erreur de sécurité lors de la tentative d\'accès au serveur.</string>
+    <string name="setup_error_version_too_high">Le QR code que vous avez scanné provient d\'une version de pretix plus récente que celle pour laquelle cette application a été conçue. Veuillez vérifier si vous pouvez obtenir une mise à jour pour cette application !</string>
+    <string name="setup_grant_camera_permission">Veuillez autoriser la caméra à utiliser le scanner QR</string>
+    <string name="setup_progress">Initialisation de l\'appareil…</string>
+    <string name="setup_tutorial">Pour commencer, créez un nouvel appareil dans la section Appareils de votre compte d\'organisateur dans le site de pretix. Un QR code vous sera alors présenté afin de configurer celui-ci.</string>
+</resources>

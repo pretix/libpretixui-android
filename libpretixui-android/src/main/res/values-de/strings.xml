@@ -1,4 +1,5 @@
 <resources>
+    <string name="action_manual">Manuelles Setup</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
     <string name="cancel">Abbrechen</string>
@@ -17,23 +18,22 @@
     <string name="time_format">%1$tH:%1$tM</string>
     <string name="android_permission_required">Bitte versuchen Sie es erneut, wenn Sie unserer App die nötige Systemberechtigung erteilt haben.</string>
     <string name="ok">OK</string>
-    <string name="setup_tutorial">Um loszulegen, erstellen Sie ein neues Gerät im Abschnitt \"Geräte\" ihres Veranstalter-Kontos im pretix-Backend. Sie erhalten dann einen QR-Code zur Konfiguration, den Sie hier scannen können.</string>
-    <string name="setup_error_legacy_qr_code">Der gescannte QR-Code ist für einen Vorläufer dieser App gültig. Bitte gehen Sie stattdessen zum Abschnitt \"Geräte\" Ihres Veranstalterkontos und legen Sie dort ein neues Gerät an.</string>
-    <string name="setup_error_invalid_qr_code">Der QR-Code, den Sie gescannt haben, ist nicht gültig. Bitte stellen Sie sicher, dass er aus der \"Geräte\"-Sektion Ihres pretix-Veranstalterkontos stammt.</string>
-    <string name="setup_error_version_too_high">Der gescannte QR-Code ist von einer neueren pretix-Version als für diese App ausgelegt. Bitte prüfen Sie, ob es ein Update für diese App gibt!</string>
-    <string name="setup_progress">Initialisiere Gerät…</string>
-    <string name="setup_error_request">Anfrage vom Server abgelehnt, bitte prüfen Sie Ihre Eingabe.</string>
-    <string name="setup_error_io">Verbindungsfehler beim Versuch, den Server zu erreichen.</string>
-    <string name="setup_error_ssl">Sicherheitsfehler bei der Verbindung zum Server.</string>
-    <string name="setup_error_server">Serverfehler beim Registrieren des Geräts.</string>
-    <string name="setup_error_response">Der Server hat eine ungültige Antwort zurückgegeben.</string>
-    <string name="setup_error_failed">Der initiale Verbindungstest ist fehlgeschlagen.</string>
-    <string name="setup_error_permissions">pretixSCAN funktioniert ohne diese Berechtigungen nicht. Bitte starten Sie die App neu.</string>
     <string name="setup_camera_permission_needed">Bitte erteilen Sie die Kamera-Berechtigung für den QR-Code-Scanner</string>
+    <string name="setup_error_failed">Der initiale Verbindungstest ist fehlgeschlagen.</string>
+    <string name="setup_error_invalid_qr_code">Der QR-Code, den Sie gescannt haben, ist nicht gültig. Bitte stellen Sie sicher, dass er aus der \"Geräte\"-Sektion Ihres pretix-Veranstalterkontos stammt.</string>
+    <string name="setup_error_io">Verbindungsfehler beim Versuch, den Server zu erreichen.</string>
+    <string name="setup_error_legacy_qr_code">Der gescannte QR-Code ist für einen Vorläufer dieser App gültig. Bitte gehen Sie stattdessen zum Abschnitt \"Geräte\" Ihres Veranstalterkontos und legen Sie dort ein neues Gerät an.</string>
+    <string name="setup_error_permissions">Die App funktioniert ohne diese Berechtigungen nicht. Bitte starten Sie die App neu.</string>
+    <string name="setup_error_request">Anfrage vom Server abgelehnt, bitte prüfen Sie Ihre Eingabe.</string>
+    <string name="setup_error_response">Der Server hat eine ungültige Antwort zurückgegeben.</string>
+    <string name="setup_error_server">Serverfehler beim Registrieren des Geräts.</string>
+    <string name="setup_error_ssl">Sicherheitsfehler bei der Verbindung zum Server.</string>
+    <string name="setup_error_version_too_high">Der gescannte QR-Code ist von einer neueren pretix-Version als für diese App ausgelegt. Bitte prüfen Sie, ob es ein Update für diese App gibt!</string>
     <string name="setup_grant_camera_permission">Kamera-Berechtigung erteilen</string>
     <string name="setup_hardware_scanner">Bitte benutze die Hardware-Scantasten deines Gerätes zum Scannen.</string>
     <string name="setup_hardware_scanner_switch_to_camera">Stattdessen Kamera verwenden</string>
-    <string name="setup_hint_url">URL</string>
     <string name="setup_hint_token">Token</string>
-    <string name="action_manual">Manuelles Setup</string>
+    <string name="setup_hint_url">URL</string>
+    <string name="setup_progress">Initialisiere Gerät…</string>
+    <string name="setup_tutorial">Um loszulegen, erstellen Sie ein neues Gerät im Abschnitt \"Geräte\" ihres Veranstalter-Kontos im pretix-Backend. Sie erhalten dann einen QR-Code zur Konfiguration, den Sie hier scannen können.</string>
 </resources>
