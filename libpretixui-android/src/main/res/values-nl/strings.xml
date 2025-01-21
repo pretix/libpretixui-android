@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_manual">Handmatig instellen</string>
+    <string name="setup_error_failed">De eerste verbindingstest is mislukt.</string>
+    <string name="setup_error_invalid_qr_code">De QR-code die u scande is geen geldige configuratiecode. Controleer of u de code heeft aangemaakt onder Apparaten in de organisatoraccountsinstellingen van een pretix-organisatoraccount.</string>
+    <string name="setup_error_io">Er is een verbindingsfout opgetreden tijdens het verbinden met de server.</string>
+    <string name="setup_error_legacy_qr_code">De QR-code die u scande is alleen voor een oudere versie van deze app geldig. Ga naar de apparatenlijst in uw pretixaccount en maak hier een nieuw apparaat aan.</string>
+    <string name="setup_error_permissions">De app werkt niet juist zonder deze toestemmingen te geven. Start de app opnieuw op.</string>
+    <string name="setup_error_request">Verzoek geweigerd door server. Controleer uw invoer.</string>
+    <string name="setup_error_response">De server heeft een ongeldig antwoord teruggegeven.</string>
+    <string name="setup_error_server">Er is een serverfout opgetreden tijdens het registreren van het apparaat.</string>
+    <string name="setup_error_ssl">Er is een beveiligingsfout opgetreden tijdens het verbinden met de server.</string>
+    <string name="setup_error_version_too_high">De gescande QR-code is voor een nieuwere versie van pretix dan waar deze app is voor gebouwd. Controleer of er een update is voor deze app!</string>
+    <string name="setup_grant_camera_permission">Verleen de camera-machtiging om de QR Scanner te kunnen gebruiken</string>
+    <string name="setup_progress">Apparaat instellen…</string>
+    <string name="setup_tutorial">Om te starten, maak een nieuw apparaat aan in het Apparaten onderdeel van je organisator account in de Pretix controlepaneel. Daar vind je een qr code die je kan scannen om de juiste configuratie te downloaden.</string>
 </resources>

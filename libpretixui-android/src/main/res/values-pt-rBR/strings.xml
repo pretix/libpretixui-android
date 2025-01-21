@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_manual">Configuração Manual</string>
+    <string name="setup_error_failed">O teste de conexão inicial falhou.</string>
+    <string name="setup_error_invalid_qr_code">O código QR que você escaneou não é um código de configuração válido. Certifique-se de que você criou o código na seção Dispositivos de uma conta do organizador.</string>
+    <string name="setup_error_io">Erro de conexão ao tentar acessar o servidor.</string>
+    <string name="setup_error_legacy_qr_code">O código QR que você escaneou é de uma versão antiga deste aplicativo. Vá para a seção Dispositivos na sua conta do organizador e crie um novo dispositivo.</string>
+    <string name="setup_error_permissions">A aplicação não funciona corretamente sem conceder essas permissões. Reinicie o aplicativo.</string>
+    <string name="setup_error_request">Requisição rejeitada pelo servidor. Por favor, verifique as informações.</string>
+    <string name="setup_error_response">O servidor retornou uma resposta inválida.</string>
+    <string name="setup_error_server">Erro no servidor ao tentar registrar o dispositivo.</string>
+    <string name="setup_error_ssl">Erro de segurança ao tentar acessar o servidor.</string>
+    <string name="setup_error_version_too_high">O código QR que você escaneou é de uma versão mais recente do que a que este aplicativo. Verifique se você pode obter uma atualização para este aplicativo!</string>
+    <string name="setup_progress">Inicializando dispositivo…</string>
+    <string name="setup_tutorial">Para começar, crie um novo dispositivo na seção Dispositivos da sua conta de organizador. Você verá um código QR de configuração para escanear.</string>
+</resources>
