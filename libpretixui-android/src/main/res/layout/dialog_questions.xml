@@ -17,12 +17,12 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clAttendeeInfo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@color/pretix_brand_orange"
             android:padding="8dp">
 
             <ImageView
-                android:id="@+id/imageView"
+                android:id="@+id/ivAttendeeIcon"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 app:layout_constraintStart_toStartOf="parent"
@@ -35,11 +35,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="Name"
+                tools:text="Name"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@color/BLACK"
                 android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@+id/imageView"
+                app:layout_constraintStart_toEndOf="@+id/ivAttendeeIcon"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
@@ -48,11 +48,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="16dp"
-                android:text="DOB"
+                tools:text="DOB"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textColor="@color/BLACK"
                 app:layout_constraintEnd_toStartOf="@+id/tvTicketId"
-                app:layout_constraintStart_toEndOf="@+id/imageView"
+                app:layout_constraintStart_toEndOf="@+id/ivAttendeeIcon"
                 app:layout_constraintTop_toBottomOf="@+id/tvAttendeeName" />
 
             <TextView
@@ -61,22 +61,52 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="16dp"
-                android:text="Ticket type"
+                tools:text="Ticket type"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textColor="@color/BLACK"
                 app:layout_constraintEnd_toStartOf="@+id/tvTicketId"
-                app:layout_constraintStart_toEndOf="@+id/imageView"
+                app:layout_constraintStart_toEndOf="@+id/ivAttendeeIcon"
                 app:layout_constraintTop_toBottomOf="@+id/tvAttendeeDOB" />
 
             <TextView
                 android:id="@+id/tvTicketId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ticket ID"
+                tools:text="Ticket ID"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textColor="@color/BLACK"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvAttendeeName" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clOrderInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/pretix_brand_orange"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/ivOrderIcon"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_receipt_long_24"
+                app:tint="@color/BLACK" />
+
+            <TextView
+                android:id="@+id/tvOrderHeadline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                tools:text="Order"
+                android:text="@string/order_question_title"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/BLACK"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/ivOrderIcon"
+                app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </ScrollView>
