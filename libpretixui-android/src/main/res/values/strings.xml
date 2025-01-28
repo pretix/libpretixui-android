@@ -16,6 +16,7 @@
     <string name="date_format">%1$tY-%1$tm-%1$td</string>
     <string name="time_format">%1$tH:%1$tM</string>
     <string name="android_permission_required">Try again after granting the required system permission.</string>
+    <string name="order_question_title">Order and invoice information</string>
     <string name="ok">OK</string>
     <string name="setup_tutorial">To get started, create a new device in the "Devices" section of your organizer account in the pretix backend. You will be then presented with a configuration QR code to scan.</string>
     <string name="setup_error_legacy_qr_code">The QR code you scanned is for an old predecessor of this app. Please go to the "Devices" section in your pretix organizer account and create a new device there.</string>

@@ -103,6 +103,7 @@ interface QuestionsDialogInterface : DialogInterface {
 }
 
 class QuestionsDialog(
+        val type: QuestionsType,
         val ctx: Activity,
         val questions: List<QuestionLike>,
         val values: Map<String, String>? = null,
@@ -120,6 +121,11 @@ class QuestionsDialog(
         val allAnswersAreOptional: Boolean = false,
 ) : AlertDialog(ctx), QuestionsDialogInterface {
     companion object {
+        enum class QuestionsType {
+            LINE_ITEM_QUESTIONS,
+            ORDER_QUESTIONS
+        }
+
         val hf = SimpleDateFormat("HH:mm", Locale.US)
         val wf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US)
         val wfServer = SimpleDateFormat("yyyy-MM-dd HH:mm:ssX", Locale.US)
@@ -135,6 +141,17 @@ class QuestionsDialog(
 
     init {
         setView(v)
+
+        when (type) {
+            QuestionsType.LINE_ITEM_QUESTIONS -> {
+                v.findViewById<View>(R.id.clOrderInfo).visibility = View.GONE
+                v.findViewById<View>(R.id.clAttendeeInfo).visibility = View.VISIBLE
+            }
+            QuestionsType.ORDER_QUESTIONS -> {
+                v.findViewById<View>(R.id.clAttendeeInfo).visibility = View.GONE
+                v.findViewById<View>(R.id.clOrderInfo).visibility = View.VISIBLE
+            }
+        }
 
         if (this.attendeeName.isNullOrBlank()) {
             v.findViewById<TextView>(R.id.tvAttendeeName).visibility = View.GONE
@@ -946,6 +963,7 @@ class QuestionsDialog(
 }
 
 fun showQuestionsDialog(
+        type: QuestionsDialog.Companion.QuestionsType,
         ctx: Activity,
         questions: List<QuestionLike>,
         values: Map<String, String>? = null,
@@ -963,6 +981,7 @@ fun showQuestionsDialog(
         allAnswersAreOptional: Boolean = false,
 ): QuestionsDialogInterface {
     val dialog = QuestionsDialog(
+            type,
             ctx,
             questions,
             values,
