@@ -21,6 +21,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDialog
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
@@ -59,6 +60,7 @@ interface SetupCallable {
 class SetupFragment : Fragment() {
     companion object {
         const val ARG_DEFAULT_HOST = "default_host"
+        const val ARG_ASK_FOR_WRITE_EXTERNAL_STORAGE = "ask_for_write_external_storage"
     }
 
     private var _binding: FragmentSetupBinding? = null
@@ -92,6 +94,21 @@ class SetupFragment : Fragment() {
             lastScanValue = rawResult.text
             lastScanTime = System.currentTimeMillis()
             handleScan(rawResult.text)
+        }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants: Map<String, Boolean> ->
+        // NOTE: Manifest.permission.WRITE_EXTERNAL_STORAGE will always return false on SDK 23+, but that's okay.
+        if (grants[Manifest.permission.CAMERA] == false) {
+            binding.llCameraPermission.visibility = View.VISIBLE
+            Toast.makeText(requireContext(), getString(R.string.setup_camera_permission_needed), Toast.LENGTH_SHORT).show()
+        } else {
+            binding.llCameraPermission.visibility = View.GONE
+            binding.scannerView.startCamera()
+            if (useCamera) {
+                binding.scannerView.setResultHandler(scannerResultHandler)
+                binding.scannerView.startCamera()
+            }
         }
     }
 
@@ -156,57 +173,64 @@ class SetupFragment : Fragment() {
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        val requestPermissionLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { isGranted: Boolean ->
-                if (!isGranted) {
-                    binding.llCameraPermission.visibility = View.VISIBLE
-                    Toast.makeText(requireContext(), getString(R.string.setup_camera_permission_needed), Toast.LENGTH_SHORT).show()
-                } else {
-                    binding.llCameraPermission.visibility = View.GONE
-                    binding.scannerView.startCamera()
-                    if (useCamera) {
-                        binding.scannerView.setResultHandler(scannerResultHandler)
-                        binding.scannerView.startCamera()
-                    }
+        binding.btCameraPermission.setOnClickListener {
+            requestPermissionLauncher.launch(arrayOf(Manifest.permission.CAMERA))
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val neededPermissions = mutableListOf<String>()
+        if (useCamera) {
+            if (
+                requireArguments().getBoolean(ARG_ASK_FOR_WRITE_EXTERNAL_STORAGE, false) &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                neededPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+            if (
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.CAMERA)) {
+                    neededPermissions.add(Manifest.permission.CAMERA)
                 }
             }
-        binding.btCameraPermission.setOnClickListener {
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-        if (useCamera) {
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.CAMERA
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                binding.llCameraPermission.visibility = View.VISIBLE
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-            } else {
-                binding.llCameraPermission.visibility = View.GONE
-            }
         } else {
-            binding.llCameraPermission.visibility = View.GONE
+            if (
+                requireArguments().getBoolean(ARG_ASK_FOR_WRITE_EXTERNAL_STORAGE, false) &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                neededPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        }
+        if (neededPermissions.isNotEmpty()) {
+            requestPermissionLauncher.launch(neededPermissions.toTypedArray())
         }
     }
 
     override fun onResume() {
         super.onResume()
         if (useCamera) {
-            if (ContextCompat.checkSelfPermission(
+            binding.llHardwareScan.visibility = View.GONE
+            if (
+                ContextCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.CAMERA
-                ) == PackageManager.PERMISSION_GRANTED
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
+                binding.llCameraPermission.visibility = View.VISIBLE
+            } else {
                 binding.llCameraPermission.visibility = View.GONE
                 binding.scannerView.setResultHandler(scannerResultHandler)
                 binding.scannerView.startCamera()
-            } else {
-                binding.llCameraPermission.visibility = View.VISIBLE
             }
+        } else {
+            binding.llCameraPermission.visibility = View.GONE
+            binding.llHardwareScan.visibility = View.VISIBLE
         }
-        binding.llHardwareScan.visibility = if (useCamera) View.GONE else View.VISIBLE
         hardwareScanner.start(requireContext())
     }
 
