@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_manual">Impostazione manuale</string>
+    <string name="setup_error_failed">Il test di prima connessione ha fallito.</string>
+    <string name="setup_error_invalid_qr_code">Il codice QR scannerizzato non è un codice valido di configurazione. Per favore verifica che il codice sia stato creato nella sezione Dispositivi dell\'account organizzatore pretix.</string>
+    <string name="setup_error_io">Errore di connessione mentre si cerca di accedere al server.</string>
+    <string name="setup_error_legacy_qr_code">Il codice QR scannerizzato è per un vecchio predecessore di quest\'app. Per favore entra nella sezione Dispositivi del tuo account organizzatore pretix e crea un nuovo dispositivo.</string>
+    <string name="setup_error_permissions">L\'applicazione non può funzionare correttamente senza abilitare i permessi. Chiudere e riaprire l\'app.</string>
+    <string name="setup_error_request">Richiesta rifiutata dal server. Ricontrolla le informazioni inserite.</string>
+    <string name="setup_error_response">Il server ha inviato una risposta non valida.</string>
+    <string name="setup_error_server">Errore del server durante il tentativo di registrazione del dispositivo.</string>
+    <string name="setup_error_ssl">Errore di sicurezza durante il tentativo di accesso al server.</string>
+    <string name="setup_error_version_too_high">Il codice QR scannerizzato proviene da una versione più recente di pretix rispetto a quella per cui è stata progettata quest\'app. Prova ad aggiornare l\'applicazione!</string>
+    <string name="setup_grant_camera_permission">Gentilmente permettere i permessi di utlizzo della fotocamera per usare lo Scanner QR</string>
+    <string name="setup_progress">Inizializzando il dispositivo…</string>
+    <string name="setup_tutorial">Per iniziare, crea un nuovo dispositivo nella sezione Dispositivi del tuo account organizzatore nel backend di pretix. Ti verrà presentato un codice QR da scannerizzare per la configurazione.</string>
+</resources>

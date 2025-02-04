@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_error_io">Помилка зв\'язку під час спроби під\'єднання до сервера.</string>
+    <string name="setup_error_ssl">Помилка безпеки під час спроби під\'єднання до сервера.</string>
+    <string name="setup_error_server">Серверна помилка під час спроби реєстрації пристрою.</string>
+    <string name="setup_error_response">Сервер надіслав недійсну відповідь.</string>
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_manual">Konfiguracja ręczna</string>
+    <string name="setup_error_failed">Początkowy test połączenia nie powiódł się.</string>
+    <string name="setup_error_invalid_qr_code">Zeskanowany kod QR nie jest prawidłowym kodem konfiguracyjnym. Upewnij się, że kod został utworzony w sekcji Urządzenia na koncie organizatora pretix.</string>
+    <string name="setup_error_io">Błąd połączenia podczas próby nawiązania połączenia z serwerem.</string>
+    <string name="setup_error_legacy_qr_code">Zeskanowany kod QR dotyczy poprzedniej wersji tej aplikacji. Przejdź do sekcji Urządzenia na swoim koncie organizatora pretix i utwórz tam nowe urządzenie.</string>
+    <string name="setup_error_permissions">Aplikacja nie działa poprawnie bez przyznania tych uprawnień. Uruchom ponownie aplikację.</string>
+    <string name="setup_error_request">Żądanie odrzucone przez serwer. Sprawdź dwukrotnie wprowadzone dane.</string>
+    <string name="setup_error_response">Serwer zwrócił nieprawidłową odpowiedź.</string>
+    <string name="setup_error_server">Błąd serwera podczas próby zarejestrowania urządzenia.</string>
+    <string name="setup_error_ssl">Błąd zabezpieczeń podczas próby połączenia z serwerem.</string>
+    <string name="setup_error_version_too_high">Zeskanowany kod QR pochodzi z nowszej wersji aplikacji pretix niż ta, dla której została stworzona. Sprawdź, czy możesz uzyskać aktualizację dla tej aplikacji!</string>
+    <string name="setup_grant_camera_permission">Zezwól na używanie kamery aby korzystać ze skanera QR</string>
+    <string name="setup_progress">Inicjalizacja urządzenia…</string>
+    <string name="setup_tutorial">Aby rozpocząć, utwórz nowe urządzenie w sekcji Urządzenia na swoim koncie organizatora w wewnętrznym systemie pretix. Następnie zostanie Ci wyświetlony konfiguracyjny kod QR do zeskanowania.</string>
+</resources>
