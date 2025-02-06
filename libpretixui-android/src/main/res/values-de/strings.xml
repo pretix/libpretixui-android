@@ -17,7 +17,7 @@
     <string name="date_format">%1$td.%1$tm.%1$tY</string>
     <string name="time_format">%1$tH:%1$tM</string>
     <string name="android_permission_required">Bitte versuchen Sie es erneut, wenn Sie unserer App die nötige Systemberechtigung erteilt haben.</string>
-    <string name="order_question_title">Kauf- und Rechnungsinformationen</string>
+    <string name="order_question_title">Bestellinformationen</string>
     <string name="ok">OK</string>
     <string name="setup_camera_permission_needed">Bitte erteilen Sie die Kamera-Berechtigung für den QR-Code-Scanner</string>
     <string name="setup_error_failed">Der initiale Verbindungstest ist fehlgeschlagen.</string>
