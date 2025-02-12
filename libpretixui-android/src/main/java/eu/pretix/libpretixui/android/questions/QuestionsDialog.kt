@@ -250,6 +250,9 @@ class QuestionsDialog(
             when (question.type) {
                 QuestionType.TEL -> {
                     val fieldS = PhoneEditText(ctx)
+                    if (defaultCountry != null) {
+                        fieldS.setDefaultCountry(defaultCountry)
+                    }
                     if (values?.containsKey(question.identifier) == true && !values[question.identifier].isNullOrBlank()) {
                         fieldS.setPhoneNumber(values[question.identifier])
                     } else if (!question.default.isNullOrBlank()) {
@@ -257,9 +260,6 @@ class QuestionsDialog(
                     }
                     fieldViews[question] = fieldS
                     setters[question.identifier] = { fieldS.setPhoneNumber(it) }
-                    if (defaultCountry != null) {
-                        fieldS.setDefaultCountry(defaultCountry)
-                    }
                     fieldS.setPadding(0, 0, 0, 0)
                     fieldS.setOnKeyListener(ctrlEnterListener)
                     fieldS.editText.doAfterTextChanged {
