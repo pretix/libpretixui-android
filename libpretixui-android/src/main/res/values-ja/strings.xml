@@ -1,4 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_manual">手動で設定</string>
+    <string name="yes">はい</string>
+    <string name="no">いいえ</string>
+    <string name="cancel">キャンセル</string>
+    <string name="copy">前の情報をコピーする</string>
+    <string name="cont">続ける</string>
+    <string name="question_validation_error">入力の一部が検証できませんでした。</string>
+    <string name="question_input_required">この項目は必須です。</string>
+    <string name="question_input_invalid">この入力は無効です。</string>
+    <string name="take_photo">写真を撮る</string>
+    <string name="delete_photo">写真を削除する</string>
+    <string name="camera_back">バックカメラ</string>
+    <string name="camera_front">フロントカメラ</string>
+    <string name="camera_usb">USBカメラを選択する</string>
+    <string name="datetime_format">%1$tY-%1$tm-%1$td %1$tH:%1$tM</string>
+    <string name="date_format">%1$tY-%1$tm-%1$td</string>
+    <string name="time_format">%1$tH:%1$tM</string>
+    <string name="android_permission_required">必要なシステム権限を付与した後、もう一度やり直してください。</string>
+    <string name="ok">OK</string>
+    <string name="setup_progress">デバイスを初期化中…</string>
+    <string name="order_question_title">注文情報</string>
+    <string name="setup_tutorial">開始するには、pretixバックエンドの主催者アカウントの「デバイス」セクションで新しいデバイスを作成します。その後、スキャンする設定のQRコードが表示されます。</string>
+    <string name="setup_grant_camera_permission">カメラの権限を付与する</string>
+    <string name="setup_hardware_scanner_switch_to_camera">代わりのカメラを使用する</string>
+    <string name="setup_hint_url">URL</string>
+    <string name="setup_hint_token">トークン</string>
+    <string name="setup_error_legacy_qr_code">スキャンしたQRコードは、以前使われていた古いアプリ用です。pretixの主催者アカウントのデバイスセクションに移動し、そこで新しいデバイスを作成してください。</string>
 </resources>
