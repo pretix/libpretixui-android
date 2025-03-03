@@ -14,4 +14,7 @@
     <string name="setup_grant_camera_permission">Zezwól na używanie kamery aby korzystać ze skanera QR</string>
     <string name="setup_progress">Inicjalizacja urządzenia…</string>
     <string name="setup_tutorial">Aby rozpocząć, utwórz nowe urządzenie w sekcji Urządzenia na swoim koncie organizatora w wewnętrznym systemie pretix. Następnie zostanie Ci wyświetlony konfiguracyjny kod QR do zeskanowania.</string>
+    <string name="yes">Tak</string>
+    <string name="no">Nie</string>
+    <string name="cancel">Anuluj</string>
 </resources>
