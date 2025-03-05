@@ -1,16 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_manual">Configuração Manual</string>
+    <string name="action_manual">Configuração manual</string>
     <string name="setup_error_failed">O teste de conexão inicial falhou.</string>
-    <string name="setup_error_invalid_qr_code">O código QR que você escaneou não é um código de configuração válido. Certifique-se de que você criou o código na seção Dispositivos de uma conta do organizador.</string>
+    <string name="setup_error_invalid_qr_code">O QR code lido não é um código de configuração válido. Certifique-se de que você criou o código na seção Dispositivos de uma conta de organizador no pretix.</string>
     <string name="setup_error_io">Erro de conexão ao tentar acessar o servidor.</string>
-    <string name="setup_error_legacy_qr_code">O código QR que você escaneou é de uma versão antiga deste aplicativo. Vá para a seção Dispositivos na sua conta do organizador e crie um novo dispositivo.</string>
-    <string name="setup_error_permissions">A aplicação não funciona corretamente sem conceder essas permissões. Reinicie o aplicativo.</string>
+    <string name="setup_error_legacy_qr_code">O QR code lido é de uma versão antiga deste aplicativo. Vá para a seção Dispositivos na sua conta de organizador no pretix e crie um novo dispositivo.</string>
+    <string name="setup_error_permissions">O aplicativo não funciona corretamente sem conceder estas permissões. Reinicie o aplicativo.</string>
     <string name="setup_error_request">Requisição rejeitada pelo servidor. Por favor, verifique as informações.</string>
     <string name="setup_error_response">O servidor retornou uma resposta inválida.</string>
     <string name="setup_error_server">Erro no servidor ao tentar registrar o dispositivo.</string>
     <string name="setup_error_ssl">Erro de segurança ao tentar acessar o servidor.</string>
-    <string name="setup_error_version_too_high">O código QR que você escaneou é de uma versão mais recente do que a que este aplicativo. Verifique se você pode obter uma atualização para este aplicativo!</string>
+    <string name="setup_error_version_too_high">O QR code lido é de uma versão mais recente do aplicativo que a instalada. Verifique se você pode atualizar o aplicativo!</string>
     <string name="setup_progress">Inicializando dispositivo…</string>
-    <string name="setup_tutorial">Para começar, crie um novo dispositivo na seção Dispositivos da sua conta de organizador. Você verá um código QR de configuração para escanear.</string>
+    <string name="setup_tutorial">Para começar, crie um novo dispositivo na seção Dispositivos em sua conta de organizado no backend do pretix. Você verá um QR code de configuração para efetuar uma leitura.</string>
+    <string name="cont">CONTINUAR</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="cancel">CAncelar</string>
+    <string name="copy">Copiar anterior</string>
+    <string name="question_validation_error">Alguma de suas entradas não puderam ser validadas.</string>
+    <string name="question_input_required">Campo obrigatório.</string>
+    <string name="question_input_invalid">Entrada inválida.</string>
+    <string name="take_photo">Tirar foto</string>
+    <string name="delete_photo">Excluir foto</string>
+    <string name="camera_back">Câmera traseira</string>
+    <string name="datetime_format">%1$tY-%1$tm-%1$td %1$tH:%1$tM</string>
+    <string name="camera_usb">Selecionar câmera USB</string>
+    <string name="date_format">%1$tY-%1$tm-%1$td</string>
+    <string name="time_format">%1$tH:%1$tM</string>
+    <string name="android_permission_required">Tente novamente depois de conceder a permissão necessário no sistema.</string>
+    <string name="ok">OK</string>
+    <string name="order_question_title">Informação do pedido</string>
+    <string name="setup_camera_permission_needed">Por favor, conceda permissão de câmera para utilizar o leitor de QR code</string>
+    <string name="setup_grant_camera_permission">Conceder permissão de câmera</string>
+    <string name="setup_hardware_scanner">Pressione os botões de verificação de hardware do seu dispositivo para efetuar a leitura.</string>
+    <string name="setup_hardware_scanner_switch_to_camera">Utilizar câmera</string>
+    <string name="setup_hint_token">Token</string>
+    <string name="camera_front">Câmera frontal</string>
+    <string name="setup_hint_url">URL</string>
 </resources>
