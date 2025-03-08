@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_manual">Manuaalinen asetus</string>
+    <string name="yes">Kyllä</string>
+    <string name="no">Ei</string>
+    <string name="cancel">Peruuta</string>
+    <string name="copy">Kopioi edellinen</string>
+    <string name="cont">JATKA</string>
+    <string name="question_validation_error">Jotakin syötteestäsi ei voitu vahvistaa.</string>
+    <string name="question_input_required">Tämä kenttä on pakollinen.</string>
+    <string name="question_input_invalid">Tämä syöte ei kelpaa.</string>
+    <string name="take_photo">Ota kuva</string>
+    <string name="delete_photo">Poista kuva</string>
+    <string name="camera_back">Takakamera</string>
+    <string name="camera_front">Etukamera</string>
+    <string name="camera_usb">Valitse USB kamera</string>
 </resources>
