@@ -61,6 +61,7 @@ class SetupFragment : Fragment() {
     companion object {
         const val ARG_DEFAULT_HOST = "default_host"
         const val ARG_ASK_FOR_WRITE_EXTERNAL_STORAGE = "ask_for_write_external_storage"
+        const val STORE_USE_CAMERA = "use_camera"
     }
 
     private var _binding: FragmentSetupBinding? = null
@@ -104,9 +105,8 @@ class SetupFragment : Fragment() {
             Toast.makeText(requireContext(), getString(R.string.setup_camera_permission_needed), Toast.LENGTH_SHORT).show()
         } else {
             binding.llCameraPermission.visibility = View.GONE
-            binding.scannerView.startCamera()
             if (useCamera) {
-                binding.scannerView.setResultHandler(scannerResultHandler)
+                binding.scannerView.visibility = View.VISIBLE
                 binding.scannerView.startCamera()
             }
         }
@@ -142,6 +142,9 @@ class SetupFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         defaultHost = requireArguments().getString(ARG_DEFAULT_HOST, "")
         useCamera = !defaultToScanner()
+        if (savedInstanceState != null && savedInstanceState.containsKey(STORE_USE_CAMERA)) {
+            useCamera = savedInstanceState.getBoolean(STORE_USE_CAMERA)
+        }
 
         binding.btSwitchCamera.setOnClickListener {
             hardwareScanner.stop(requireContext())
@@ -149,9 +152,10 @@ class SetupFragment : Fragment() {
             binding.llHardwareScan.visibility = View.GONE
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 binding.llCameraPermission.visibility = View.GONE
-                binding.scannerView.setResultHandler(scannerResultHandler)
+                binding.scannerView.visibility = View.VISIBLE
                 binding.scannerView.startCamera()
             } else {
+                binding.scannerView.visibility = View.GONE
                 binding.llCameraPermission.visibility = View.VISIBLE
             }
         }
@@ -176,6 +180,13 @@ class SetupFragment : Fragment() {
         binding.btCameraPermission.setOnClickListener {
             requestPermissionLauncher.launch(arrayOf(Manifest.permission.CAMERA))
         }
+
+        binding.scannerView.setResultHandler(scannerResultHandler)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STORE_USE_CAMERA, useCamera)
     }
 
     override fun onStart() {
@@ -224,10 +235,11 @@ class SetupFragment : Fragment() {
                 binding.llCameraPermission.visibility = View.VISIBLE
             } else {
                 binding.llCameraPermission.visibility = View.GONE
-                binding.scannerView.setResultHandler(scannerResultHandler)
+                binding.scannerView.visibility = View.VISIBLE
                 binding.scannerView.startCamera()
             }
         } else {
+            binding.scannerView.visibility = View.GONE
             binding.llCameraPermission.visibility = View.GONE
             binding.llHardwareScan.visibility = View.VISIBLE
         }

@@ -33,14 +33,18 @@
 
             <TextView
                 android:id="@+id/tvHardwareScan"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="32dp"
                 android:gravity="center"
+                android:singleLine="false"
+                app:drawableStartCompat="@drawable/ic_qr_code_scanner_24"
+                android:drawablePadding="6dp"
                 android:text="@string/setup_hardware_scanner" />
 
             <Button
                 android:id="@+id/btSwitchCamera"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/setup_hardware_scanner_switch_to_camera" />
