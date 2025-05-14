@@ -161,7 +161,7 @@ class QuestionsDialog(
                 if (attendeeDOB.isNullOrBlank()) {
                     v.findViewById<TextView>(R.id.tvAttendeeDOB).visibility = View.GONE
                 } else {
-                    v.findViewById<TextView>(R.id.tvAttendeeDOB).text = attendeeName // TODO: Fix
+                    v.findViewById<TextView>(R.id.tvAttendeeDOB).text = attendeeDOB
                 }
                 if (ticketType.isNullOrBlank()) {
                     v.findViewById<TextView>(R.id.tvTicketType).visibility = View.GONE
