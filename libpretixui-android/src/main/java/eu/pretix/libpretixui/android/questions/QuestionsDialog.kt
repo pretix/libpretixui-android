@@ -109,14 +109,13 @@ class QuestionsDialog(
         val values: Map<String, String>? = null,
         val defaultCountry: String?,
         val glideLoader: ((String) -> GlideUrl)? = null,
-        val retryHandler: ((MutableList<Answer>) -> Unit),
-        val copyFrom: Map<String, String>? = null,
+        val onComplete: ((MutableList<Answer>) -> Unit),
+        val previousValues: Map<String, String>? = null,
         val attendeeName: String? = null,
         val attendeeDOB: String? = null,
         val ticketId: String? = null,
         val ticketType: String? = null,
         val useHardwareScan: Boolean = false,
-        val isResumed: Boolean = false,
         val clonePictures: Boolean = false,
         val allAnswersAreOptional: Boolean = false,
 ) : AlertDialog(ctx), QuestionsDialogInterface {
@@ -181,16 +180,16 @@ class QuestionsDialog(
         setButton(DialogInterface.BUTTON_NEUTRAL, ctx.getString(R.string.cancel)) { p0, p1 ->
             cancel()
         }
-        if (copyFrom != null && copyFrom.isNotEmpty()) {
+        if (previousValues != null && previousValues.isNotEmpty()) {
             setButton(DialogInterface.BUTTON_NEUTRAL, ctx.getString(R.string.copy), null as DialogInterface.OnClickListener?)
         }
         setOnShowListener {
             getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
                 validate()
             }
-            if (copyFrom != null && copyFrom.isNotEmpty()) {
+            if (previousValues != null && previousValues.isNotEmpty()) {
                 getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener {
-                    for (cf in copyFrom.entries) {
+                    for (cf in previousValues.entries) {
                         if (setters.containsKey(cf.key)) {
                             setters[cf.key]!!(cf.value)
                         }
@@ -907,7 +906,7 @@ class QuestionsDialog(
         }
         if (!has_errors) {
             dismiss()
-            retryHandler(answers)
+            onComplete(answers)
         } else {
             Toast.makeText(ctx, R.string.question_validation_error, Toast.LENGTH_SHORT).show()
         }
@@ -969,14 +968,13 @@ fun showQuestionsDialog(
         values: Map<String, String>? = null,
         defaultCountry: String?,
         glideLoader: ((String) -> GlideUrl)? = null,
-        retryHandler: ((MutableList<Answer>) -> Unit),
-        copyFrom: Map<String, String>? = null,
+        onComplete: ((MutableList<Answer>) -> Unit),
+        previousValues: Map<String, String>? = null,
         attendeeName: String? = null,
         attendeeDOB: String? = null,
         ticketId: String? = null,
         ticketType: String? = null,
         useHardwareScan: Boolean = false,
-        isResumed: Boolean = false,
         clonePictures: Boolean = false,
         allAnswersAreOptional: Boolean = false,
 ): QuestionsDialogInterface {
@@ -987,14 +985,13 @@ fun showQuestionsDialog(
             values,
             defaultCountry,
             glideLoader,
-            retryHandler,
-            copyFrom,
+            onComplete,
+            previousValues,
             attendeeName,
             attendeeDOB,
             ticketId,
             ticketType,
             useHardwareScan,
-            isResumed,
             clonePictures,
             allAnswersAreOptional
     )
@@ -1002,4 +999,3 @@ fun showQuestionsDialog(
     dialog.show()
     return dialog
 }
-
