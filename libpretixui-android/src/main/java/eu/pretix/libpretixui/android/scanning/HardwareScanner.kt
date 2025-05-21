@@ -46,6 +46,10 @@ class HardwareScanner(val receiver: ScanReceiver) {
                 // SEUIC AUTOID
                 val barcode = intent.getStringExtra("scannerdata")!!.trim()
                 receiver.scanResult(barcode)
+            } else if (intent.hasExtra("m3scannerdata")) {
+                // M3 Mobile
+                val barcode = intent.getStringExtra("m3scannerdata")!!.trim()
+                receiver.scanResult(barcode)
             }
         }
     }
@@ -84,6 +88,11 @@ class HardwareScanner(val receiver: ScanReceiver) {
         filter.addAction("com.android.scanner.ACTION_DATA_CODE_RECEIVED")
         filter.addAction("com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED")
 
+        // M3 Mobile, e.g. PC10
+        // Active by default
+        // Configure via Settings > System > Scanner Setting > Data Output Mode > Output via Broadcast
+        filter.addAction("com.android.server.scannerservice.broadcast")
+
         ContextCompat.registerReceiver(ctx, scanReceiver, filter, ContextCompat.RECEIVER_EXPORTED)
     }
 
@@ -106,6 +115,7 @@ fun defaultToScanner(): Boolean {
         "Honeywell" -> Build.MODEL.startsWith("EDA")
         "SUNMI" -> Build.MODEL.startsWith("L")
         "SEUIC" -> Build.MODEL.startsWith("AUTOID Pad Air")
+        "M3" -> Build.MODEL.startsWith("M3PC")
         else -> false
     }
 }
