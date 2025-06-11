@@ -446,10 +446,11 @@ class QuestionsDialog(
                 }
                 QuestionType.M -> {
                     val fields = ArrayList<CheckBox>()
+                    val defaultValue = question.default
                     val selected = if (values?.containsKey(question.identifier) == true) {
                         values[question.identifier]!!.split(",")
-                    } else if (!question.default.isNullOrBlank()) {
-                        question.default.split(",")
+                    } else if (!defaultValue.isNullOrBlank()) {
+                        defaultValue.split(",")
                     } else {
                         emptyList<String>()
                     }
@@ -520,7 +521,7 @@ class QuestionsDialog(
 
                     setters[question.identifier] = {
                         var i = 1  // 0 = empty opt
-                        for (opt in question.options) {
+                        for (opt in question.options ?: emptyList()) {
                             if (opt.server_id.toString() == it) {
                                 fieldC.setSelection(i)
                                 break
@@ -770,17 +771,20 @@ class QuestionsDialog(
     }
 
     private fun questionIsVisible(question: QuestionLike): Boolean {
-        if (question.dependency == null) {
+        val dependency = question.dependency
+        val dependencyValues = question.dependencyValues ?: emptyList()
+
+        if (dependency == null) {
             return true
         }
-        if (question.dependency.dependency !== null && !questionIsVisible(question.dependency)) {
+        if (dependency.dependency !== null && !questionIsVisible(dependency)) {
             return false
         }
-        val field = fieldViews[question.dependency] ?: return false
-        when (question.dependency.type) {
+        val field = fieldViews[dependency] ?: return false
+        when (dependency.type) {
             QuestionType.C -> {
                 val opt = ((field as Spinner).selectedItem as QuestionOption)
-                if (question.dependencyValues.contains(opt.identifier)) {
+                if (dependencyValues.contains(opt.identifier)) {
                     return true
                 }
                 return false
@@ -788,7 +792,7 @@ class QuestionsDialog(
             QuestionType.M -> {
                 for (f in (field as List<CheckBox>)) {
                     if (f.isChecked) {
-                        if (question.dependencyValues.contains((f.tag as QuestionOption).identifier)) {
+                        if (dependencyValues.contains((f.tag as QuestionOption).identifier)) {
                             return true
                         }
                     }
@@ -797,7 +801,7 @@ class QuestionsDialog(
             }
             QuestionType.B -> {
                 val value = (field as CheckBox).isChecked
-                return (question.dependencyValues.contains("True") && value) || (question.dependencyValues.contains("False") && !value)
+                return (dependencyValues.contains("True") && value) || (dependencyValues.contains("False") && !value)
             }
             else -> return false
         }
