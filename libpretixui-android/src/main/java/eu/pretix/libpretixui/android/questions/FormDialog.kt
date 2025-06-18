@@ -37,6 +37,7 @@ import eu.pretix.libpretixui.android.questions.form.DialogOutput
 import eu.pretix.libpretixui.android.questions.form.FormField
 import eu.pretix.libpretixui.android.questions.form.FormFieldIdentifier
 import eu.pretix.libpretixui.android.questions.form.MultiLineStringField
+import eu.pretix.libpretixui.android.questions.form.MultipleChoiceField
 import eu.pretix.libpretixui.android.questions.form.NumberField
 import eu.pretix.libpretixui.android.questions.form.StringField
 import eu.pretix.libpretixui.android.questions.form.TelephoneNumberField
@@ -93,7 +94,7 @@ class FormDialog(
     private val labels = HashMap<FormFieldIdentifier, TextView>()
     private val warnings = HashMap<FormFieldIdentifier, TextView>()
     private val setters = HashMap<FormFieldIdentifier, ((String?) -> Unit)>()
-    private var currentValues = mutableMapOf<FormFieldIdentifier, String>()
+    private var currentValues = mutableMapOf<FormFieldIdentifier, DialogOutput>()
 
     private var v: View = LayoutInflater.from(context).inflate(R.layout.dialog_questions, null)
     private var waitingForAnswerFor: FormFieldIdentifier? = null
@@ -187,8 +188,8 @@ class FormDialog(
 
         // Step 1: Extract values from views
         inputs.forEach { input ->
-            val trimmedValue = extractValues(input.field)
-            currentValues[input.field.identifier] = trimmedValue
+            val output = extractValues(input.field)
+            currentValues[input.field.identifier] = output
         }
 
         // Step 2: Validate
@@ -203,9 +204,9 @@ class FormDialog(
             val field = input.field
             val identifier = field.identifier
             val view = fieldViews[identifier] ?: throw IllegalStateException("Could not get view for identifier $identifier")
-            val trimmedValue = currentValues[identifier] ?: throw IllegalStateException("Could not get trimmed value for identifier $identifier")
+            val output = currentValues[identifier] ?: throw IllegalStateException("Could not get trimmed value for identifier $identifier")
             try {
-                validate(field, trimmedValue, allAnswersAreOptional)
+                validate(field, output.value, allAnswersAreOptional)
                 addQuestionsError(ctx, view, labels[field.identifier], 0)
             } catch (e: QuestionInvalid) {
                 addQuestionsError(ctx, view, labels[field.identifier], e.msgid)
@@ -216,43 +217,52 @@ class FormDialog(
         if (!has_errors) {
             dismiss()
 
-            val outputs = currentValues.map { (identifier, value) ->
-                DialogOutput(
-                    fieldIdentifier = identifier,
-                    value = value,
-                )
-            }
-            onComplete(outputs)
+            onComplete(currentValues.values.toList())
         } else {
             Toast.makeText(ctx, R.string.question_validation_error, Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun extractValues(field: FormField): String {
+    private fun extractValues(field: FormField): DialogOutput {
         val view = fieldViews[field.identifier]
-        val answer = when (field) {
+        val output = when (field) {
 //            QuestionType.S, QuestionType.T, QuestionType.EMAIL -> {
 //                answer = (field as EditText).text.toString()
 //                empty = answer.trim() == ""
 //            }
             is StringField,
             is MultiLineStringField -> {
-                (view as EditText).text.toString()
+                DialogOutput(
+                    fieldIdentifier = field.identifier,
+                    value = field.trim((view as EditText).text.toString()),
+                )
             }
             is TelephoneNumberField -> {
                 val widget = (view as PhoneEditText)
 
-                if (!widget.isValid) {
+                val value = if (!widget.isValid) {
                     ""
                 } else {
                     widget.phoneNumberE164 ?: ""
                 }
+
+                DialogOutput(
+                    fieldIdentifier = field.identifier,
+                    value = field.trim(value),
+                )
             }
             is NumberField -> {
-                (view as EditText).text.toString()
+                DialogOutput(
+                    fieldIdentifier = field.identifier,
+                    value = field.trim((view as EditText).text.toString()),
+                )
             }
             is BooleanField -> {
-                if ((view as CheckBox).isChecked) "True" else "False"
+                val value = if ((view as CheckBox).isChecked) "True" else "False"
+                DialogOutput(
+                    fieldIdentifier = field.identifier,
+                    value = field.trim(value),
+                )
             }
 //            QuestionType.F -> {
 //                val fieldset = field as List<View>
@@ -279,6 +289,25 @@ class FormDialog(
 //                }
 //                answer = aw.toString()
 //            }
+            is MultipleChoiceField -> {
+                var empty = true
+                val aw = StringBuilder()
+                for (f in (field as List<CheckBox>)) {
+                    if (f.isChecked) {
+                        if (!empty) {
+                            aw.append(",")
+                        }
+                        aw.append(f.tag as Long)
+                        empty = false
+                    }
+                }
+
+                DialogOutput(
+                    fieldIdentifier = field.identifier,
+                    value = field.trim(aw.toString()),
+                    hasOptions = true,
+                )
+            }
 //            QuestionType.CC -> {
 //                val opt = ((field as Spinner).selectedItem as CountryCode)
 //                answer = opt.alpha2
@@ -320,7 +349,7 @@ class FormDialog(
 //            }
         }
 
-        return field.trim(answer)
+        return output
     }
 
     private fun validate(field: FormField, trimmedValue: String, allAnswersAreOptional: Boolean) {
@@ -364,15 +393,15 @@ class FormDialog(
                 continue
             }
 
-            val answer = try {
+            val output = try {
                 extractValues(input.field)
             } catch (e: Throwable) {
                 warningTv?.visibility = View.GONE
                 continue
             }
-            currentValues[identifier] = answer
+            currentValues[identifier] = output
 
-            val warning = input.checkForWarning(answer)
+            val warning = input.checkForWarning(output.value)
             if (warning != null) {
                 warningTv?.text = warning
                 warningTv?.visibility = View.VISIBLE
@@ -683,39 +712,38 @@ class FormDialog(
 //                        llFormFields.addView(llInner)
 //                    }
 //                }
-//                QuestionType.M -> {
-//                    val fields = ArrayList<CheckBox>()
-//                    val selected = if (values?.containsKey(question.identifier) == true) {
-//                        values[question.identifier]!!.split(",")
-//                    } else if (!question.default.isNullOrBlank()) {
-//                        question.default.split(",")
-//                    } else {
-//                        emptyList<String>()
-//                    }
-//                    for (opt in question.options!!) {
-//                        val field = CheckBox(ctx)
-//                        field.text = opt!!.value
-//                        field.tag = opt
-//                        if (selected.contains(opt.server_id.toString())) {
-//                            field.isChecked = true
-//                        }
-//                        field.setOnKeyListener(ctrlEnterListener)
-//                        field.setOnCheckedChangeListener { buttonView, isChecked ->
-//                            updateDependencyVisibilities()
-//                            checkForWarnings(listOf(question))
-//                        }
-//                        fields.add(field)
-//                        llFormFields.addView(field)
-//                    }
-//                    setters[question.identifier] = {
-//                        for (f in fields) {
-//                            if (it != null && it.contains((f.tag as QuestionOption).server_id.toString())) {
-//                                f.isChecked = true
-//                            }
-//                        }
-//                    }
-//                    fieldViews[question] = fields
-//                }
+                is MultipleChoiceField -> {
+                    val fields = ArrayList<CheckBox>()
+                    val selected = if (inputValue != null) {
+                        inputValue.split(",")
+                    } else if (!defaultValue.isNullOrBlank()) {
+                        defaultValue.split(",")
+                    } else {
+                        emptyList()
+                    }
+                    for (opt in field.options) {
+                        val fieldM = CheckBox(ctx)
+                        fieldM.text = opt.value
+                        fieldM.tag = opt.server_id
+                        if (selected.contains(opt.server_id.toString())) {
+                            fieldM.isChecked = true
+                        }
+                        fieldM.setOnKeyListener(ctrlEnterListener)
+                        fieldM.setOnCheckedChangeListener { buttonView, isChecked ->
+                            onChange(listOf(input))
+                        }
+                        fields.add(fieldM)
+                        llFormFields.addView(fieldM)
+                    }
+                    setters[identifier] = {
+                        for (f in fields) {
+                            if (it != null && it.contains((f.tag as Long).toString())) {
+                                f.isChecked = true
+                            }
+                        }
+                    }
+                    fieldViews[identifier] = fields
+                }
 //                QuestionType.CC -> {
 //                    val fieldC = Spinner(ctx)
 //                    fieldC.adapter = CountryAdapter(ctx)

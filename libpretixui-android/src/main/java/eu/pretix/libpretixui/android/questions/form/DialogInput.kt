@@ -6,7 +6,7 @@ data class DialogInput(
     val previousValue: String?,
 
     //TODO: dependencies
-    val shouldShow: (currentValues: Map<FormFieldIdentifier, String>) -> Boolean = { true },
+    val shouldShow: (currentValues: Map<FormFieldIdentifier, DialogOutput>) -> Boolean = { true },
 
     /**
      * Checks if a warning should be displayed for the provided value
@@ -14,4 +14,8 @@ data class DialogInput(
      * Should return the error text if a warning should be displayed, null otherwise.
      */
     val checkForWarning: (trimmedValue: String) -> String? = { null }
-)
+) {
+    fun processOutput(output: DialogOutput) {
+
+    }
+}
