@@ -15,4 +15,20 @@
     <string name="setup_progress">Apparaat instellen…</string>
     <string name="setup_tutorial">Om te starten, maak een nieuw apparaat aan in het Apparaten onderdeel van je organisator account in de Pretix controlepaneel. Daar vind je een qr code die je kan scannen om de juiste configuratie te downloaden.</string>
     <string name="yes">Ja</string>
+    <string name="no">Nee</string>
+    <string name="cancel">Annuleren</string>
+    <string name="copy">Kopieer vorige</string>
+    <string name="cont">DOORGAAN</string>
+    <string name="question_validation_error">Een deel van uw invoer kon niet worden gevalideerd.</string>
+    <string name="question_input_required">Dit veld is verplicht.</string>
+    <string name="question_input_invalid">Deze invoer is niet geldig.</string>
+    <string name="take_photo">Maak een foto</string>
+    <string name="delete_photo">Wis foto</string>
+    <string name="camera_back">Achterzijde-camera</string>
+    <string name="camera_front">Voorzijde-camera</string>
+    <string name="camera_usb">Kies USB-camera</string>
+    <string name="datetime_format">%1$tY-%1$tm-%1$td %1$tH:%1$tM</string>
+    <string name="date_format">%1$tY-%1$tm-%1$td</string>
+    <string name="time_format">%1$tH:%1$tM</string>
+    <string name="android_permission_required">Sta de app de benodigde systeempermissies toe en probeer het opnieuw.</string>
 </resources>
