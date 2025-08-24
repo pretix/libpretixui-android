@@ -27,4 +27,10 @@
     <string name="setup_hint_url">URL</string>
     <string name="setup_hint_token">トークン</string>
     <string name="setup_error_legacy_qr_code">スキャンしたQRコードは、以前使われていた古いアプリ用です。pretixの主催者アカウントのデバイスセクションに移動し、そこで新しいデバイスを作成してください。</string>
+    <string name="setup_error_io">サーバーへの接続を試行中に接続エラーが発生しました。</string>
+    <string name="setup_error_ssl">サーバーへの接続を試行中にセキュリティエラーが発生しました。</string>
+    <string name="setup_error_server">サーバーへの接続を試行中にセキュリティエラーが発生しました。</string>
+    <string name="setup_error_response">サーバーから無効なレスポンスが返されました。</string>
+    <string name="setup_error_failed">初期接続テストに失敗しました。</string>
+    <string name="setup_error_version_too_high">スキャンしたQRコードは、このアプリが対応するバージョンより新しいpretixのものです。このアプリの更新版があるかご確認ください！</string>
 </resources>
