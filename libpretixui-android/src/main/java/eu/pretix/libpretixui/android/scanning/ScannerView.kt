@@ -27,6 +27,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.google.zxing.BinaryBitmap
+import com.google.zxing.DecodeHintType
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.NotFoundException
 import com.google.zxing.PlanarYUVLuminanceSource
@@ -227,7 +228,9 @@ class ScannerView : FrameLayout {
 
 
     class ZXingBarcodeAnalyzer(private val listener: ResultHandler) : ImageAnalysis.Analyzer {
-        private var multiFormatReader: MultiFormatReader = MultiFormatReader()
+        private var multiFormatReader: MultiFormatReader = MultiFormatReader().apply {
+            setHints(mapOf(DecodeHintType.ALSO_INVERTED to true))
+        }
         private var isScanning = AtomicBoolean(false)
 
         override fun analyze(image: ImageProxy) {
