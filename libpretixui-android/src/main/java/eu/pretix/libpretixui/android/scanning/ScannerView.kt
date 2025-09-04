@@ -6,7 +6,6 @@ import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
-import android.preference.PreferenceManager
 import android.util.AttributeSet
 import android.util.Size
 import android.view.OrientationEventListener
