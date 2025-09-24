@@ -33,4 +33,9 @@
     <string name="setup_error_response">サーバーから無効なレスポンスが返されました。</string>
     <string name="setup_error_failed">初期接続テストに失敗しました。</string>
     <string name="setup_error_version_too_high">スキャンしたQRコードは、このアプリが対応するバージョンより新しいpretixのものです。このアプリの更新版があるかご確認ください！</string>
+    <string name="setup_error_invalid_qr_code">スキャンした QR コードは有効な構成コードではありません。Pretixオーガナイザーアカウントの「デバイス」セクションでコードを作成していることを確認してください。</string>
+    <string name="setup_error_request">リクエストがサーバーによって拒否されました。入力内容を再確認してください。</string>
+    <string name="setup_error_permissions">これらの権限を付与しないと、アプリは正しく動作しません。アプリを再起動してください。</string>
+    <string name="setup_camera_permission_needed">QRスキャナーを使用する許可をカメラに付与してください</string>
+    <string name="setup_hardware_scanner">デバイスのハードウェアスキャンボタンを押してスキャンしてください。</string>
 </resources>
