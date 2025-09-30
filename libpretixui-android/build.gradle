@@ -51,9 +51,9 @@ dependencies {
     implementation 'com.neovisionaries:nv-i18n:1.27'
     implementation 'joda-time:joda-time:2.10.10'
     implementation 'com.github.ialokim:android-phone-field:0.2.3'
-    implementation 'androidx.core:core-ktx:1.10.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.lifecycle:lifecycle-common:2.6.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'com.google.zxing:core:3.5.3'
@@ -63,7 +63,7 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
     implementation "androidx.camera:camera-view:$camerax_version"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'com.google.android.material:material:1.13.0'
     implementation 'com.github.pretix:json-logic-kotlin:1.0.0'
     implementation implementation(project(':android-libuvccamera',))
     implementation implementation(project(':android-libusbcameracommon',))

@@ -7,8 +7,10 @@
     <application>
         <activity
             android:name=".scanning.ScanActivity"
-            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar" />
-        <activity android:name=".PhotoCaptureActivity" />
+            android:theme="@style/Theme.Material3.Light.NoActionBar" />
+        <activity
+            android:name=".PhotoCaptureActivity"
+            android:theme="@style/Theme.Material3.Dark.NoActionBar" />
     </application>
 
 </manifest>

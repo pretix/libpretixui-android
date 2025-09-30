@@ -19,12 +19,16 @@ import android.view.Menu
 import android.view.Surface
 import android.view.View
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.UVCCamera
 import eu.pretix.libpretixui.android.databinding.ActivityPhotoCaptureBinding
@@ -184,9 +188,27 @@ class PhotoCaptureActivity : CameraDialog.CameraDialogParent, AppCompatActivity(
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivityPhotoCaptureBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.topAppBar)
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+            findViewById(R.id.content)
+        ) { v, windowInsets ->
+            val insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars()
+                        or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.updatePadding(
+                left = insets.left,
+                right = insets.right,
+                top = 0, // handled by AppBar
+                bottom = insets.bottom
+            )
+            WindowInsetsCompat.CONSUMED
+        }
 
         outputDirectory = getOutputDirectory()
         prefs = getSharedPreferences("PhotoCaptureActivity", Context.MODE_PRIVATE)
