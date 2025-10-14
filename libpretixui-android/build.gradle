@@ -46,7 +46,7 @@ repositories {
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
-    def kotlin_version = "1.9.23" // update in settings.gradle too
+    def kotlin_version = "2.2.21" // update in settings.gradle too
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'com.neovisionaries:nv-i18n:1.27'
     implementation 'joda-time:joda-time:2.10.10'
