@@ -11,9 +11,9 @@ pluginManagement {
 // workaround: plugin definition with version here, so a standalone build is possible
 // but building it inside the multi module project doesn't exit with "unknown version already on classpath" error
 plugins {
-    id 'com.android.library' version '8.4.2' apply false
-    id 'org.jetbrains.kotlin.android' version '1.9.23' apply false
-    id 'org.jetbrains.kotlin.kapt' version '1.9.23' apply false
+    id 'com.android.library' version '8.13.0' apply false
+    id 'org.jetbrains.kotlin.android' version '2.2.21' apply false
+    id 'org.jetbrains.kotlin.kapt' version '2.2.21' apply false
 }
 
 rootProject.name = 'eu.pretix.libpretixui-android'
