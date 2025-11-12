@@ -8,11 +8,11 @@ plugins {
 android {
     namespace 'eu.pretix.libpretixui.android'
 
-    compileSdkVersion 33
+    compileSdkVersion 36
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 36
         multiDexEnabled true
 
         vectorDrawables {
