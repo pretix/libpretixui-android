@@ -22,6 +22,8 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.ImageProxy.PlaneProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.TorchState
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
@@ -159,8 +161,7 @@ class ScannerView : FrameLayout {
         }
 
         val imageAnalysis = ImageAnalysis.Builder()
-            .setTargetResolution(Size(this.width, this.height))
-            /*.setResolutionSelector(
+            .setResolutionSelector(
                 ResolutionSelector.Builder()
                     .setResolutionStrategy(
                         ResolutionStrategy(
@@ -169,7 +170,7 @@ class ScannerView : FrameLayout {
                         )
                     )
                     .build()
-            )*/
+            )
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
         val analyzer = ZXingBarcodeAnalyzer(object : ResultHandler {
