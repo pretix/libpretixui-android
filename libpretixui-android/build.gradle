@@ -6,21 +6,21 @@ plugins {
 }
 
 android {
-    namespace 'eu.pretix.libpretixui.android'
+    namespace = 'eu.pretix.libpretixui.android'
 
     compileSdkVersion 36
 
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 36
-        multiDexEnabled true
+        multiDexEnabled = true
 
         vectorDrawables {
             useSupportLibrary = true
         }
     }
     compileOptions {
-        coreLibraryDesugaringEnabled true
+        coreLibraryDesugaringEnabled = true
     }
     kotlin {
         jvmToolchain {
@@ -40,7 +40,7 @@ android {
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
+    maven { url = 'https://jitpack.io' }
 }
 
 dependencies {
