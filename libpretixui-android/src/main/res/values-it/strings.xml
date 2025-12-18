@@ -14,4 +14,5 @@
     <string name="setup_grant_camera_permission">Gentilmente permettere i permessi di utlizzo della fotocamera per usare lo Scanner QR</string>
     <string name="setup_progress">Inizializzando il dispositivo…</string>
     <string name="setup_tutorial">Per iniziare, crea un nuovo dispositivo nella sezione Dispositivi del tuo account organizzatore nel backend di pretix. Ti verrà presentato un codice QR da scannerizzare per la configurazione.</string>
+    <string name="yes">Sì</string>
 </resources>
