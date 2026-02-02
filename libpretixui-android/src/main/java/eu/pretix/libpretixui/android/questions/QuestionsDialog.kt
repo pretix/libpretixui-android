@@ -139,6 +139,14 @@ class QuestionsDialog(
     private var v: View = LayoutInflater.from(context).inflate(R.layout.dialog_questions, null)
     private var waitingForAnswerFor: QuestionLike? = null
 
+    private val isEffectivelyOptional: Boolean by lazy {
+        if (type == QuestionsType.ORDER_QUESTIONS) {
+            !allAnswersAreOptional
+        } else {
+            allAnswersAreOptional
+        }
+    }
+
     init {
         setView(v)
 
@@ -227,7 +235,7 @@ class QuestionsDialog(
         }
         for (question in questions) {
             val tv = TextView(ctx)
-            tv.text = if (!allAnswersAreOptional && question.requiresAnswer()) {
+            tv.text = if (!isEffectivelyOptional && question.requiresAnswer()) {
                 buildSpannedString {
                     append(question.question)
                     append(" ")
@@ -898,7 +906,7 @@ class QuestionsDialog(
             }
 
             try {
-                answers.add(serializeAnswer(question, allAnswersAreOptional))
+                answers.add(serializeAnswer(question, isEffectivelyOptional))
                 addQuestionsError(ctx, field, labels[question], 0)
             } catch (e: QuestionInvalid) {
                 addQuestionsError(ctx, field, labels[question], e.msgid)
