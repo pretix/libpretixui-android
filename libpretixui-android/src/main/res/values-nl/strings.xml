@@ -2,7 +2,7 @@
 <resources>
     <string name="action_manual">Handmatig instellen</string>
     <string name="setup_error_failed">De eerste verbindingstest is mislukt.</string>
-    <string name="setup_error_invalid_qr_code">De QR-code die u scande, is geen geldige configuratiecode. Controleer of u de code heeft aangemaakt onder Apparaten in uw pretix-organisatoraccount.</string>
+    <string name="setup_error_invalid_qr_code">De QR-code die u scande, is geen geldige configuratiecode. Controleer of u de code hebt aangemaakt onder Apparaten in uw pretix-organisatoraccount.</string>
     <string name="setup_error_io">Er is een verbindingsfout opgetreden tijdens het verbinden met de server.</string>
     <string name="setup_error_legacy_qr_code">De QR-code die u scande, is alleen voor een oudere versie van deze app geldig. Ga naar de apparatenlijst in uw pretix-account en maak daar een nieuw apparaat aan.</string>
     <string name="setup_error_permissions">De app werkt niet juist zonder deze toestemmingen te geven. Start de app opnieuw op.</string>
