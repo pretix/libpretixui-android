@@ -27,7 +27,7 @@
     <string name="camera_back">Camera achterzijde</string>
     <string name="camera_front">Camera voorzijde</string>
     <string name="camera_usb">Kies USB-camera</string>
-    <string name="datetime_format">%1$td-%1$tm-%1$tY %1$tH:%1$tM</string>
+    <string name="datetime_format">%1$td.%1$tm.%1$tY %1$tH:%1$tM</string>
     <string name="date_format">%1$td-%1$tm-%1$tY</string>
     <string name="time_format">%1$tH:%1$tM</string>
     <string name="android_permission_required">Probeer het opnieuw nadat u de vereiste systeemtoestemming hebt verleend.</string>
