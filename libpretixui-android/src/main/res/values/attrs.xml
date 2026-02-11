@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="KeyboardButtonView">
+        <attr name="lp_keyboard_button_text" format="string" />
+        <attr name="lp_keyboard_button_image" format="integer" />
+        <attr name="lp_pin_forgot_dialog_title" format="string" />
+        <attr name="lp_pin_forgot_dialog_content" format="string" />
+        <attr name="lp_pin_forgot_dialog_positive" format="string" />
+        <attr name="lp_pin_forgot_dialog_negative" format="string" />
+    </declare-styleable>
+    <declare-styleable name="RoundTextView">
+        <attr name="bgColor" format="color"/>
+        <attr name="radius" format="dimension"/>
+    </declare-styleable>
+</resources>
