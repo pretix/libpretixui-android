@@ -19,10 +19,6 @@ package eu.pretix.libpretixui.android.uvc;
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
- *  All files in the folder are under this Apache License, Version 2.0.
- *  Files in the libjpeg-turbo, libusb, libuvc, rapidjson folder
- *  may have a different license, see the respective files.
  */
 
 
@@ -48,6 +44,8 @@ import com.serenegiant.usb.USBMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import eu.pretix.libpretixui.android.R;
 
 public class CameraDialog extends DialogFragment {
     private static final String TAG = CameraDialog.class.getSimpleName();
@@ -124,10 +122,10 @@ public class CameraDialog extends DialogFragment {
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(initView());
-        builder.setTitle(com.serenegiant.uvccamera.R.string.select);
+        builder.setTitle(R.string.camera_usb);
         builder.setPositiveButton(android.R.string.ok, mOnDialogClickListener);
         builder.setNegativeButton(android.R.string.cancel, mOnDialogClickListener);
-        builder.setNeutralButton(com.serenegiant.uvccamera.R.string.refresh, null);
+        builder.setNeutralButton(R.string.refresh, null);
         final Dialog dialog = builder.create();
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(true);
@@ -140,8 +138,8 @@ public class CameraDialog extends DialogFragment {
      * @return
      */
     private final View initView() {
-        final View rootView = getActivity().getLayoutInflater().inflate(com.serenegiant.uvccamera.R.layout.dialog_camera, null);
-        mSpinner = (Spinner) rootView.findViewById(com.serenegiant.uvccamera.R.id.spinner1);
+        final View rootView = getActivity().getLayoutInflater().inflate(R.layout.dialog_camera, null);
+        mSpinner = (Spinner) rootView.findViewById(R.id.spinner1);
         final View empty = rootView.findViewById(android.R.id.empty);
         mSpinner.setEmptyView(empty);
         return rootView;
@@ -195,7 +193,7 @@ public class CameraDialog extends DialogFragment {
 
     public void updateDevices() {
 //		mUSBMonitor.dumpDevices();
-        final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(getActivity(), com.serenegiant.uvccamera.R.xml.device_filter);
+        final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(getActivity(), R.xml.device_filter);
         mDeviceListAdapter = new DeviceListAdapter(getActivity(), mUSBMonitor.getDeviceList(filter.get(0)));
         mSpinner.setAdapter(mDeviceListAdapter);
     }
@@ -231,7 +229,7 @@ public class CameraDialog extends DialogFragment {
         @Override
         public View getView(final int position, View convertView, final ViewGroup parent) {
             if (convertView == null) {
-                convertView = mInflater.inflate(com.serenegiant.uvccamera.R.layout.listitem_device, parent, false);
+                convertView = mInflater.inflate(R.layout.listitem_device, parent, false);
             }
             if (convertView instanceof CheckedTextView) {
                 final UsbDevice device = getItem(position);

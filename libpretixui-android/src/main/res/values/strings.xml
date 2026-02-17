@@ -12,6 +12,9 @@
     <string name="camera_back">Back camera</string>
     <string name="camera_front">Front camera</string>
     <string name="camera_usb">Select USB camera</string>
+    <string name="refresh">Refresh</string>
+    <string name="camera">Camera</string>
+    <string name="camera_no_device">No USB camera found</string>
     <string name="datetime_format">%1$tY-%1$tm-%1$td %1$tH:%1$tM</string>
     <string name="date_format">%1$tY-%1$tm-%1$td</string>
     <string name="time_format">%1$tH:%1$tM</string>
