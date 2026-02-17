@@ -69,8 +69,6 @@ dependencies {
     implementation implementation(project(':android-libuvccamera',))
     implementation implementation(project(':android-libusbcameracommon',))
 
-    implementation implementation(project(':android-libserenegiantcommon',))
-
     implementation(project(':libpretixsync')) {
         transitive = false
     }
