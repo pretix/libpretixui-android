@@ -13,6 +13,9 @@
     <string name="camera_back">Kamera auf der Rückseite</string>
     <string name="camera_front">Kamera auf der Frontseite</string>
     <string name="camera_usb">USB-Kamera auswählen</string>
+    <string name="refresh">Neu laden</string>
+    <string name="camera">Kamera</string>
+    <string name="camera_no_device">Keine USB-Kamera gefunden</string>
     <string name="datetime_format">%1$td.%1$tm.%1$tY %1$tH:%1$tM</string>
     <string name="date_format">%1$td.%1$tm.%1$tY</string>
     <string name="time_format">%1$tH:%1$tM</string>
