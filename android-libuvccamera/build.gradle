@@ -1,2 +1,32 @@
-configurations.maybeCreate("default")
-artifacts.add("default", file('libuvccamera.aar'))
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace = 'com.serenegiant.usb'
+    compileSdk = 36
+
+    def aarResDir = layout.buildDirectory.dir("generated/aar-res")
+    def extractAarResources = tasks.register('extractAarResources', Copy) {
+        from zipTree(file('libuvccamera.aar'))
+        into aarResDir
+        include "res/**", "assets/**"
+    }
+
+    sourceSets {
+        main {
+            res.srcDirs += aarResDir.map { it.dir("res") }
+            assets.srcDirs += aarResDir.map { it.dir("assets") }
+        }
+    }
+
+    libraryVariants.all { variant ->
+        variant.preBuildProvider.configure {
+            dependsOn extractAarResources
+        }
+    }
+}
+
+dependencies {
+    api files('libuvccamera.aar')
+}

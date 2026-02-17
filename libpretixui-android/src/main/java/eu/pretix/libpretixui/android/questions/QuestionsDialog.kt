@@ -241,7 +241,7 @@ class QuestionsDialog(
                 question.question
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                tv.setTextAppearance(R.style.TextAppearance_AppCompat_Medium)
+                tv.setTextAppearance(androidx.appcompat.R.style.TextAppearance_AppCompat_Medium)
             }
             tv.setPadding(0, 16, 0, 4)
             llFormFields.addView(tv)
@@ -676,7 +676,7 @@ class QuestionsDialog(
             warningTv.text = ""
             warningTv.visibility = View.GONE
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                warningTv.setTextAppearance(R.style.TextAppearance_AppCompat_Small)
+                warningTv.setTextAppearance(androidx.appcompat.R.style.TextAppearance_AppCompat_Small)
             }
             warningTv.setTextColor(ContextCompat.getColor(ctx, R.color.pretix_brand_orange))
             warningTv.setTypeface(null, Typeface.ITALIC)
