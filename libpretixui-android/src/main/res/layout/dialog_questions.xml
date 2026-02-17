@@ -28,7 +28,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_person_24"
-                app:tint="@color/BLACK" />
+                app:tint="@color/black" />
 
             <TextView
                 android:id="@+id/tvAttendeeName"
@@ -37,7 +37,7 @@
                 android:layout_marginStart="8dp"
                 tools:text="Name"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="@color/BLACK"
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/ivAttendeeIcon"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -50,7 +50,7 @@
                 android:layout_marginEnd="16dp"
                 tools:text="DOB"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textColor="@color/BLACK"
+                android:textColor="@color/black"
                 app:layout_constraintEnd_toStartOf="@+id/tvTicketId"
                 app:layout_constraintStart_toEndOf="@+id/ivAttendeeIcon"
                 app:layout_constraintTop_toBottomOf="@+id/tvAttendeeName" />
@@ -63,7 +63,7 @@
                 android:layout_marginEnd="16dp"
                 tools:text="Ticket type"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textColor="@color/BLACK"
+                android:textColor="@color/black"
                 app:layout_constraintEnd_toStartOf="@+id/tvTicketId"
                 app:layout_constraintStart_toEndOf="@+id/ivAttendeeIcon"
                 app:layout_constraintTop_toBottomOf="@+id/tvAttendeeDOB" />
@@ -74,7 +74,7 @@
                 android:layout_height="wrap_content"
                 tools:text="Ticket ID"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textColor="@color/BLACK"
+                android:textColor="@color/black"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvAttendeeName" />
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -93,7 +93,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_receipt_long_24"
-                app:tint="@color/BLACK" />
+                app:tint="@color/black" />
 
             <TextView
                 android:id="@+id/tvOrderHeadline"
@@ -103,7 +103,7 @@
                 tools:text="Order"
                 android:text="@string/order_question_title"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="@color/BLACK"
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/ivOrderIcon"
                 app:layout_constraintTop_toTopOf="parent" />
