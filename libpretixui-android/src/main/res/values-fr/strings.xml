@@ -38,4 +38,7 @@
     <string name="ok">OK</string>
     <string name="setup_hint_url">URL</string>
     <string name="setup_hint_token">Token</string>
+    <string name="refresh">Actualiser</string>
+    <string name="camera">Caméra</string>
+    <string name="camera_no_device">Aucune caméra USB trouvée</string>
 </resources>
