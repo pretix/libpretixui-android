@@ -38,4 +38,7 @@
     <string name="setup_error_permissions">これらの権限を付与しないと、アプリは正しく動作しません。アプリを再起動してください。</string>
     <string name="setup_camera_permission_needed">QRスキャナーを使用する許可をカメラに付与してください</string>
     <string name="setup_hardware_scanner">デバイスのハードウェアスキャンボタンを押してスキャンしてください。</string>
+    <string name="refresh">更新</string>
+    <string name="camera">カメラ</string>
+    <string name="camera_no_device">USBカメラが見つかりません</string>
 </resources>
