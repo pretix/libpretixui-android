@@ -38,4 +38,7 @@
     <string name="setup_hardware_scanner_switch_to_camera">En cambio, utilizar la cámara</string>
     <string name="setup_hint_url">URL</string>
     <string name="setup_hint_token">Token</string>
+    <string name="refresh">Actualizar</string>
+    <string name="camera">Cámara</string>
+    <string name="camera_no_device">No se ha encontrado ninguna cámara USB</string>
 </resources>
