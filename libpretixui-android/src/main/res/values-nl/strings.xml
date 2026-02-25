@@ -38,4 +38,7 @@
     <string name="setup_hardware_scanner_switch_to_camera">Gebruik in plaats daarvan de camera</string>
     <string name="setup_hint_url">URL</string>
     <string name="setup_hint_token">Token</string>
+    <string name="refresh">Verversen</string>
+    <string name="camera">Camera</string>
+    <string name="camera_no_device">Geen USB-camera gevonden</string>
 </resources>
