@@ -62,11 +62,17 @@ class ScannerView : FrameLayout {
     private var autofocusTarget: Boolean = true
     private var orientationEventListener: OrientationEventListener? = null
     private var camera: Camera? = null
+    private var preferFrontCameraTarget: Boolean = false
 
     constructor(context: Context) : super(context) {}
 
     constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet) {}
 
+    var preferFrontCamera: Boolean
+        get() = preferFrontCameraTarget
+        set(value) {
+            preferFrontCameraTarget = value
+        }
     var torch: Boolean
         get() = torchTarget
         set(value) {
@@ -158,6 +164,10 @@ class ScannerView : FrameLayout {
         var cameraSelector = CameraSelector.Builder().build()
         if (cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)) {
             cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        }
+
+        if (preferFrontCamera && cameraProvider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA)) {
+            cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
         }
 
         val imageAnalysis = ImageAnalysis.Builder()
