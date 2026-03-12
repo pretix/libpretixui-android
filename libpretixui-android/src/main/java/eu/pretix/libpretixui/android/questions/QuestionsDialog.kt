@@ -47,7 +47,7 @@ import java.util.*
 fun addQuestionsError(ctx: Context, f: Any?, label: TextView?, strid: Int) {
     if (f is EditText) {
         f.error = if (strid == 0) null else ctx.getString(strid)
-    } else if (f is MutableList<*> && f[0] is EditText) {
+    } else if (f is MutableList<*> && f.isNotEmpty() && f[0] is EditText) {
         (f as List<EditText>).get(1).error = if (strid == 0) null else ctx.getString(strid)
     } else if (label != null) {
         label.error = if (strid == 0) null else ctx.getString(strid)
