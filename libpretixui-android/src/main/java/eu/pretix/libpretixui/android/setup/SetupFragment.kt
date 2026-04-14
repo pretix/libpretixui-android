@@ -326,8 +326,9 @@ class SetupFragment : Fragment() {
                 bgScope.async {
                     (requireActivity() as SetupCallable).setup(url, token)
                 }.await()
-                (requireActivity() as SetupCallable).onSuccessfulSetup()
                 (requireActivity() as SetupCallable).config(useCamera)
+                pdialog.dismiss()
+                (requireActivity() as SetupCallable).onSuccessfulSetup()
             } catch (e: SetupBadRequestException) {
                 e.printStackTrace()
                 if (parentFragmentManager.isDestroyed) {
