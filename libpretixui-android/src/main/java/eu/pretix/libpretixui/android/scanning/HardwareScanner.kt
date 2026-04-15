@@ -113,7 +113,7 @@ fun defaultToScanner(): Boolean {
         "NewLand" -> Build.MODEL.startsWith("NQ")
         "Newland" -> Build.MODEL.startsWith("NLS-NQ")
         "Honeywell" -> Build.MODEL.startsWith("EDA")
-        "SUNMI" -> Build.MODEL.startsWith("L")
+        "SUNMI" -> Build.MODEL.startsWith("L") || Build.MODEL.startsWith("V")
         "SEUIC" -> Build.MODEL.startsWith("AUTOID Pad Air")
         "M3" -> Build.MODEL.startsWith("M3PC")
         else -> false
