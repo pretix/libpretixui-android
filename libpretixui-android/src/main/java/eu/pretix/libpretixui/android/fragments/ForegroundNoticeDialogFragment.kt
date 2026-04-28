@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
@@ -12,9 +11,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.edit
 import eu.pretix.libpretixui.android.BuildConfig
 import eu.pretix.libpretixui.android.R
+import eu.pretix.libpretixui.android.databinding.DialogForegroundNoticeBinding
 import kotlin.text.contains
 
 class ForegroundNoticeDialogFragment : SelectDialogFragment() {
+    lateinit var binding: DialogForegroundNoticeBinding
 
     companion object {
         const val TAG = "ForegroundNoticeDialogFragment"
@@ -52,15 +53,14 @@ class ForegroundNoticeDialogFragment : SelectDialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val view = layoutInflater.inflate(R.layout.dialog_foreground_notice, null, false)
-        val btn = view.findViewById<Button>(R.id.buttonOK)
+        val binder = DialogForegroundNoticeBinding.inflate(layoutInflater, null, false)
 
         val dialog: AlertDialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.foreground_service_dialog_title)
-            .setView(view)
+            .setView(binder.root)
             .create()
 
-        btn.setOnClickListener { dismiss() }
+        binder.buttonOK.setOnClickListener { dismiss() }
 
         dialog.window?.setWindowAnimations(R.style.AppTheme_Dialog_ShortAnimation)
         dialog.setCanceledOnTouchOutside(true)
