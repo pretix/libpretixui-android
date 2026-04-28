@@ -41,4 +41,7 @@
     <string name="refresh">Verversen</string>
     <string name="camera">Camera</string>
     <string name="camera_no_device">Geen USB-camera gevonden</string>
+    <string name="foreground_service_dialog_title">De service wordt op de voorgrond uitgevoerd</string>
+    <string name="foreground_service_dialog_text">Als u deze functie inschakelt, start %1$s een service op de voorgrond om te voorkomen dat de verbinding met uw aangesloten apparaat verbroken wordt. U ziet een doorlopende melding over de service. Het batterijverbruik kan toenemen terwijl de service actief is. U kunt hem ook stoppen via de melding.</string>
+    <string name="foreground_service_stop">Dienst stoppen</string>
 </resources>

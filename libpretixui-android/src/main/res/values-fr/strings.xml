@@ -41,4 +41,7 @@
     <string name="refresh">Actualiser</string>
     <string name="camera">Caméra</string>
     <string name="camera_no_device">Aucune caméra USB trouvée</string>
+    <string name="foreground_service_dialog_title">Le service s\'exécutera au premier plan</string>
+    <string name="foreground_service_dialog_text">Si vous activez cette fonctionnalité, afin d\'éviter toute déconnexion de votre appareil connecté, %1$s lancera un service au premier plan. Une notification permanente s\'affichera à propos du service. L\'utilisation de la batterie peut augmenter pendant le fonctionnement du service. Vous pouvez arrêter le service via la notification.</string>
+    <string name="foreground_service_stop">Arrêter le service</string>
 </resources>
