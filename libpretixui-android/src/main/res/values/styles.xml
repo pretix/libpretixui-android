@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme.Dialog.ShortAnimation">
+        <item name="android:windowEnterAnimation">@anim/enter_short</item>
+        <item name="android:windowExitAnimation">@anim/exit_short</item>
+    </style>
+</resources>

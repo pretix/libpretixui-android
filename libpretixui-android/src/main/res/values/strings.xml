@@ -40,4 +40,7 @@
     <string name="setup_hint_url">URL</string>
     <string name="setup_hint_token">Token</string>
     <string name="action_manual">Manual setup</string>
+    <string name="foreground_service_dialog_title">Service will run in foreground</string>
+    <string name="foreground_service_dialog_text">If you enable this feature, to avoid disconnections from your connected device, %1$s will start a foreground service. You will see an ongoing notification about the service. Battery usage might be increased while the service is running. You can stop the service through the notification.</string>
+    <string name="foreground_service_stop">Stop service</string>
 </resources>
