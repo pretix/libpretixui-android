@@ -41,4 +41,7 @@
     <string name="refresh">Actualizar</string>
     <string name="camera">Cámara</string>
     <string name="camera_no_device">No se ha encontrado ninguna cámara USB</string>
+    <string name="foreground_service_dialog_text">Si activa esta función, %1$s iniciará un servicio en primer plano para evitar desconexiones con el dispositivo conectado. Verá una notificación permanente mientras el servicio esté activo. El consumo de batería puede aumentar durante la ejecución del servicio. Puede detenerlo a través de la propia notificación.</string>
+    <string name="foreground_service_dialog_title">El servicio se ejecutará en primer plano</string>
+    <string name="foreground_service_stop">Detener el servicio</string>
 </resources>
