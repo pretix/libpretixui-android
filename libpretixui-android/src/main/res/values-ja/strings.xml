@@ -41,4 +41,7 @@
     <string name="refresh">更新</string>
     <string name="camera">カメラ</string>
     <string name="camera_no_device">USBカメラが見つかりません</string>
+    <string name="foreground_service_dialog_title">サービスはフォアグラウンドで実行されます</string>
+    <string name="foreground_service_dialog_text">この機能を有効にすると、接続されたデバイスからの切断を防ぐために、%1$s がフォアグラウンドサービスを開始します。サービスに関する継続的な通知が表示されます。サービスが実行中は、バッテリー使用量が増加する可能性があります。通知でサービスを停止できます。</string>
+    <string name="foreground_service_stop">サービスを停止する</string>
 </resources>
