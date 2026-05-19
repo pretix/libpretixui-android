@@ -3,6 +3,7 @@ package eu.pretix.libpretixui.android.setup
 import android.Manifest
 import android.app.Dialog
 import android.app.ProgressDialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
@@ -18,17 +19,18 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import eu.pretix.libpretixsync.setup.SetupBadRequestException
 import eu.pretix.libpretixsync.setup.SetupBadResponseException
 import eu.pretix.libpretixsync.setup.SetupException
@@ -102,7 +104,7 @@ class SetupFragment : Fragment() {
         // NOTE: Manifest.permission.WRITE_EXTERNAL_STORAGE will always return false on SDK 23+, but that's okay.
         if (grants[Manifest.permission.CAMERA] == false) {
             binding.llCameraPermission.visibility = View.VISIBLE
-            Toast.makeText(requireContext(), getString(R.string.setup_camera_permission_needed), Toast.LENGTH_SHORT).show()
+            showCameraPermissionSnackbar()
         } else {
             binding.llCameraPermission.visibility = View.GONE
             if (useCamera) {
@@ -170,7 +172,7 @@ class SetupFragment : Fragment() {
                 return when (menuItem.itemId) {
                     R.id.action_manual -> {
                         showManualSetupDialog()
-                        return true
+                        true
                     }
                     else -> false
                 }
@@ -178,7 +180,15 @@ class SetupFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         binding.btCameraPermission.setOnClickListener {
-            requestPermissionLauncher.launch(arrayOf(Manifest.permission.CAMERA))
+            if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.CAMERA)) {
+                showCameraPermissionSnackbar()
+            } else {
+                requestPermissionLauncher.launch(arrayOf(Manifest.permission.CAMERA))
+            }
+        }
+
+        binding.btManualSetup.setOnClickListener {
+            showManualSetupDialog()
         }
 
         binding.scannerView.setResultHandler(scannerResultHandler)
@@ -204,9 +214,7 @@ class SetupFragment : Fragment() {
                 ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED
             ) {
-                if (!ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.CAMERA)) {
-                    neededPermissions.add(Manifest.permission.CAMERA)
-                }
+                neededPermissions.add(Manifest.permission.CAMERA)
             }
         } else {
             if (
@@ -271,6 +279,17 @@ class SetupFragment : Fragment() {
         childFragmentManager.beginTransaction()
             .add(ManualSetupDialogFragment::class.java, args, "MANUAL_SETUP_DIALOG")
             .commit()
+    }
+
+    fun showCameraPermissionSnackbar() {
+        Snackbar
+            .make(binding.activitySetup, getString(R.string.setup_camera_permission_needed), Snackbar.LENGTH_LONG)
+            .setAction(R.string.setup_open_permissions) {
+                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.setData("package:${requireActivity().packageName}".toUri())
+                startActivity(intent)
+            }
+            .show()
     }
 
     // NOTE: this needs manually be called in the Activity
