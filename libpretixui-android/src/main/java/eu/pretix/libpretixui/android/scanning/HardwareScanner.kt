@@ -116,6 +116,7 @@ fun defaultToScanner(): Boolean {
         "SUNMI" -> Build.MODEL.startsWith("L") || Build.MODEL.startsWith("V")
         "SEUIC" -> Build.MODEL.startsWith("AUTOID Pad Air")
         "M3" -> Build.MODEL.startsWith("M3PC")
+        "pretix" -> Build.MODEL == "TR51"
         else -> false
     }
 }
