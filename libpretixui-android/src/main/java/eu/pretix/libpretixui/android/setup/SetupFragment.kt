@@ -402,17 +402,26 @@ class ManualSetupDialogFragment : DialogFragment() {
         const val RESULT_TOKEN = "token"
     }
 
+    lateinit var dialogView: View
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val defaultUrl = arguments?.getString(ARG_DEFAULT_URL, "")
 
         val builder = MaterialAlertDialogBuilder(requireActivity())
-        val view = layoutInflater.inflate(R.layout.dialog_setup_manual, null)
-        val inputUri = view.findViewById<EditText>(R.id.input_uri)
+        dialogView = layoutInflater.inflate(R.layout.dialog_setup_manual, null)
+        builder.setView(dialogView)
+
+        val inputUri = dialogView.findViewById<EditText>(R.id.input_uri)
         if (!defaultUrl.isNullOrEmpty()) {
             inputUri.setText(defaultUrl)
         }
-        val inputToken = view.findViewById<EditText>(R.id.input_token)
-        builder.setView(view)
+        if (!savedInstanceState?.getString(RESULT_URL, "").isNullOrBlank()) {
+            inputUri.setText(savedInstanceState.getString(RESULT_URL))
+        }
+        val inputToken = dialogView.findViewById<EditText>(R.id.input_token)
+        if (!savedInstanceState?.getString(RESULT_TOKEN, "").isNullOrBlank()) {
+            inputToken.setText(savedInstanceState.getString(RESULT_TOKEN))
+        }
         builder.setPositiveButton(R.string.ok) { dialog, _ ->
             dialog.dismiss()
             parentFragmentManager.setFragmentResult(
@@ -427,5 +436,11 @@ class ManualSetupDialogFragment : DialogFragment() {
             dialog.cancel()
         }
         return builder.create()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(RESULT_URL, dialogView.findViewById<EditText>(R.id.input_uri)?.text.toString())
+        outState.putString(RESULT_TOKEN, dialogView.findViewById<EditText>(R.id.input_token)?.text.toString())
     }
 }
