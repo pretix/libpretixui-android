@@ -112,7 +112,6 @@ class QuestionsDialog(
         val retryHandler: ((MutableList<Answer>) -> Unit),
         val copyFrom: Map<String, String>? = null,
         val attendeeName: String? = null,
-        val attendeeDOB: String? = null,
         val ticketId: String? = null,
         val ticketType: String? = null,
         val useHardwareScan: Boolean = false,
@@ -157,11 +156,6 @@ class QuestionsDialog(
             v.findViewById<TextView>(R.id.tvAttendeeName).visibility = View.GONE
         } else {
             v.findViewById<TextView>(R.id.tvAttendeeName).text = attendeeName
-        }
-        if (this.attendeeDOB.isNullOrBlank()) {
-            v.findViewById<TextView>(R.id.tvAttendeeDOB).visibility = View.GONE
-        } else {
-            v.findViewById<TextView>(R.id.tvAttendeeDOB).text = attendeeName
         }
         if (ticketType.isNullOrBlank()) {
             v.findViewById<TextView>(R.id.tvTicketType).visibility = View.GONE
@@ -972,7 +966,6 @@ fun showQuestionsDialog(
         retryHandler: ((MutableList<Answer>) -> Unit),
         copyFrom: Map<String, String>? = null,
         attendeeName: String? = null,
-        attendeeDOB: String? = null,
         ticketId: String? = null,
         ticketType: String? = null,
         useHardwareScan: Boolean = false,
@@ -990,7 +983,6 @@ fun showQuestionsDialog(
             retryHandler,
             copyFrom,
             attendeeName,
-            attendeeDOB,
             ticketId,
             ticketType,
             useHardwareScan,
