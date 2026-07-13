@@ -1,3 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="yes">نعم</string>
+    <string name="cancel">إلغاء</string>
+    <string name="no">من</string>
+    <string name="question_input_invalid">هذا الإدخال غير صحيح.</string>
+    <string name="question_input_required">هذا الحقل إلزامي.</string>
+    <string name="question_validation_error">تعذر التحقق من صحة بعض البيانات التي أدخلتها.</string>
+    <string name="copy">نسخ ما سبق</string>
+    <string name="cont">تابع</string>
+    <string name="take_photo">التقط صورة</string>
+    <string name="delete_photo">حذف الصورة</string>
+    <string name="camera_usb">اختر كاميرا USB</string>
+    <string name="camera">غرفة</string>
+    <string name="camera_back">الكاميرا الخلفية</string>
+    <string name="camera_front">الكاميرا الأمامية</string>
+    <string name="refresh">تحديث</string>
+    <string name="camera_no_device">لم يتم العثور على كاميرا USB</string>
+    <string name="datetime_format">%1$tY-%1$tm-%1$td %1$tH:%1$tM</string>
+    <string name="time_format">%1$tH:%1$tM</string>
+    <string name="order_question_title">معلومات الطلب</string>
+    <string name="date_format">التاريخ</string>
+    <string name="setup_error_request">تم رفض الطلب من قِبل الخادم. يرجى إعادة التحقق من البيانات التي أدخلتها.</string>
+    <string name="setup_error_io">حدث خطأ في الاتصال أثناء محاولة الوصول إلى الخادم.</string>
+    <string name="android_permission_required">يرجى المحاولة مرة أخرى بعد منح الإذن المطلوب للنظام.</string>
+    <string name="setup_tutorial">للبدء، قم بإنشاء جهاز جديد في قسم «الأجهزة» بحسابك كمنظم في واجهة إدارة pretix. سيُعرض عليك بعد ذلك رمز QR للتكوين لتقوم بمسحه ضوئيًا.</string>
+    <string name="setup_error_permissions">لن يعمل التطبيق بشكل صحيح دون منح تلك الأذونات. يرجى إعادة تشغيل التطبيق.</string>
+    <string name="ok">حسنًا</string>
+    <string name="setup_grant_camera_permission">منح الكاميرا الإذن</string>
+    <string name="setup_error_invalid_qr_code">رمز الاستجابة السريعة (QR) الذي قمت بمسحه ليس رمز تهيئة صالحًا. يرجى التأكد من أنك قمت بإنشاء الرمز في قسم «الأجهزة» بحساب «بريتيكس أورغانيزر».</string>
+    <string name="setup_error_legacy_qr_code">رمز الاستجابة السريعة (QR) الذي قمت بمسحه ضوئيًا يخص إصدارًا قديمًا من هذا التطبيق. يرجى الانتقال إلى قسم «الأجهزة» في حسابك على Pretix Organizer وإنشاء جهاز جديد من هناك.</string>
+    <string name="setup_hardware_scanner">يرجى الضغط على أزرار المسح الخاصة بالأجهزة في جهازك لإجراء المسح.</string>
+    <string name="setup_hardware_scanner_switch_to_camera">استخدم الكاميرا بدلاً من ذلك</string>
+    <string name="setup_camera_permission_needed">يرجى منح الكاميرا الإذن لاستخدام ماسح QR</string>
+    <string name="setup_error_server">حدث خطأ في الخادم أثناء محاولة تسجيل الجهاز.</string>
+    <string name="setup_progress">جاري تهيئة الجهاز…</string>
+    <string name="setup_error_version_too_high">رمز الاستجابة السريعة (QR) الذي قمت بمسحه ينتمي إلى إصدار أحدث من تطبيق «pretix» مقارنة بالإصدار الذي تم تطوير هذا التطبيق من أجله. يرجى التحقق مما إذا كان بإمكانك الحصول على تحديث لهذا التطبيق!</string>
+    <string name="setup_hint_url">عنوان الموقع الإلكتروني</string>
+    <string name="setup_error_ssl">حدث خطأ أمني أثناء محاولة الاتصال بالخادم.</string>
+    <string name="setup_error_response">أرسل الخادم استجابة غير صالحة.</string>
+    <string name="setup_hint_token">الرمز</string>
+    <string name="setup_error_failed">فشل اختبار الاتصال الأولي.</string>
+    <string name="foreground_service_stop">إيقاف الخدمة</string>
+    <string name="foreground_service_dialog_title">ستعمل الخدمة في الخلفية</string>
+    <string name="action_manual">الإعداد اليدوي</string>
+    <string name="foreground_service_dialog_text">إذا قمت بتفعيل هذه الميزة، فسيبدأ %1$s تشغيل خدمة في المقدمة لتجنب انقطاع الاتصال بجهازك المتصل. ستظهر لك إشعار مستمر بشأن هذه الخدمة. قد يزداد استهلاك البطارية أثناء تشغيل الخدمة. يمكنك إيقاف الخدمة من خلال الإشعار.</string>
 </resources>
