@@ -1,0 +1,47 @@
+[versions]
+agp = "8.4.2"
+androidPhoneField = "0.2.3"
+appcompat = "1.7.1"
+camerax = "1.4.2"
+constraintlayout = "2.2.1"
+coreKtx = "1.13.1"
+desugar_jdk_libs = "2.1.5"
+glide = "4.12.0"
+jodaTime = "2.10.10"
+jsonLogicKotlin = "1.0.0"
+kotlin = "2.2.21"
+lifecycleCommon = "2.6.0"
+lifecycleExtensions = "2.2.0"
+material = "1.13.0"
+nvI18n = "1.27"
+preferenceKtx = "1.2.1"
+swiperefreshlayout = "1.1.0"
+zxing = "3.5.3"
+
+[libraries]
+android-phone-field = { module = "com.github.ialokim:android-phone-field", version.ref = "androidPhoneField" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+androidx-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
+androidx-coreKtx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+androidx-preferenceKtx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
+androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+joda-time = { module = "joda-time:joda-time", version.ref = "jodaTime" }
+jsonLogicKotlin = { module = "com.github.pretix:json-logic-kotlin", version.ref = "jsonLogicKotlin" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "lifecycleCommon" }
+lifecycle-extensions1 = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycleExtensions" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+nv-i18n = { module = "com.neovisionaries:nv-i18n", version.ref = "nvI18n" }
+zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
+
+[plugins]
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
