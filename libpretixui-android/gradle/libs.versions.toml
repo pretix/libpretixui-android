@@ -2,6 +2,7 @@
 agp = "8.13.0"
 androidPhoneField = "0.2.3"
 appcompat = "1.8.0"
+calendarview = "1.0.4"
 camerax = "1.4.2"
 cardview = "1.0.0"
 constraintlayout = "2.2.2"
@@ -42,6 +43,7 @@ androidx-preferenceKtx = { module = "androidx.preference:preference-ktx", versio
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" } # used in parent android projects
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-vectordrawable = { module = "androidx.vectordrawable:vectordrawable", version.ref = "vectordrawable" } # used in parent android projects
+calendarview = { module = "com.github.kizitonwose:CalendarView", version.ref = "calendarview" } # used in parent android projects
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
