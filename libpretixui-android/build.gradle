@@ -53,8 +53,8 @@ dependencies {
     implementation uiLibs.androidx.coreKtx
     implementation uiLibs.androidx.appcompat
     implementation uiLibs.androidx.constraintlayout
-    implementation uiLibs.lifecycle.common
-    implementation uiLibs.lifecycle.extensions1
+    implementation uiLibs.androidx.lifecycle.common
+    implementation uiLibs.androidx.lifecycle.extensions1
     implementation uiLibs.zxing
     implementation uiLibs.androidx.camera.core
     implementation uiLibs.androidx.camera2
