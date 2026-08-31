@@ -3,6 +3,7 @@ agp = "8.13.0"
 androidPhoneField = "0.2.3"
 appcompat = "1.8.0"
 camerax = "1.4.2"
+cardview = "1.0.0"
 constraintlayout = "2.2.2"
 coreKtx = "1.13.1"
 desugar_jdk_libs = "2.1.5"
@@ -10,13 +11,17 @@ glide = "4.12.0"
 jodaTime = "2.10.10"
 jsonLogicKotlin = "1.0.0"
 kotlin = "2.2.21"
+lifecycle = "2.4.1"
 lifecycleCommon = "2.6.0"
 lifecycleExtensions = "2.2.0"
 material = "1.14.0"
+multidex = "2.0.1"
 nvI18n = "1.27"
 preferenceKtx = "1.2.1"
+recyclerview = "1.4.0"
 swiperefreshlayout = "1.1.0"
 zxing = "3.5.3"
+vectordrawable = "1.2.0"
 
 [libraries]
 android-phone-field = { module = "com.github.ialokim:android-phone-field", version.ref = "androidPhoneField" }
@@ -25,18 +30,24 @@ androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 androidx-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" } # used in parent android projects
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 androidx-coreKtx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+androidx-multidex = { module = "androidx.multidex:multidex", version.ref = "multidex" } # used in parent android projects
+androidx-lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "lifecycleCommon" } # used in parent android projects
+androidx-lifecycle-extensions1 = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycleExtensions" } # used in parent android projects
+androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" } # used in parent android projects
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" } # used in parent android projects
 androidx-preferenceKtx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" } # used in parent android projects
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
+androidx-vectordrawable = { module = "androidx.vectordrawable:vectordrawable", version.ref = "vectordrawable" } # used in parent android projects
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
 joda-time = { module = "joda-time:joda-time", version.ref = "jodaTime" }
 jsonLogicKotlin = { module = "com.github.pretix:json-logic-kotlin", version.ref = "jsonLogicKotlin" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
-lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "lifecycleCommon" }
-lifecycle-extensions1 = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycleExtensions" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 nv-i18n = { module = "com.neovisionaries:nv-i18n", version.ref = "nvI18n" }
 zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
