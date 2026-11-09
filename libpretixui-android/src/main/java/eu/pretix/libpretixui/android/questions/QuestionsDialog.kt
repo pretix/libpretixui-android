@@ -221,7 +221,7 @@ class QuestionsDialog(
         }
         for (question in questions) {
             val tv = TextView(ctx)
-            tv.text = if (!allAnswersAreOptional && question.requiresAnswer()) {
+            tv.text = if (!allAnswersAreOptional && question.required) {
                 buildSpannedString {
                     append(question.question)
                     append(" ")
@@ -470,7 +470,7 @@ class QuestionsDialog(
                     val selected = if (values?.containsKey(question.identifier) == true) {
                         values[question.identifier]!!.split(",")
                     } else if (!question.default.isNullOrBlank()) {
-                        question.default.split(",")
+                        question.default!!.split(",")
                     } else {
                         emptyList<String>()
                     }
@@ -478,7 +478,9 @@ class QuestionsDialog(
                         val field = CheckBox(ctx)
                         field.text = opt!!.value
                         field.tag = opt
-                        if (selected.contains(opt.server_id.toString())) {
+                        if (selected.contains(opt.identifier.toString()) || selected.contains(opt.serverId.toString())) {
+                            // This has a slight change of going wrong for legacy questions when the option id is identical to an identifier
+                            // but that is veeeery unlikely on the same question
                             field.isChecked = true
                         }
                         field.setOnKeyListener(ctrlEnterListener)
@@ -490,8 +492,12 @@ class QuestionsDialog(
                         llFormFields.addView(field)
                     }
                     setters[question.identifier] = {
+                        val value = it?.split(",") ?: emptyList()
                         for (f in fields) {
-                            if (it != null && it.contains((f.tag as QuestionOption).server_id.toString())) {
+                            val opt = (f.tag as QuestionOption)
+                            if (it != null && (value.contains(opt.serverId.toString()) || value.contains(opt.identifier.toString()))) {
+                                // This has a slight change of going wrong for legacy questions when the option id is identical to an identifier
+                                // but that is veeeery unlikely on the same question
                                 f.isChecked = true
                             }
                         }
@@ -540,13 +546,12 @@ class QuestionsDialog(
                     fieldC.adapter = OptionAdapter(ctx, opts.filter { it != null } as MutableList<QuestionOption>)
 
                     setters[question.identifier] = {
-                        var i = 1  // 0 = empty opt
-                        for (opt in question.options) {
-                            if (opt.server_id.toString() == it) {
-                                fieldC.setSelection(i)
-                                break
-                            }
-                            i++
+                        var activeSelection = question.options!!.indexOfFirst { opt -> opt.identifier == it }
+                        if (activeSelection == -1) {  // Legacy behaviour with IDs
+                            activeSelection = question.options!!.indexOfFirst { opt -> opt.serverId.toString() == it }
+                        }
+                        if (activeSelection != -1) {
+                            fieldC.setSelection(activeSelection + 1)  // index 0 is "empty"
                         }
                     }
 
@@ -576,7 +581,7 @@ class QuestionsDialog(
                     llFormFields.addView(fieldC)
                 }
                 QuestionType.D -> {
-                    val fieldD = DatePickerField(ctx, question.valid_date_min, question.valid_date_max)
+                    val fieldD = DatePickerField(ctx, question.validDateMin, question.validDateMax)
                     setters[question.identifier] = {
                         try {
                             fieldD.setValue(df.parse(it))
@@ -622,7 +627,7 @@ class QuestionsDialog(
                     val llInner = LinearLayout(ctx)
                     llInner.orientation = LinearLayout.HORIZONTAL
 
-                    val fieldWD = DatePickerField(ctx, question.valid_datetime_min, question.valid_datetime_max)
+                    val fieldWD = DatePickerField(ctx, question.validDateTimeMin, question.validDateTimeMax)
                     fieldWD.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, 1f)
                     fieldWD.gravity = Gravity.CENTER
                     fieldWD.setOnKeyListener(ctrlEnterListener)
@@ -727,7 +732,7 @@ class QuestionsDialog(
                         if (!empty) {
                             aw.append(",")
                         }
-                        aw.append((f.tag as QuestionOption).server_id)
+                        aw.append((f.tag as QuestionOption).identifier)  // Will be ignored anways by cleanAnswer
                         options.add(f.tag as QuestionOption)
                         empty = false
                     }
@@ -740,10 +745,10 @@ class QuestionsDialog(
             }
             QuestionType.C -> {
                 val opt = ((field as Spinner).selectedItem as QuestionOption)
-                if (opt.server_id == 0L) {
+                if (opt.serverId == 0L) {
                     empty = true
                 } else {
-                    answer = opt.server_id.toString()
+                    answer = opt.identifier  // Will be ignored anways by cleanAnswer
                     options.add(opt)
                 }
             }
@@ -774,7 +779,7 @@ class QuestionsDialog(
                 }
             }
         }
-        if (!allAnswersAreOptional && empty && question.requiresAnswer()) {
+        if (!allAnswersAreOptional && empty && question.required) {
             throw QuestionInvalid(R.string.question_input_required)
         } else if (empty) {
             return Answer(question, "", options)
@@ -782,7 +787,7 @@ class QuestionsDialog(
             throw QuestionInvalid(R.string.question_input_invalid)
         } else {
             try {
-                question.clean_answer(answer, question.options!!, allAnswersAreOptional)
+                question.cleanAnswer(answer, question.options!!, allAnswersAreOptional)
             } catch (e: QuestionLike.ValidationException) {
                 throw QuestionInvalid(R.string.question_input_invalid)
             }
@@ -794,11 +799,11 @@ class QuestionsDialog(
         if (question.dependency == null) {
             return true
         }
-        if (question.dependency.dependency !== null && !questionIsVisible(question.dependency)) {
+        if (question.dependency!!.dependency !== null && !questionIsVisible(question.dependency!!)) {
             return false
         }
-        val field = fieldViews[question.dependency] ?: return false
-        when (question.dependency.type) {
+        val field = fieldViews[question.dependency!!] ?: return false
+        when (question.dependency!!.type) {
             QuestionType.C -> {
                 val opt = ((field as Spinner).selectedItem as QuestionOption)
                 if (question.dependencyValues.contains(opt.identifier)) {
@@ -840,7 +845,7 @@ class QuestionsDialog(
             }
 
             try {
-                question.warn_answer(answer.value, question.options!!, allAnswersAreOptional)
+                question.warnAnswer(answer.value, question.options!!, allAnswersAreOptional)
                 warningTv?.visibility = View.GONE
             } catch (e: ValidationException) {
                 warningTv?.text = e.message
