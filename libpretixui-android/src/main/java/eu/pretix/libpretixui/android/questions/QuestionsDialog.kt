@@ -478,7 +478,9 @@ class QuestionsDialog(
                         val field = CheckBox(ctx)
                         field.text = opt!!.value
                         field.tag = opt
-                        if (selected.contains(opt.serverId.toString())) {
+                        if (selected.contains(opt.identifier.toString()) || selected.contains(opt.serverId.toString())) {
+                            // This has a slight change of going wrong for legacy questions when the option id is identical to an identifier
+                            // but that is veeeery unlikely on the same question
                             field.isChecked = true
                         }
                         field.setOnKeyListener(ctrlEnterListener)
@@ -490,8 +492,12 @@ class QuestionsDialog(
                         llFormFields.addView(field)
                     }
                     setters[question.identifier] = {
+                        val value = it?.split(",") ?: emptyList()
                         for (f in fields) {
-                            if (it != null && it.contains((f.tag as QuestionOption).serverId.toString())) {
+                            val opt = (f.tag as QuestionOption)
+                            if (it != null && (value.contains(opt.serverId.toString()) || value.contains(opt.identifier.toString()))) {
+                                // This has a slight change of going wrong for legacy questions when the option id is identical to an identifier
+                                // but that is veeeery unlikely on the same question
                                 f.isChecked = true
                             }
                         }
@@ -540,13 +546,12 @@ class QuestionsDialog(
                     fieldC.adapter = OptionAdapter(ctx, opts.filter { it != null } as MutableList<QuestionOption>)
 
                     setters[question.identifier] = {
-                        var i = 1  // 0 = empty opt
-                        for (opt in question.options) {
-                            if (opt.serverId.toString() == it) {
-                                fieldC.setSelection(i)
-                                break
-                            }
-                            i++
+                        var activeSelection = question.options!!.indexOfFirst { opt -> opt.identifier == it }
+                        if (activeSelection == -1) {  // Legacy behaviour with IDs
+                            activeSelection = question.options!!.indexOfFirst { opt -> opt.serverId.toString() == it }
+                        }
+                        if (activeSelection != -1) {
+                            fieldC.setSelection(activeSelection + 1)  // index 0 is "empty"
                         }
                     }
 
@@ -727,7 +732,7 @@ class QuestionsDialog(
                         if (!empty) {
                             aw.append(",")
                         }
-                        aw.append((f.tag as QuestionOption).serverId)
+                        aw.append((f.tag as QuestionOption).identifier)  // Will be ignored anways by cleanAnswer
                         options.add(f.tag as QuestionOption)
                         empty = false
                     }
@@ -743,7 +748,7 @@ class QuestionsDialog(
                 if (opt.serverId == 0L) {
                     empty = true
                 } else {
-                    answer = opt.serverId.toString()
+                    answer = opt.identifier  // Will be ignored anways by cleanAnswer
                     options.add(opt)
                 }
             }
